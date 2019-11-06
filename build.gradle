@@ -1,5 +1,7 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '4.0.4'
 }
 
 group 'io.github.rxcmr'
@@ -20,3 +22,5 @@ repositories {
     jcenter()
     mavenCentral()
 }
+
+compileJava.options.encoding = 'UTF-8'

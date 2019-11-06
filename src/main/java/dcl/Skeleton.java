@@ -75,6 +75,7 @@ public class Skeleton {
          .setRateLimitPool(Executors.newScheduledThreadPool(poolSize), true)
          .setCompression(Compression.ZLIB)
          .setUseShutdownNow(true)
+         .setRelativeRateLimit(false)
          .setContextEnabled(true);
       if (eventListeners != null) managerBuilder.addEventListeners(eventListeners);
       managerBuilder.build();

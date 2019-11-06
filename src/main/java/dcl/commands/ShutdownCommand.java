@@ -19,5 +19,6 @@ public class ShutdownCommand extends Command {
       Logger logger = (Logger) LoggerFactory.getLogger(ShutdownCommand.class);
       logger.warn("[!!] JDA shutting down.");
       event.getJDA().shutdownNow();
+      System.exit(1);
    }
 }

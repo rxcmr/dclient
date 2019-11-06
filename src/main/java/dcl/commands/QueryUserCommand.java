@@ -34,15 +34,16 @@ public class QueryUserCommand extends Command {
 
    private MEBuilder embed = (member, author) -> {
       User user = member.getUser();
-      embedBuilder.setTitle("JDA v4, requesting: " + user);
-      embedBuilder.setDescription(String.format("Member: %s\nUser: %s", user, member));
+      embedBuilder.setTitle("JDA v4, requesting: " + user.getName());
+      embedBuilder.setDescription(String.format("Member: `%s`\nUser: `%s`", user, member));
       embedBuilder.setImage(user.getEffectiveAvatarUrl());
-      embedBuilder.addField("Avatar ID: ", user.getAvatarId(), true);
-      embedBuilder.addField("Avatar URL: ", user.getEffectiveAvatarUrl(), true);
-      embedBuilder.addField("Name: ", user.getName() + user.getDiscriminator(), true);
-      embedBuilder.addField("Nickname: ", member.getNickname() == null ? "No nickname" : member.getNickname(), true);
-      embedBuilder.setColor(0xadde40);
-      embedBuilder.setFooter("requested by: " + author, Objects.requireNonNull(author.getAvatarUrl()));
+      embedBuilder.addField("Avatar ID: ", user.getAvatarId(), false);
+      embedBuilder.addField("Avatar URL: ", user.getEffectiveAvatarUrl(), false);
+      embedBuilder.addField("Name: ", String.format("%s#%s", user.getName(), user.getDiscriminator()), false);
+      embedBuilder.addField("Nickname: ", member.getNickname() == null ? "No nickname" : member.getNickname(), false);
+      embedBuilder.addField("ID: ", user.getId(), false);
+      embedBuilder.setColor(0x41 + 0x64 + 0x64 + 0x65+ 0x72);
+      embedBuilder.setFooter("requested by: " + author.getName(), Objects.requireNonNull(author.getAvatarUrl()));
       return embedBuilder.build();
    };
 
