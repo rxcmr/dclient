@@ -8,11 +8,10 @@ import dcl.Skeleton;
 import java.util.Objects;
 
 public class FleshListener implements CommandListener {
-   private DirectMessage dm;
 
    @Override
    public void onCommandException(CommandEvent event, Command command, Throwable throwable) {
-      dm = (a, b, c) -> Objects.requireNonNull(b).openPrivateChannel().queue(
+      DirectMessage dm = (a, b, c) -> Objects.requireNonNull(b).openPrivateChannel().queue(
          d -> d.sendMessage(a + c.toString()).queue()
       );
 
