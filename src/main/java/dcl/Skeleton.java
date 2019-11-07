@@ -18,7 +18,7 @@ import java.util.concurrent.*;
  * @author rxcmr
  */
 public class Skeleton {
-   public static String prefix = ">";
+   public static String prefix = "fl!";
    public static String ID = "175610330217447424";
 
    private Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);

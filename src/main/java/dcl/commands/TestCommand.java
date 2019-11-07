@@ -12,11 +12,14 @@ public class TestCommand extends Command {
       this.name = "test";
       this.aliases = new String[]{"try"};
       this.help = "Testing command handler of JDA-Utilities";
+      this.ownerCommand = true;
+      this.category = new Category("Owner");
    }
 
    @Override
    protected void execute(@NotNull CommandEvent event) {
+      String[] args = event.getArgs().split("\\s+");
       event.getChannel().sendTyping().queue();
-      event.reply("it works bro");
+      for (String s : args) event.reply(s);
    }
 }

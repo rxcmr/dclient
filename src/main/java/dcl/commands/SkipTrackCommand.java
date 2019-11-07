@@ -13,6 +13,7 @@ public class SkipTrackCommand extends Command {
    public SkipTrackCommand() {
       this.name = "skip";
       this.help = "Skips current playing track.";
+      this.category = new Category("Music");
       loader = new Loader();
    }
 

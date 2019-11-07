@@ -21,6 +21,7 @@ public class PurgeCommand extends Command {
       this.userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
       this.cooldown = 5;
       this.help = "Purges [1-100] messages.";
+      this.category = new Category("Moderation");
    }
 
    @Override

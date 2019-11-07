@@ -24,12 +24,16 @@ public class QueryUserCommand extends Command {
       this.cooldown = 10;
       this.arguments = "**user**";
       this.help = "Information about a user.";
+      this.category = new Category("Utilities");
    }
 
    @Override
    protected void execute(@NotNull CommandEvent event) {
       event.getChannel().sendTyping().queue();
-      member = event.getMessage().getMentionedMembers().get(0);
+      member =
+         event.getMessage().getMentionedMembers().isEmpty()
+            ? (Member) event.getJDA().getUserById(event.getArgs())
+            : event.getMessage().getMentionedMembers().get(0);
       author = event.getAuthor();
       event.reply(buildEmbed(member, author));
       clearEmbed();

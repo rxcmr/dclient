@@ -13,6 +13,7 @@ public class ShardCommand extends Command {
       this.aliases = new String[]{"shards"};
       this.help = "Sharding info.";
       this.ownerCommand = true;
+      this.category = new Category("Owner");
    }
 
    @Override

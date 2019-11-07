@@ -8,11 +8,14 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * @author rxcmr
+ */
 public class ExceptionListener extends ListenerAdapter {
    @Override
    public void onException(@NotNull ExceptionEvent event) {
       User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
-      sendDirectMessage(owner, "An exception has occurred.");
+      sendDirectMessage(owner, "A client exception has occurred.");
       sendDirectMessage(owner, event.getCause().getMessage());
    }
 

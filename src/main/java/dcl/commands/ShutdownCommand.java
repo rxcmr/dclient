@@ -15,6 +15,7 @@ public class ShutdownCommand extends Command {
       this.aliases = new String[]{"shutdown"};
       this.help = "Don't even try, it will fail on you.";
       this.ownerCommand = true;
+      this.category = new Category("Owner");
    }
 
    @Override

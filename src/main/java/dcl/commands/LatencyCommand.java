@@ -18,6 +18,8 @@ public class LatencyCommand extends Command {
       this.aliases = new String[]{"ping"};
       this.help = "REST HTTP ping and WebSocket ping.";
       this.guildOnly = false;
+      this.ownerCommand = true;
+      this.category = new Category("Owner");
    }
 
    @Override

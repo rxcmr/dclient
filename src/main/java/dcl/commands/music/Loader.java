@@ -59,9 +59,7 @@ public class Loader {
          }
 
          @Override
-         public void noMatches() {
-            channel.sendMessage("Nothing found by: " + trackUrl + ".").queue();
-         }
+         public void noMatches() { channel.sendMessage("Nothing found by: " + trackUrl + ".").queue(); }
 
          @Override
          public void loadFailed(FriendlyException exception) {

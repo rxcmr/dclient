@@ -13,6 +13,7 @@ public class LeaveVoiceChannelCommand extends Command {
       this.name = "leave";
       this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
       this.help = "Leaves the voice channel.";
+      this.category = new Category("Music");
    }
 
    @Override

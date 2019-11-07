@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author rxcmr
+ */
 public class ReadyEventListener extends ListenerAdapter {
    private Logger logger = (Logger) LoggerFactory.getLogger(ReadyEventListener.class);
    @Override

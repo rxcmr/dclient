@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
+import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -11,6 +12,10 @@ import java.util.Objects;
 /**
  * @author rxcmr
  */
+interface DirectMessage {
+   void sendMessage(String content, User user, Throwable throwable);
+}
+
 public class FleshListener implements CommandListener {
 
    @Override
