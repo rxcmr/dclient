@@ -6,6 +6,9 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author rxcmr
+ */
 public class ShutdownCommand extends Command {
    public ShutdownCommand() {
       this.name = "shutdown";

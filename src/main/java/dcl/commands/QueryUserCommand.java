@@ -10,6 +10,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+/**
+ * @author rxcmr
+ */
 public class QueryUserCommand extends Command {
    private EmbedBuilder embedBuilder = new EmbedBuilder();
    Member member;

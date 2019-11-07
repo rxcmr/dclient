@@ -4,6 +4,9 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * @author rxcmr
+ */
 public class TestCommand extends Command {
    public TestCommand() {
       this.name = "test";

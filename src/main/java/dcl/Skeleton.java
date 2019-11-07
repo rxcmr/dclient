@@ -14,6 +14,9 @@ import javax.security.auth.login.LoginException;
 import java.util.Collection;
 import java.util.concurrent.*;
 
+/**
+ * @author rxcmr
+ */
 public class Skeleton {
    public static String prefix = ">";
    public static String ID = "175610330217447424";

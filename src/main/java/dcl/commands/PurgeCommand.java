@@ -8,6 +8,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
+/**
+ * @author rxcmr
+ */
 public class PurgeCommand extends Command {
    public PurgeCommand() {
       this.name = "purge";

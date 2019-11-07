@@ -17,6 +17,6 @@ public class ExceptionListener extends ListenerAdapter {
    }
 
    private void sendDirectMessage(@NotNull User user, @NotNull String message) {
-      user.openPrivateChannel().queue((channel) -> channel.sendMessage(message).queue());
+      user.openPrivateChannel().queue(channel -> channel.sendMessage(message).queue());
    }
 }
