@@ -4,6 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -13,7 +14,7 @@ import java.util.Objects;
 public class FleshListener implements CommandListener {
 
    @Override
-   public void onCommandException(CommandEvent event, Command command, Throwable throwable) {
+   public void onCommandException(@NotNull CommandEvent event, Command command, Throwable throwable) {
       DirectMessage dm = (a, b, c) -> Objects.requireNonNull(b).openPrivateChannel().queue(
          d -> d.sendMessage(a + c.toString()).queue()
       );
@@ -29,7 +30,7 @@ public class FleshListener implements CommandListener {
    }
 
    @Override
-   public void onCompletedCommand(CommandEvent event, Command command) {
+   public void onCompletedCommand(@NotNull CommandEvent event, Command command) {
       event.getMessage().addReaction("\u2705").queue();
    }
 }

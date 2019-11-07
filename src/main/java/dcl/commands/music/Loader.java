@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ public class Loader {
       musicManagers = new HashMap<>();
    }
 
-   public void loadAndPlay(final TextChannel channel, final String trackUrl) {
+   public void loadAndPlay(@NotNull final TextChannel channel, final String trackUrl) {
       MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
       playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
          @Override
@@ -69,18 +70,18 @@ public class Loader {
       });
    }
 
-   private void play(Guild guild, MusicManager musicManager, AudioTrack track) {
+   private void play(@NotNull Guild guild, @NotNull MusicManager musicManager, AudioTrack track) {
       connectToFirstVoiceChannel(guild.getAudioManager());
       musicManager.scheduler.queue(track);
    }
 
-   public void skipTrack(TextChannel channel) {
+   public void skipTrack(@NotNull TextChannel channel) {
       MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
       musicManager.scheduler.nextTrack();
       channel.sendMessage("Skipped.").queue();
    }
 
-   private static void connectToFirstVoiceChannel(AudioManager audioManager) {
+   private static void connectToFirstVoiceChannel(@NotNull AudioManager audioManager) {
       if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
          for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
             audioManager.openAudioConnection(voiceChannel);
@@ -89,7 +90,8 @@ public class Loader {
       }
    }
 
-   private synchronized MusicManager getGuildAudioPlayer(Guild guild) {
+   @NotNull
+   private synchronized MusicManager getGuildAudioPlayer(@NotNull Guild guild) {
       long guildId = Long.parseLong(guild.getId());
       MusicManager musicManager = musicManagers.get(guildId);
 
@@ -101,7 +103,7 @@ public class Loader {
       return musicManager;
    }
 
-   public AudioPlayerManager registerSourceManagers(AudioPlayerManager manager) {
+   public AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
       YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
       youtubeAudioSourceManager.configureRequests(
          config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()

@@ -3,6 +3,7 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr
@@ -15,7 +16,7 @@ public class LeaveVoiceChannelCommand extends Command {
    }
 
    @Override
-   protected void execute(CommandEvent event) {
+   protected void execute(@NotNull CommandEvent event) {
       event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
    }
 }
