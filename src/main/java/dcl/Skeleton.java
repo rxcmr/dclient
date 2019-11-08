@@ -1,18 +1,24 @@
 package dcl;
 
 import ch.qos.logback.classic.Logger;
-import com.jagrosh.jdautilities.command.*;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandClient;
+import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import dcl.commands.listener.FleshListener;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.utils.Compression;
-import org.jetbrains.annotations.*;
+import okhttp3.Dns;
+import okhttp3.OkHttpClient;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author rxcmr
@@ -64,6 +70,7 @@ public class Skeleton {
             init();
          } catch (LoginException l) {
             logger.error("[!!!] LoginException occurred: ", l.getCause());
+            logger.warn("[!!!] Supply the .env file!");
          }
       });
    }
@@ -77,6 +84,7 @@ public class Skeleton {
          .setGatewayPool(Executors.newScheduledThreadPool(poolSize), true)
          .setRateLimitPool(Executors.newScheduledThreadPool(poolSize), true)
          .setCompression(Compression.ZLIB)
+         .setHttpClientBuilder(new OkHttpClient.Builder().dns(Dns.SYSTEM))
          .setUseShutdownNow(true)
          .setRelativeRateLimit(false)
          .setContextEnabled(true);
