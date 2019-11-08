@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class ReadyEventListener extends ListenerAdapter {
    private Logger logger = (Logger) LoggerFactory.getLogger(ReadyEventListener.class);
    @Override

@@ -1,4 +1,4 @@
-package dcl.commands.listener;
+package dcl.commands.utils;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -8,22 +8,27 @@ import dcl.commands.ShutdownCommand;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * @author rxcmr
  */
-interface DirectMessage {
-   void send(String content, User user, Object optional);
-}
-
 public class FleshListener implements CommandListener {
-   DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(d -> d.sendMessage(a + c.toString()).queue());
+   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+      c == null ? d -> d.sendMessage(a).queue() : d -> d.sendMessage(a + c).queue()
+   );
 
    @Override
-   public void onCommandException(@NotNull CommandEvent event, Command command, Throwable throwable) {
+   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
+      User owner = event.getJDA().getUserById(Skeleton.ID);
       event.getChannel().sendTyping().queue();
       event.getMessage().addReaction("\u274C").queue();
-      event.reply(Skeleton.prefix + command.getName() + " " + command.getArguments());
-      dm.send("Exception: ", event.getJDA().getUserById(Skeleton.ID), throwable.getCause());
+      event.reply(
+         command.getArguments() == null ?
+            "Something wrong happened..." : Skeleton.prefix + command.getName() + " " + command.getArguments()
+      );
+      assert owner != null;
+      dm.send("```java\n", owner, String.format("%s\n```", throwable));
    }
 
    @Override
@@ -34,12 +39,13 @@ public class FleshListener implements CommandListener {
 
    @Override
    public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
+      User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
       event.getMessage().addReaction("\u274C").queue();
       event.getChannel().sendTyping().queue();
-      event.reply("Unexpected behavior?");
+      event.reply("Unexpected behavior. Try again.");
       dm.send(
          "Unexpected behavior. Triggered by: ",
-         event.getJDA().getUserById(Skeleton.ID),
+         owner,
          event.getAuthor() + " in " + event.getGuild()
       );
    }

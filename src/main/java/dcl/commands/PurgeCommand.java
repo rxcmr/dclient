@@ -11,6 +11,7 @@ import java.util.List;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class PurgeCommand extends Command {
    public PurgeCommand() {
       this.name = "purge";

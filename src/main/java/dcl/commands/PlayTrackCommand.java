@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class PlayTrackCommand extends Command {
    private final Loader loader;
 

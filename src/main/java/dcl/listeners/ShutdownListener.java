@@ -10,11 +10,12 @@ import javax.annotation.Nonnull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class ShutdownListener extends ListenerAdapter {
    @Override
    public void onShutdown(@Nonnull ShutdownEvent event) {
       Logger logger = (Logger) LoggerFactory.getLogger(ShutdownListener.class);
-      logger.info("                                                                                                                                                              \n" +
+      logger.info("                                                                                                                                                \n" +
          "                                                                                                                                                              \n" +
          "                                                                                                         ...          ...                                     \n" +
          "                                                                                            .   ............          ..*                                     \n" +
@@ -70,7 +71,7 @@ public class ShutdownListener extends ListenerAdapter {
          "                                                     ...  ..*//////***/#&@@@@@@@@@@@@@@@@@@@@@@@@@@@&%%%%#/.  .                                               \n" +
          "                                         ...         ..,,...,*//////**,*(%%@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@&(...,                                               \n" +
          "                                         ..            .,,...*//////**,,*((%@@@@@@@@@@@@@@@@@@@@@@@@@@@&,.,,                                                  \n" +
-         "                   .........   ..........               .,,,..*////////*...*(&@@@@@@@@@@@@@@@@@@@@@@@@#, .                                                    \n" +
+         "                   .........   ..........               .,,,..*////////*...*(&@@@@@@@@@@@@@@@@@@@@@@@@#, .      heh heh heh, i will enjoy breaking you!       \n" +
          "              .........,,,,,,,,..                        .,,,.,**///////*.. ./##&@@@@@@@@@@@@@@@@@@@@,,.,                                                     \n" +
          "             ......,,,,,,,*****,,....                    .,,*,.,,*//////*,,  .//#&@@@@@@@@@@@@@@@@@@@&/...,                                                   \n" +
          "           .  ..,****,.    .,********,,..                 ..,*,,,,*/////***,    ./#&&@@@@@@@@@@@@@@@&(,...                                                    \n" +

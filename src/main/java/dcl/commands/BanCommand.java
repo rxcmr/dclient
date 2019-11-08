@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class BanCommand extends Command {
    public BanCommand() {
       this.name = "ban";

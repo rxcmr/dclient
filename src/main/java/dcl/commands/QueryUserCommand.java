@@ -13,6 +13,7 @@ import java.util.Objects;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class QueryUserCommand extends Command {
    private EmbedBuilder embedBuilder = new EmbedBuilder();
    Member member;

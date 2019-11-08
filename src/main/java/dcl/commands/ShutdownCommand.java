@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class ShutdownCommand extends Command {
    public ShutdownCommand() {
       this.name = "shutdown";

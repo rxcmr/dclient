@@ -9,6 +9,7 @@ import java.lang.management.RuntimeMXBean;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class UptimeCommand extends Command {
    public UptimeCommand() {
       this.name = "uptime";

@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.Permission;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class KickCommand extends Command {
    public KickCommand() {
       this.name = "kick";

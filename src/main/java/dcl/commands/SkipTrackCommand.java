@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class SkipTrackCommand extends Command {
    private final Loader loader;
    public SkipTrackCommand() {

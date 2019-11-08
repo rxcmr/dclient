@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class DisconnectListener extends ListenerAdapter {
    @Override
    public void onDisconnect(@NotNull DisconnectEvent event) {

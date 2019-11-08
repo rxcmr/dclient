@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class LatencyCommand extends Command {
    private EmbedBuilder embedBuilder = new EmbedBuilder();
 

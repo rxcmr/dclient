@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class ShardCommand extends Command {
    public ShardCommand() {
       this.name = "shardinfo";

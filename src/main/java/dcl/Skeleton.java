@@ -1,31 +1,25 @@
 package dcl;
 
 import ch.qos.logback.classic.Logger;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandClient;
-import com.jagrosh.jdautilities.command.CommandClientBuilder;
-import dcl.commands.listener.FleshListener;
+import com.jagrosh.jdautilities.command.*;
+import dcl.commands.utils.FleshListener;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.utils.Compression;
-import okhttp3.Dns;
-import okhttp3.OkHttpClient;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.Nullable;
+import okhttp3.*;
+import org.jetbrains.annotations.*;
 import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 import java.util.Collection;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
  * @author rxcmr
  */
 public class Skeleton {
-   public static String prefix = "fl!";
-   public static String ID = "175610330217447424";
+   public static String prefix = "fl!", ID = "175610330217447424";
 
    private Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
    private DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
@@ -39,9 +33,9 @@ public class Skeleton {
 
    @Contract(pure = true)
    Skeleton
-      (String token,
+      (@NotNull String token,
        int shards,
-       Collection<Command> commands,
+       @NotNull Collection<Command> commands,
        @Nullable Collection<Object> listeners,
        int poolSize) {
       this.token = token;
@@ -64,11 +58,8 @@ public class Skeleton {
    }
 
    void run() {
-      ExecutorService service = Executors.newCachedThreadPool();
-      service.execute(() -> {
-         try {
-            init();
-         } catch (LoginException l) {
+      Executors.newCachedThreadPool().execute(() -> {
+         try { init(); } catch (LoginException l) {
             logger.error("[!!!] LoginException occurred: ", l.getCause());
             logger.warn("[!!!] Supply the .env file!");
          }

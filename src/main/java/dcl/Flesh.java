@@ -29,6 +29,7 @@ public class Flesh {
       Set<Class<? extends ListenerAdapter>> listenerSet = listenerReflections.getSubTypesOf(ListenerAdapter.class);
       for (Class<? extends ListenerAdapter> l : listenerSet) listeners.add(l.getDeclaredConstructor().newInstance());
       // Client instance
+      assert token != null;
       Skeleton skeleton = new Skeleton(token, shards, commands, listeners, poolSize);
       skeleton.run();
    }

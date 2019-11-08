@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class LeaveVoiceChannelCommand extends Command {
    public LeaveVoiceChannelCommand() {
       this.name = "leave";

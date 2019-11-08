@@ -7,6 +7,7 @@ import groovy.lang.GroovyShell;
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class DebugCommand extends Command {
    private final GroovyShell shell;
    private final String libs;

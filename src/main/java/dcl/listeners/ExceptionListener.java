@@ -1,25 +1,25 @@
 package dcl.listeners;
 
 import dcl.Skeleton;
+import dcl.commands.utils.DirectMessage;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ExceptionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
-
 /**
  * @author rxcmr
  */
+@SuppressWarnings("unused")
 public class ExceptionListener extends ListenerAdapter {
+   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+      c == null ? d -> d.sendMessage(a).queue() : d -> d.sendMessage(a + c).queue()
+   );
+
    @Override
    public void onException(@NotNull ExceptionEvent event) {
-      User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
-      sendDirectMessage(owner, "A client exception has occurred.");
-      sendDirectMessage(owner, event.getCause().getMessage());
-   }
-
-   private void sendDirectMessage(@NotNull User user, @NotNull String message) {
-      user.openPrivateChannel().queue(channel -> channel.sendMessage(message).queue());
+      User owner = event.getJDA().getUserById(Skeleton.ID);
+      assert owner != null;
+      dm.send("```java\n", owner, String.format("%s\n```", event.getCause()));
    }
 }
