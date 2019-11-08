@@ -1,12 +1,5 @@
 package dcl.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import net.dv8tion.jda.api.audio.AudioSendHandler;
-
-import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -22,6 +15,13 @@ import java.nio.ByteBuffer;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
+
+import javax.annotation.Nullable;
+import java.nio.ByteBuffer;
 
 /**
  * @author rxcmr

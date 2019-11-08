@@ -1,11 +1,5 @@
 package dcl.commands;
 
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.music.Loader;
-import net.dv8tion.jda.api.Permission;
-import org.jetbrains.annotations.NotNull;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -21,6 +15,12 @@ import org.jetbrains.annotations.NotNull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.music.Loader;
+import net.dv8tion.jda.api.Permission;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr

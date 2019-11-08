@@ -1,11 +1,5 @@
 package dcl.commands;
 
-import ch.qos.logback.classic.Logger;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -21,6 +15,12 @@ import org.slf4j.LoggerFactory;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import ch.qos.logback.classic.Logger;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr

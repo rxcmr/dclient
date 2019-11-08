@@ -1,9 +1,5 @@
 package dcl.commands;
 
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.Permission;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -19,6 +15,10 @@ import net.dv8tion.jda.api.Permission;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
 
 /**
  * @author rxcmr

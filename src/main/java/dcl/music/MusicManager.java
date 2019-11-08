@@ -1,9 +1,5 @@
 package dcl.music;
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import org.jetbrains.annotations.NotNull;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -19,6 +15,10 @@ import org.jetbrains.annotations.NotNull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr

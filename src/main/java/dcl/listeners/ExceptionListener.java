@@ -1,12 +1,5 @@
 package dcl.listeners;
 
-import dcl.Skeleton;
-import dcl.commands.utils.DirectMessage;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.ExceptionEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -22,6 +15,13 @@ import org.jetbrains.annotations.NotNull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import dcl.Skeleton;
+import dcl.commands.utils.DirectMessage;
+import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.events.ExceptionEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr

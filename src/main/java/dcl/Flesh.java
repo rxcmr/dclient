@@ -1,13 +1,5 @@
 package dcl;
 
-import com.jagrosh.jdautilities.command.Command;
-import io.github.cdimascio.dotenv.Dotenv;
-import io.github.classgraph.ClassGraph;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -24,13 +16,20 @@ import java.util.List;
  * limitations under the License.
  */
 
+import com.jagrosh.jdautilities.command.Command;
+import io.github.cdimascio.dotenv.Dotenv;
+import io.github.classgraph.ClassGraph;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author rxcmr
  */
 public class Flesh {
    public Flesh() throws ReflectiveOperationException {
-      Dotenv dotenv = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load();
-      String token = dotenv.get("TOKEN");
+      String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
       int shards = 1, poolSize = 1;
 
       // Commands

@@ -1,12 +1,5 @@
 package dcl.listeners;
 
-import ch.qos.logback.classic.Logger;
-import net.dv8tion.jda.api.events.ShutdownEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
  *
@@ -22,6 +15,13 @@ import javax.annotation.Nonnull;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+import ch.qos.logback.classic.Logger;
+import net.dv8tion.jda.api.events.ShutdownEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
 
 /**
  * @author rxcmr
