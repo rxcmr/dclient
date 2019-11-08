@@ -1,25 +1,25 @@
-# gradle
+# Gradle
 **/build/
 /.gradle/
 /gradle.properties
 
-# eclipse files
+# Eclipse files
 .classpath
 .project
 .settings/
 /bin/
 
-# intellij files
+# IntelliJ files
 **/out/
 .idea/
 *.iml
 *.ipr
 *.iws
 
-# netbeans files
+# NetBeans files
 /target/
 /.nb-gradle/
 *.nb-gradle-properties
 
-# files
+# actual files
 .env
