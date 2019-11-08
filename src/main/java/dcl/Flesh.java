@@ -33,7 +33,5 @@ public class Flesh {
       skeleton.run();
    }
 
-   public static void main(String[] args) throws ReflectiveOperationException {
-      new Flesh();
-   }
+   public static void main(String[] args) throws ReflectiveOperationException { new Flesh(); }
 }

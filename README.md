@@ -7,10 +7,10 @@ Requirements:
 
 ```java
 package dcl;
-
+@SuppressWarnings("ALL")
 public class Runner {
-   public static void main(String[] args){
-     new Flesh();
-   }
+   public static void main(String[] args) throws ReflectiveOperationException { new Flesh(); }
 }
 ```
+
+See, only a one liner.
