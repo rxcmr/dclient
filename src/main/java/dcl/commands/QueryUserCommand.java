@@ -39,7 +39,8 @@ public class QueryUserCommand extends Command {
       clearEmbed();
    }
 
-   private MessageEmbed buildEmbed(Member member, User author) {
+   @NotNull
+   private MessageEmbed buildEmbed(@NotNull Member member, @NotNull User author) {
       User user = member.getUser();
       embedBuilder
          .setTitle("JDA v4, requesting: " + user.getName())

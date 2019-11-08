@@ -14,6 +14,7 @@ public class ShardCommand extends Command {
       this.help = "Sharding info.";
       this.ownerCommand = true;
       this.category = new Category("Owner");
+      this.hidden = true;
    }
 
    @Override

@@ -1,4 +1,4 @@
-package dcl.commands.music;
+package dcl.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
@@ -24,19 +24,13 @@ public class TrackScheduler extends AudioEventAdapter {
    }
 
    public void queue(AudioTrack track) {
-      if (!player.startTrack(track, true)) {
-         queue.offer(track);
-      }
+      if (!player.startTrack(track, true)) queue.offer(track);
    }
 
-   public void nextTrack() {
-      player.startTrack(queue.poll(), false);
-   }
+   public void nextTrack() { player.startTrack(queue.poll(), false); }
 
    @Override
    public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
-      if (reason.mayStartNext) {
-         nextTrack();
-      }
+      if (reason.mayStartNext) nextTrack();
    }
 }

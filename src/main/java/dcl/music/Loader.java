@@ -1,4 +1,4 @@
-package dcl.commands.music;
+package dcl.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -20,6 +20,7 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -42,7 +43,7 @@ public class Loader {
       playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
          @Override
          public void trackLoaded(AudioTrack track) {
-            channel.sendMessage(String.format("Adding to queue: *%s*", track.getInfo().title)).queue();
+            channel.sendMessageFormat("Adding to queue: *%s*", track.getInfo().title).queue();
             play(channel.getGuild(), musicManager, track);
          }
 
@@ -50,11 +51,9 @@ public class Loader {
          public void playlistLoaded(AudioPlaylist playlist) {
             AudioTrack firstTrack = playlist.getSelectedTrack();
             if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
-            channel.sendMessage(
-               String.format("Adding to queue: *%s* *(first track of playlist %s)*",
-                  firstTrack.getInfo().title,
-                  playlist.getName())
-            ).queue();
+            channel.sendMessageFormat("Adding to queue: *%s* *(first track of playlist %s)*",
+               firstTrack.getInfo().title,
+               playlist.getName()).queue();
             play(channel.getGuild(), musicManager, firstTrack);
          }
 
@@ -101,7 +100,9 @@ public class Loader {
       return musicManager;
    }
 
-   public AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
+   @NotNull
+   @Contract("_ -> param1")
+   private AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
       YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
       youtubeAudioSourceManager.configureRequests(
          config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()

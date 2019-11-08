@@ -2,7 +2,7 @@ package dcl;
 
 import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.*;
-import dcl.commands.FleshListener;
+import dcl.commands.listener.FleshListener;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
@@ -28,7 +28,7 @@ public class Skeleton {
    private String token;
    private int shards;
    private Collection<Command> commands;
-   private @Nullable Collection<Object> eventListeners;
+   private @Nullable Collection<Object> listeners;
    private int poolSize;
 
    @Contract(pure = true)
@@ -36,12 +36,12 @@ public class Skeleton {
       (String token,
        int shards,
        Collection<Command> commands,
-       @Nullable Collection<Object> eventListeners,
+       @Nullable Collection<Object> listeners,
        int poolSize) {
       this.token = token;
       this.shards = shards;
       this.commands = commands;
-      this.eventListeners = eventListeners;
+      this.listeners = listeners;
       this.poolSize = poolSize;
       logger.info("[!] Constructor initialized");
    }
@@ -53,8 +53,8 @@ public class Skeleton {
       logger.info("[#] JDA Running");
       logger.info(String.format(shards == 1 ? "[#] %s shard active" : "[#] %s shards active", shards));
       commands.forEach(command -> logger.info(String.format("[#] Command loaded: %s", command)));
-      if (!(eventListeners == null))
-         eventListeners.forEach(eventListener -> logger.info("[#] EventListener loaded: " + eventListener));
+      if (!(listeners == null))
+         listeners.forEach(eventListener -> logger.info("[#] EventListener loaded: " + eventListener));
    }
 
    void run() {
@@ -80,7 +80,7 @@ public class Skeleton {
          .setUseShutdownNow(true)
          .setRelativeRateLimit(false)
          .setContextEnabled(true);
-      if (eventListeners != null) managerBuilder.addEventListeners(eventListeners);
+      if (listeners != null) managerBuilder.addEventListeners(listeners);
       managerBuilder.build();
    }
 

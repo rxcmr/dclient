@@ -1,4 +1,4 @@
-package dcl.commands.music;
+package dcl.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
@@ -10,12 +10,12 @@ import java.nio.ByteBuffer;
 /**
  * @author rxcmr
  */
-public class AudioPlayerSendHandler implements AudioSendHandler {
+public class AudioHandler implements AudioSendHandler {
    private final AudioPlayer player;
    private final ByteBuffer buffer;
    private final MutableAudioFrame frame;
 
-   public AudioPlayerSendHandler(AudioPlayer player) {
+   public AudioHandler(AudioPlayer player) {
       this.player = player;
       this.buffer = ByteBuffer.allocate(1024);
       this.frame = new MutableAudioFrame();
@@ -23,9 +23,7 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
    }
 
    @Override
-   public boolean canProvide() {
-      return player.provide(frame);
-   }
+   public boolean canProvide() { return player.provide(frame); }
 
    @Nullable
    @Override
@@ -35,7 +33,5 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
    }
 
    @Override
-   public boolean isOpus() {
-      return true;
-   }
+   public boolean isOpus() { return true; }
 }

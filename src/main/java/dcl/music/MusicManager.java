@@ -1,4 +1,4 @@
-package dcl.commands.music;
+package dcl.music;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
@@ -17,7 +17,5 @@ public class MusicManager {
       player.addListener(scheduler);
    }
 
-   public AudioPlayerSendHandler getSendHandler() {
-      return new AudioPlayerSendHandler(player);
-   }
+   public AudioHandler getSendHandler() { return new AudioHandler(player); }
 }

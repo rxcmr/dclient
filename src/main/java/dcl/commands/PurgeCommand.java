@@ -16,7 +16,7 @@ public class PurgeCommand extends Command {
       this.name = "purge";
       this.aliases = new String[]{"clear"};
       this.botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-      this.arguments = "**amount**";
+      this.arguments = "**amount** [1-100]";
       this.guildOnly = true;
       this.userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
       this.cooldown = 5;

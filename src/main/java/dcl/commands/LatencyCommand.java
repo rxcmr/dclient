@@ -16,28 +16,27 @@ public class LatencyCommand extends Command {
    public LatencyCommand() {
       this.name = "latency";
       this.aliases = new String[]{"ping"};
-      this.help = "REST HTTP ping and WebSocket ping.";
+      this.help = "REST API ping and WebSocket ping.";
       this.guildOnly = false;
       this.ownerCommand = true;
       this.category = new Category("Owner");
+      this.hidden = true;
    }
 
    @Override
    protected void execute(@NotNull CommandEvent event) {
       event.getChannel().sendTyping().queue();
       event.reply(buildEmbed(event.getAuthor(), event));
-      clearEmbed();
+      embedBuilder.clear();
    }
 
    @NotNull
    private MessageEmbed buildEmbed(@NotNull User user, @NotNull CommandEvent event) {
+      event.getJDA().getRestPing().queue(p -> embedBuilder.addField("API: ", p + " ms", true));
       embedBuilder
          .setThumbnail(user.getEffectiveAvatarUrl())
-         .addField("REST HTTP Ping: ", event.getJDA().getRestPing().complete() + " ms", true)
-         .addField("WebSocket Ping: ", event.getJDA().getGatewayPing() + " ms", true)
+         .addField("WebSocket: ", event.getJDA().getGatewayPing() + " ms", true)
          .setColor(0xd32ce6);
       return embedBuilder.build();
    }
-
-   private void clearEmbed() { embedBuilder.clear(); }
 }

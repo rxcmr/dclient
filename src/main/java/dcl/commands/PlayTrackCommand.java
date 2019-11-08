@@ -2,7 +2,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.music.Loader;
+import dcl.music.Loader;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
 

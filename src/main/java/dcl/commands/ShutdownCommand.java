@@ -13,9 +13,10 @@ public class ShutdownCommand extends Command {
    public ShutdownCommand() {
       this.name = "shutdown";
       this.aliases = new String[]{"shutdown"};
-      this.help = "Don't even try, it will fail on you.";
+      this.help = "Shutdown JDA, and process running it.";
       this.ownerCommand = true;
       this.category = new Category("Owner");
+      this.hidden = true;
    }
 
    @Override
@@ -23,6 +24,5 @@ public class ShutdownCommand extends Command {
       Logger logger = (Logger) LoggerFactory.getLogger(ShutdownCommand.class);
       logger.warn("[!!] JDA shutting down.");
       event.getJDA().shutdownNow();
-      System.exit(1);
    }
 }
