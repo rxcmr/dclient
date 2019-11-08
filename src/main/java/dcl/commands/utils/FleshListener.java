@@ -1,5 +1,6 @@
 package dcl.commands.utils;
 
+import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
@@ -7,6 +8,7 @@ import dcl.Skeleton;
 import dcl.commands.ShutdownCommand;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -17,6 +19,8 @@ public class FleshListener implements CommandListener {
    private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
       c == null ? d -> d.sendMessage(a).queue() : d -> d.sendMessage(a + c).queue()
    );
+
+   private Logger logger = (Logger) LoggerFactory.getLogger(FleshListener.class);
 
    @Override
    public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
@@ -33,8 +37,10 @@ public class FleshListener implements CommandListener {
 
    @Override
    public void onCompletedCommand(@NotNull CommandEvent event, Command command) {
-      if (command instanceof ShutdownCommand) return;
-      event.getMessage().addReaction("\u2705").queue();
+      try {
+         if (command instanceof ShutdownCommand) return;
+         event.getMessage().addReaction("\u2705").queue();
+      } catch (Exception e) { logger.warn(e.getCause().toString()); }
    }
 
    @Override

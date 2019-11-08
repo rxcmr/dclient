@@ -1,8 +1,11 @@
 package dcl.commands;
 
+import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import groovy.lang.GroovyShell;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr
@@ -33,7 +36,8 @@ public class DebugCommand extends Command {
    }
 
    @Override
-   protected void execute(CommandEvent event) {
+   protected void execute(@NotNull CommandEvent event) {
+      Logger logger = (Logger) LoggerFactory.getLogger(DebugCommand.class);
       try {
          shell.setProperty("args", event.getArgs());
          shell.setProperty("event", event);
@@ -43,6 +47,7 @@ public class DebugCommand extends Command {
          shell.setProperty("guild", event.getGuild());
          shell.setProperty("member", event.getMember());
          shell.setProperty("user", event.getMember().getUser());
+         shell.setProperty("logger", logger);
 
          String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
          Object out = shell.evaluate(script);
