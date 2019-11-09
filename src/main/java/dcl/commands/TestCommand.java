@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,7 +36,7 @@ public class TestCommand extends Command {
       this.aliases = new String[]{"try"};
       this.help = "???";
       this.ownerCommand = true;
-      this.category = new Category("Owner");
+      this.category = Categories.ownerOnly;
       this.hidden = true;
    }
 

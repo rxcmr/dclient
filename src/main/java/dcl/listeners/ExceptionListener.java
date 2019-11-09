@@ -29,7 +29,9 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class ExceptionListener extends ListenerAdapter {
    private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      c == null ? d -> d.sendMessage(a).queue() : d -> d.sendMessage(a + c).queue()
+      a instanceof String ?
+         (c == null ? d -> d.sendMessage((String) a).queue() : d -> d.sendMessage(a + c).queue())
+         : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
    );
 
    @Override

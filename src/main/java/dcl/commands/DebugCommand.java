@@ -19,6 +19,7 @@ package dcl.commands;
 import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import groovy.lang.GroovyShell;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -37,7 +38,7 @@ public class DebugCommand extends Command {
       this.ownerCommand = true;
       this.help = "JDA evaluator using Groovy";
       this.hidden = true;
-      this.category = new Category("Owner");
+      this.category = Categories.ownerOnly;
       shell = new GroovyShell();
       libs = "import java.io.*\n" +
          "import java.lang.*\n" +

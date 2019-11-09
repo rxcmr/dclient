@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -30,7 +31,7 @@ public class ShardCommand extends Command {
       this.aliases = new String[]{"shards"};
       this.help = "Sharding info.";
       this.ownerCommand = true;
-      this.category = new Category("Owner");
+      this.category = Categories.ownerOnly;
       this.hidden = true;
    }
 

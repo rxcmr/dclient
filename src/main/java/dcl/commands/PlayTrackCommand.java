@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import dcl.music.Loader;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
@@ -34,7 +35,7 @@ public class PlayTrackCommand extends Command {
       this.arguments = "**URL**";
       this.botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
       this.help = "Plays a track from URL.";
-      this.category = new Category("Music");
+      this.category = Categories.music;
       loader = new Loader();
    }
 

@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.MessageEmbed;
@@ -41,7 +42,7 @@ public class QueryUserCommand extends Command {
       this.cooldown = 10;
       this.arguments = "**user**";
       this.help = "Information about a user.";
-      this.category = new Category("Utilities");
+      this.category = Categories.utilities;
    }
 
    @Override

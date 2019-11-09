@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.Permission;
 
 /**
@@ -31,7 +32,7 @@ public class KickCommand extends Command {
       this.help = "Kicks a user";
       this.botPermissions = new Permission[]{Permission.KICK_MEMBERS};
       this.userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-      this.category = new Category("Moderation");
+      this.category = Categories.moderation;
    }
 
    @Override

@@ -70,7 +70,6 @@ public class GoogleSearchHandler {
          } else if (APIUsageCounter >= 80) throw new IllegalStateException("Limit reached. (80)");
          terms = terms.replace(" ", "%20");
          String searchUrl = String.format(googleURL, engineId, googleAPIKey, requiredResultsCount, terms);
-         logger.info(searchUrl);
          URL searchURL = new URL(searchUrl);
          OkHttpClient httpClient = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
          Request request = new Request.Builder().url(searchURL).build();

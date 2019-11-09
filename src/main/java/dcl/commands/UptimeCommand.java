@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -32,7 +33,7 @@ public class UptimeCommand extends Command {
       this.help = "Bot uptime.";
       this.ownerCommand = true;
       this.hidden = true;
-      this.category = new Category("Owner");
+      this.category = Categories.ownerOnly;
    }
 
    @Override

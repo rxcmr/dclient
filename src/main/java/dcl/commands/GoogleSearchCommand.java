@@ -19,6 +19,7 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.Skeleton;
+import dcl.commands.utils.Categories;
 import dcl.commands.utils.GoogleSearchHandler;
 import dcl.commands.utils.GoogleSearchResult;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -35,7 +36,7 @@ public class GoogleSearchCommand extends Command {
    public GoogleSearchCommand() {
       this.name = "google";
       this.aliases = new String[]{"search"};
-      this.category = new Category("Utilities");
+      this.category = Categories.utilities;
       this.cooldown = 10;
       this.arguments = "**query**";
       this.help = "The Google Search API";

@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +33,7 @@ public class BanCommand extends Command {
       this.help = "Bans a user";
       this.botPermissions = new Permission[]{Permission.BAN_MEMBERS};
       this.userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-      this.category = new Category("Moderation");
+      this.category = Categories.moderation;
    }
 
    @Override

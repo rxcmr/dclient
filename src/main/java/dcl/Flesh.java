@@ -57,8 +57,7 @@ public class Flesh {
 
       // Instantiate the base class Skeleton
       assert token != null;
-      Skeleton skeleton = new Skeleton(token, shards, commands, listeners, poolSize);
-      skeleton.run();
+      new Skeleton(token, shards, commands, listeners, poolSize).run();
    }
 
    public static void main(String[] args) throws Exception { new Flesh(); }

@@ -18,6 +18,7 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
@@ -36,7 +37,7 @@ public class LatencyCommand extends Command {
       this.help = "REST API ping and WebSocket ping.";
       this.guildOnly = false;
       this.ownerCommand = true;
-      this.category = new Category("Owner");
+      this.category = Categories.ownerOnly;
       this.hidden = true;
    }
 

@@ -33,7 +33,9 @@ import java.util.Objects;
  */
 public class FleshListener implements CommandListener {
    private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      c == null ? d -> d.sendMessage(a).queue() : d -> d.sendMessage(a + c).queue()
+      a instanceof String ?
+         (c == null ? d -> d.sendMessage((String) a).queue() : d -> d.sendMessage(a + c).queue())
+         : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
    );
 
    private Logger logger = (Logger) LoggerFactory.getLogger(FleshListener.class);

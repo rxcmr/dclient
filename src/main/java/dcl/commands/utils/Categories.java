@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
@@ -17,28 +17,15 @@ package dcl.commands;
  */
 
 import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
-import dcl.music.Loader;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr
  */
-@SuppressWarnings("unused")
-public class SkipTrackCommand extends Command {
-   private final Loader loader;
+public class Categories {
+   public static Command.Category
+      ownerOnly = new Command.Category("Owner"),
+      moderation = new Command.Category("Moderation"),
+      utilities = new Command.Category("Utilities"),
+      music = new Command.Category("Music");
 
-   public SkipTrackCommand() {
-      this.name = "skip";
-      this.help = "Skips current playing track.";
-      this.category = Categories.music;
-      loader = new Loader();
-   }
-
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      loader.skipTrack(event.getTextChannel());
-   }
 }
