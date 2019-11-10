@@ -32,13 +32,13 @@ public class LatencyCommand extends Command {
    private EmbedBuilder embedBuilder = new EmbedBuilder();
 
    public LatencyCommand() {
-      this.name = "latency";
-      this.aliases = new String[]{"ping"};
-      this.help = "REST API ping and WebSocket ping.";
-      this.guildOnly = false;
-      this.ownerCommand = true;
-      this.category = Categories.ownerOnly;
-      this.hidden = true;
+      name = "latency";
+      aliases = new String[]{"ping"};
+      help = "REST API ping and WebSocket ping.";
+      guildOnly = false;
+      ownerCommand = true;
+      category = Categories.ownerOnly;
+      hidden = true;
    }
 
    @Override

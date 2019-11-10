@@ -27,12 +27,12 @@ import net.dv8tion.jda.api.Permission;
 @SuppressWarnings("unused")
 public class KickCommand extends Command {
    public KickCommand() {
-      this.name = "kick";
-      this.arguments = "**user**";
-      this.help = "Kicks a user";
-      this.botPermissions = new Permission[]{Permission.KICK_MEMBERS};
-      this.userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-      this.category = Categories.moderation;
+      name = "kick";
+      arguments = "**user**";
+      help = "Kicks a user";
+      botPermissions = new Permission[]{Permission.KICK_MEMBERS};
+      userPermissions = new Permission[]{Permission.KICK_MEMBERS};
+      category = Categories.moderation;
    }
 
    @Override

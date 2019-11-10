@@ -19,6 +19,7 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
@@ -29,15 +30,15 @@ import java.lang.management.RuntimeMXBean;
 @SuppressWarnings("unused")
 public class UptimeCommand extends Command {
    public UptimeCommand() {
-      this.name = "uptime";
-      this.help = "Bot uptime.";
-      this.ownerCommand = true;
-      this.hidden = true;
-      this.category = Categories.ownerOnly;
+      name = "uptime";
+      help = "Bot uptime.";
+      ownerCommand = true;
+      hidden = true;
+      category = Categories.ownerOnly;
    }
 
    @Override
-   protected void execute(CommandEvent event) {
+   protected void execute(@NotNull CommandEvent event) {
       RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
       long uptime = runtimeMXBean.getUptime();
       long uptimeInSeconds = uptime / 1000;
@@ -47,6 +48,6 @@ public class UptimeCommand extends Command {
 
       event.getChannel().sendMessageFormat(
          "`%s:%s:%s`", new Object[]{numberOfHours, numberOfMinutes, numberOfSeconds}
-         ).queue();
+      ).queue();
    }
 }

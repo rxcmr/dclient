@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.listeners;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
@@ -16,28 +16,23 @@ package dcl.commands;
  * limitations under the License.
  */
 
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 /**
  * @author rxcmr
  */
 @SuppressWarnings("unused")
-public class ShardCommand extends Command {
-   public ShardCommand() {
-      name = "shardinfo";
-      aliases = new String[]{"shards"};
-      help = "Sharding info.";
-      ownerCommand = true;
-      category = Categories.ownerOnly;
-      hidden = true;
-   }
+public class GuildJoinListener extends ListenerAdapter {
 
    @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      event.reply("Shards: " + event.getJDA().getShardInfo().getShardString());
+   public void onGuildJoin(@NotNull GuildJoinEvent event) {
+      if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
+         event.getGuild().getDefaultChannel().sendTyping().queue();
+         event.getGuild().getDefaultChannel().sendMessage("`hello, type fl!help`").queue();
+      }
    }
 }

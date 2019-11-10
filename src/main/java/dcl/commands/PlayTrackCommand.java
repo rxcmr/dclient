@@ -31,11 +31,11 @@ public class PlayTrackCommand extends Command {
    private final Loader loader;
 
    public PlayTrackCommand() {
-      this.name = "play";
-      this.arguments = "**URL**";
-      this.botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
-      this.help = "Plays a track from URL.";
-      this.category = Categories.music;
+      name = "play";
+      arguments = "**URL**";
+      botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
+      help = "Plays a track from URL.";
+      category = Categories.music;
       loader = new Loader();
    }
 

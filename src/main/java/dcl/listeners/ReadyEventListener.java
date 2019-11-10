@@ -40,7 +40,7 @@ public class ReadyEventListener extends ListenerAdapter {
       logger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Sharding: " + event.getJDA().getShardInfo().getShardString());
       logger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + event.getJDA().getInviteUrl());
       logger.info("|                            | Account type: " + event.getJDA().getAccountType());
-      logger.info("|     [version 4.0.0_56]     | Guilds: " + event.getJDA().getGuilds());
+      logger.info("|     [version 4.0.0_59]     | Guilds: " + event.getJDA().getGuilds());
       logger.info("|                            | Owner ID: " + Skeleton.ID);
    }
 }

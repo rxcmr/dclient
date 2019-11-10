@@ -33,12 +33,12 @@ public class DebugCommand extends Command {
    private final String libs;
 
    public DebugCommand() {
-      this.name = "debug";
-      this.aliases = new String[]{"eval"};
-      this.ownerCommand = true;
-      this.help = "JDA evaluator using Groovy";
-      this.hidden = true;
-      this.category = Categories.ownerOnly;
+      name = "debug";
+      aliases = new String[]{"eval"};
+      ownerCommand = true;
+      help = "JDA evaluator using Groovy";
+      hidden = true;
+      category = Categories.ownerOnly;
       shell = new GroovyShell();
       libs = "import java.io.*\n" +
          "import java.lang.*\n" +
@@ -49,7 +49,11 @@ public class DebugCommand extends Command {
          "import net.dv8tion.jda.core.entities.impl.*\n" +
          "import net.dv8tion.jda.core.managers.*\n" +
          "import net.dv8tion.jda.core.managers.impl.*\n" +
-         "import net.dv8tion.jda.core.utils.*\n";
+         "import net.dv8tion.jda.core.utils.*" +
+         "import dcl.commands.*" +
+         "import dcl.listeners.*" +
+         "import dcl.commands.utils.*" +
+         "import dcl.music.*;\n";
    }
 
    @Override

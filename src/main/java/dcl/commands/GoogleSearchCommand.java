@@ -34,12 +34,12 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class GoogleSearchCommand extends Command {
    public GoogleSearchCommand() {
-      this.name = "google";
-      this.aliases = new String[]{"search"};
-      this.category = Categories.utilities;
-      this.cooldown = 10;
-      this.arguments = "**query**";
-      this.help = "The Google Search API";
+      name = "google";
+      aliases = new String[]{"search"};
+      category = Categories.utilities;
+      cooldown = 10;
+      arguments = "**query**";
+      help = "The Google Search API";
    }
 
    @Override

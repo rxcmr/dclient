@@ -16,30 +16,38 @@ package dcl.commands;
  * limitations under the License.
  */
 
+import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr
  */
 @SuppressWarnings("unused")
-public class BanCommand extends Command {
-   public BanCommand() {
-      name = "ban";
-      arguments = "**user** **amount** (in days)";
-      help = "Bans a user";
-      botPermissions = new Permission[]{Permission.BAN_MEMBERS};
-      userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-      category = Categories.moderation;
+public class PauseThreadCommand extends Command {
+   private Logger logger = (Logger) LoggerFactory.getLogger(PauseThreadCommand.class);
+
+   public PauseThreadCommand() {
+      name = "pausethread";
+      aliases = new String[]{"halt"};
+      ownerCommand = true;
+      category = Categories.ownerOnly;
+      arguments = "**amount** (seconds)";
+      help = "Stops the current thread for a specific amount in time.";
    }
 
    @Override
    protected void execute(@NotNull CommandEvent event) {
-      String[] args = event.getArgs().split("\\s+");
-      event.getChannel().sendTyping().queue();
-      event.getMessage().getMentionedMembers().get(0).ban(Integer.parseInt(args[1])).queue();
+      event.reply("Stopping thread...");
+      long start = System.currentTimeMillis();
+      try {
+         Thread.sleep(Integer.parseInt(event.getArgs()) * 1000);
+      } catch (InterruptedException e) {
+         logger.error("Thread paused.", e);
+      }
+      event.reply(String.format("Resumed after %d seconds.", (System.currentTimeMillis() - start) / 1000));
    }
 }

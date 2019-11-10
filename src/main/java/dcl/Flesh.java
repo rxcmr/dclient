@@ -38,21 +38,19 @@ public class Flesh {
       ArrayList<Object> listeners = new ArrayList<>();
 
       // Get all commands and put new instances of it in the ArrayList commands
-      List<Class<Command>> commandClassList =
-         new ClassGraph()
-            .whitelistPackagesNonRecursive("dcl.commands")
-            .scan()
-            .getAllClasses()
-            .loadClasses(Command.class);
+      List<Class<Command>> commandClassList = new ClassGraph()
+         .whitelistPackagesNonRecursive("dcl.commands")
+         .scan()
+         .getAllClasses()
+         .loadClasses(Command.class);
       for (Class<Command> c : commandClassList) commands.add(c.getDeclaredConstructor().newInstance());
 
       // Get all listeners and put new instances of it in the ArrayList listeners
-      List<Class<ListenerAdapter>> listenerClassList =
-         new ClassGraph()
-            .whitelistPackagesNonRecursive("dcl.listeners")
-            .scan()
-            .getAllClasses()
-            .loadClasses(ListenerAdapter.class);
+      List<Class<ListenerAdapter>> listenerClassList = new ClassGraph()
+         .whitelistPackagesNonRecursive("dcl.listeners")
+         .scan()
+         .getAllClasses()
+         .loadClasses(ListenerAdapter.class);
       for (Class<ListenerAdapter> l : listenerClassList) listeners.add(l.getDeclaredConstructor().newInstance());
 
       // Instantiate the base class Skeleton

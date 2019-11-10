@@ -30,9 +30,9 @@ public class SkipTrackCommand extends Command {
    private final Loader loader;
 
    public SkipTrackCommand() {
-      this.name = "skip";
-      this.help = "Skips current playing track.";
-      this.category = Categories.music;
+      name = "skip";
+      help = "Skips current playing track.";
+      category = Categories.music;
       loader = new Loader();
    }
 

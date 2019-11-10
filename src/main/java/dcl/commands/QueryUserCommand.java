@@ -37,12 +37,12 @@ public class QueryUserCommand extends Command {
    User author;
 
    public QueryUserCommand() {
-      this.name = "queryuser";
-      this.aliases = new String[]{"about", "userinfo"};
-      this.cooldown = 10;
-      this.arguments = "**user**";
-      this.help = "Information about a user.";
-      this.category = Categories.utilities;
+      name = "queryuser";
+      aliases = new String[]{"about", "userinfo"};
+      cooldown = 10;
+      arguments = "**user**";
+      help = "Information about a user.";
+      category = Categories.utilities;
    }
 
    @Override

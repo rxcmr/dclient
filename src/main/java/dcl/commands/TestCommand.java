@@ -32,12 +32,12 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class TestCommand extends Command {
    public TestCommand() {
-      this.name = "test";
-      this.aliases = new String[]{"try"};
-      this.help = "???";
-      this.ownerCommand = true;
-      this.category = Categories.ownerOnly;
-      this.hidden = true;
+      name = "test";
+      aliases = new String[]{"try"};
+      help = "???";
+      ownerCommand = true;
+      category = Categories.ownerOnly;
+      hidden = true;
    }
 
    @Override

@@ -16,22 +16,29 @@ package dcl.listeners;
  * limitations under the License.
  */
 
+import ch.qos.logback.classic.Logger;
 import dcl.Skeleton;
 import dcl.commands.utils.DirectMessage;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ExceptionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr
  */
 @SuppressWarnings("unused")
 public class ExceptionListener extends ListenerAdapter {
+   private Logger logger = (Logger) LoggerFactory.getLogger(ExceptionListener.class);
    private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      a instanceof String ?
-         (c == null ? d -> d.sendMessage((String) a).queue() : d -> d.sendMessage(a + c).queue())
-         : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
+      a instanceof String
+         ? (c == null
+         ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
+         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+         : (c == null
+         ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
+         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
    );
 
    @Override

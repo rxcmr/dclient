@@ -35,8 +35,10 @@ public class UserAgentInterceptor implements Interceptor {
 
    public UserAgentInterceptor() {
       this(
-         String.format("Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-               "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36 %s",
+         String.format(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+               "AppleWebKit/537.36 (KHTML, like Gecko) " +
+               "Chrome/78.0.3904.97 Safari/537.36 %s",
             GoogleSearchHandler.randomName(10)
          )
       );

@@ -28,15 +28,15 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class PurgeCommand extends Command {
    public PurgeCommand() {
-      this.name = "purge";
-      this.aliases = new String[]{"clear"};
-      this.botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-      this.arguments = "**amount** [1-100]";
-      this.guildOnly = true;
-      this.userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-      this.cooldown = 5;
-      this.help = "Purges [1-100] messages.";
-      this.category = Categories.utilities;
+      name = "purge";
+      aliases = new String[]{"clear"};
+      botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
+      arguments = "**amount** [1-100]";
+      guildOnly = true;
+      userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
+      cooldown = 5;
+      help = "Purges [1-100] messages.";
+      category = Categories.utilities;
    }
 
    @Override

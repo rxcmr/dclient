@@ -53,23 +53,23 @@ public class Skeleton {
    public static String prefix = "fl!", ID = "175610330217447424";
 
    private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      a instanceof MessageEmbed ?
-         (c == null ? d -> d.sendMessage((MessageEmbed) a).queue() : d -> d.sendMessage(a + c).queue())
+      a instanceof MessageEmbed
+         ? (c == null ? d -> d.sendMessage((MessageEmbed) a).queue() : d -> d.sendMessage(a + c).queue())
          : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
    );
-   private BidiMap<String, String> aboutCommand = new DualLinkedHashBidiMap<>();
-   private List<String> commandInvocation = new LinkedList<>();
-   private List<String> commandInfo = new LinkedList<>();
-   private EmbedBuilder embedBuilder = new EmbedBuilder();
    private Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
+   private EmbedBuilder embedBuilder = new EmbedBuilder();
    private DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
    private CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
    private CommandClient commandClient;
    private String token;
-   private int shards;
+   private BidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+   private List<String> commandInvocation = new LinkedList<>();
+   private List<String> commandInformation = new LinkedList<>();
    private Collection<Command> commands;
    private @Nullable Collection<Object> listeners;
    private int poolSize;
+   private int shards;
 
    @Contract(pure = true)
    Skeleton
@@ -78,6 +78,7 @@ public class Skeleton {
        @NotNull Collection<Command> commands,
        @Nullable Collection<Object> listeners,
        int poolSize) {
+      if (shards == 0 || poolSize == 0) throw new IllegalArgumentException("Shards or pool size must not equal 0.");
       this.token = token;
       this.shards = shards;
       this.commands = commands;
@@ -86,7 +87,7 @@ public class Skeleton {
       logger.info("[!] Constructor initialized");
    }
 
-   private void consumeHelp(@NotNull CommandEvent event) {
+   private void helpConsumer(@NotNull CommandEvent event) {
       dm.send(
          buildHelpEmbed(event.getAuthor(), event.getArgs()),
          event.getAuthor(),
@@ -105,11 +106,14 @@ public class Skeleton {
          .loadClasses()
          .get(0)
          .getFields();
-      embedBuilder.setTitle("```Commands: ```").setDescription("```Prefix: " + prefix + "```");
+      Arrays.stream(categories).forEachOrdered(f -> logger.info("Categories: " + f));
+      embedBuilder
+         .setTitle("```Commands: ```")
+         .setDescription(String.format("```Prefix: %s```", prefix));
       if (args.equalsIgnoreCase("utilities")) {
          // Utilities category
          embedBuilder.addField(
-            "```" + Categories.utilities.getName() + ": ```",
+            String.format("```%s: ```", Categories.utilities.getName()),
             "`General utilities`",
             false
          );
@@ -117,53 +121,51 @@ public class Skeleton {
       } else if (args.equalsIgnoreCase("music")) {
          // Music category
          embedBuilder.addField(
-            "```" + Categories.music.getName() + ": ```",
+            String.format("```%s: ```", Categories.music.getName()),
             "`Music related commands`",
             false);
          streamCommands(Categories.music);
       } else if (args.equalsIgnoreCase("moderation")) {
          // Moderation category
          embedBuilder.addField(
-            "```" + Categories.moderation.getName() + ": ```",
+            String.format("```%s: ```", Categories.moderation.getName()),
             "`Moderation commands`",
             false
          );
          streamCommands(Categories.moderation);
       } else if (args.equalsIgnoreCase("ownerOnly") && author.getId().equals(ID)) {
          embedBuilder.addField(
-            "```" + Categories.ownerOnly.getName() + ": ```",
+            String.format("```%s: ```", Categories.ownerOnly.getName()),
             "`Owner-only utilities`",
             false
          );
          streamCommands(Categories.ownerOnly);
       } else if (args.isEmpty()) {
          Arrays.stream(categories).forEachOrdered(
-            f -> embedBuilder.addField(prefix + "help", "`" + f.getName() + "`", false)
+            f -> embedBuilder.addField(String.format("```%s!help %s```", prefix, f.getName()), "", false)
          );
       }
       embedBuilder
-         .setColor(0x41 + 0x64 + 0x64 + 0x65 + 0x72)
+         .setColor(0xd32ce6)
          .setFooter("requested by: " + author.getName(), Objects.requireNonNull(author.getAvatarUrl()));
       return embedBuilder.build();
    }
 
-
    private void streamCommands(Command.Category category) {
-      commandInfo.clear();
-      aboutCommand.clear();
-      for (Command c : commands) {
-         if (c.getCategory() == category) {
-            commandInvocation.add("```" + prefix + c.getName() + "```");
-            commandInfo.add(
-               c.getArguments() == null ? "```" + " - " + c.getHelp() + "```"
-                  : "```" + " " + c.getArguments() + " - " + c.getHelp() + "```"
-            );
-            Iterator<String> invokeIter = commandInvocation.iterator();
-            Iterator<String> infoIter = commandInfo.iterator();
-            while (invokeIter.hasNext() && infoIter.hasNext()) aboutCommand.put(invokeIter.next(), infoIter.next());
-         }
-      }
-      aboutCommand.forEach((k, v) -> embedBuilder.addField(k, v, false));
+      commandInformation.clear();
+      commandContent.clear();
+      commands.stream().filter(c -> c.getCategory() == category).forEachOrdered(c -> {
+         commandInvocation.add(String.format("```%s%s```", prefix, c.getName()));
+         commandInformation.add(
+            c.getArguments() == null
+               ? String.format("``` - %s```", c.getHelp())
+               : String.format("``` %s - %s```", c.getArguments(), c.getHelp())
+         );
+         Iterator<String> invokeIter = commandInvocation.iterator();
+         Iterator<String> infoIter = commandInformation.iterator();
+         while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
+      });
+      commandContent.forEach((k, v) -> embedBuilder.addField(k, v, false));
    }
 
    private void init() throws LoginException {
@@ -171,10 +173,10 @@ public class Skeleton {
       logger.info("[#] Building JDA v4.0.0");
       buildShardManager();
       logger.info("[#] JDA Running");
-      logger.info(String.format(shards == 1 ? "[#] %s shard active" : "[#] %s shards active", shards));
+      logger.info(String.format(shards > 1 ? "[#] %s shards active" : "[#] %s shard active", shards));
       commands.forEach(command -> logger.info(String.format("[#] Command loaded: %s", command)));
-      if (!(listeners == null))
-         listeners.forEach(eventListener -> logger.info("[#] EventListener loaded: " + eventListener));
+      if (listeners == null) return;
+      listeners.forEach(eventListener -> logger.info("[#] EventListener loaded: " + eventListener));
    }
 
    void run() {
@@ -208,9 +210,9 @@ public class Skeleton {
          .setOwnerId(ID)
          .setPrefix(prefix)
          .setActivity(Activity.listening("events."))
-         .setStatus(OnlineStatus.DO_NOT_DISTURB)
+         .setStatus(OnlineStatus.IDLE)
          .setListener(new FleshListener())
-         .setHelpConsumer(this::consumeHelp)
+         .setHelpConsumer(this::helpConsumer)
          .setShutdownAutomatically(true);
       commands.forEach(command -> commandClientBuilder.addCommand(command));
       commandClient = commandClientBuilder.build();

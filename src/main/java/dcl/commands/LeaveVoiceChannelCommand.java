@@ -28,10 +28,10 @@ import org.jetbrains.annotations.NotNull;
 @SuppressWarnings("unused")
 public class LeaveVoiceChannelCommand extends Command {
    public LeaveVoiceChannelCommand() {
-      this.name = "leave";
-      this.botPermissions = new Permission[]{Permission.VOICE_CONNECT};
-      this.help = "Leaves the voice channel.";
-      this.category = Categories.music;
+      name = "leave";
+      botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+      help = "Leaves the voice channel.";
+      category = Categories.music;
    }
 
    @Override
