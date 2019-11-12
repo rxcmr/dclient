@@ -26,18 +26,18 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class ShardCommand extends Command {
-   public ShardCommand() {
-      name = "shardinfo";
-      aliases = new String[]{"shards"};
-      help = "Sharding info.";
-      ownerCommand = true;
-      category = Categories.ownerOnly;
-      hidden = true;
-   }
+  public ShardCommand() {
+    name = "shardinfo";
+    aliases = new String[]{"shards"};
+    help = "Sharding info.";
+    ownerCommand = true;
+    category = Categories.ownerOnly;
+    hidden = true;
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      event.reply("Shards: " + event.getJDA().getShardInfo().getShardString());
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    event.reply("Shards: " + event.getJDA().getShardInfo().getShardString());
+  }
 }

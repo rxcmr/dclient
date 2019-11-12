@@ -30,21 +30,25 @@ import java.util.concurrent.LinkedBlockingQueue;
  * @author rxcmr
  */
 public class TrackScheduler extends AudioEventAdapter {
-   private final AudioPlayer player;
-   private final BlockingQueue<AudioTrack> queue;
+  private final AudioPlayer player;
+  private final BlockingQueue<AudioTrack> queue;
 
-   @Contract(pure = true)
-   public TrackScheduler(AudioPlayer player) {
-      this.player = player;
-      this.queue = new LinkedBlockingQueue<>();
-   }
+  @Contract(pure = true)
+  public TrackScheduler(AudioPlayer player) {
+    this.player = player;
+    this.queue = new LinkedBlockingQueue<>();
+  }
 
-   public void queue(AudioTrack track) { if (!player.startTrack(track, true)) queue.offer(track); }
+  public void queue(AudioTrack track) {
+    if (!player.startTrack(track, true)) queue.offer(track);
+  }
 
-   public void nextTrack() { player.startTrack(queue.poll(), false); }
+  public void nextTrack() {
+    player.startTrack(queue.poll(), false);
+  }
 
-   @Override
-   public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
-      if (reason.mayStartNext) nextTrack();
-   }
+  @Override
+  public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
+    if (reason.mayStartNext) nextTrack();
+  }
 }

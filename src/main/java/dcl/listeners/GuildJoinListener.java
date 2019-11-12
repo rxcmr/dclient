@@ -28,11 +28,11 @@ import java.util.Objects;
 @SuppressWarnings("unused")
 public class GuildJoinListener extends ListenerAdapter {
 
-   @Override
-   public void onGuildJoin(@NotNull GuildJoinEvent event) {
-      if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
-         event.getGuild().getDefaultChannel().sendTyping().queue();
-         event.getGuild().getDefaultChannel().sendMessage("`hello, type fl!help`").queue();
-      }
-   }
+  @Override
+  public void onGuildJoin(@NotNull GuildJoinEvent event) {
+    if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
+      event.getGuild().getDefaultChannel().sendTyping().queue();
+      event.getGuild().getDefaultChannel().sendMessage("`hello, type fl!help`").queue();
+    }
+  }
 }

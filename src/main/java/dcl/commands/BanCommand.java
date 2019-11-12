@@ -27,19 +27,19 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class BanCommand extends Command {
-   public BanCommand() {
-      name = "ban";
-      arguments = "**user** **amount** (in days)";
-      help = "Bans a user";
-      botPermissions = new Permission[]{Permission.BAN_MEMBERS};
-      userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-      category = Categories.moderation;
-   }
+  public BanCommand() {
+    name = "ban";
+    arguments = "**user** **amount** (in days)";
+    help = "Bans a user";
+    botPermissions = new Permission[]{Permission.BAN_MEMBERS};
+    userPermissions = new Permission[]{Permission.BAN_MEMBERS};
+    category = Categories.moderation;
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      String[] args = event.getArgs().split("\\s+");
-      event.getChannel().sendTyping().queue();
-      event.getMessage().getMentionedMembers().get(0).ban(Integer.parseInt(args[1])).queue();
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    String[] args = event.getArgs().split("\\s+");
+    event.getChannel().sendTyping().queue();
+    event.getMessage().getMentionedMembers().get(0).ban(Integer.parseInt(args[1])).queue();
+  }
 }

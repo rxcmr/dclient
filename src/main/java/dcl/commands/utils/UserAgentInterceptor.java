@@ -27,30 +27,30 @@ import java.io.IOException;
  * @author rxcmr
  */
 public class UserAgentInterceptor implements Interceptor {
-   public final String userAgent;
+  public final String userAgent;
 
-   public UserAgentInterceptor(String userAgent) {
-      this.userAgent = userAgent;
-   }
+  public UserAgentInterceptor(String userAgent) {
+    this.userAgent = userAgent;
+  }
 
-   public UserAgentInterceptor() {
-      this(
-         String.format(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-               "AppleWebKit/537.36 (KHTML, like Gecko) " +
-               "Chrome/78.0.3904.97 Safari/537.36 %s",
-            GoogleSearchHandler.randomName(10)
-         )
-      );
-   }
+  public UserAgentInterceptor() {
+    this(
+      String.format(
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+          "AppleWebKit/537.36 (KHTML, like Gecko) " +
+          "Chrome/78.0.3904.97 Safari/537.36 %s",
+        GoogleSearchHandler.randomName(10)
+      )
+    );
+  }
 
-   @NotNull
-   @Override
-   public Response intercept(@NotNull Chain chain) throws IOException {
-      Request userAgentRequest = chain.request()
-         .newBuilder()
-         .header("User-Agent", userAgent)
-         .build();
-      return chain.proceed(userAgentRequest);
-   }
+  @NotNull
+  @Override
+  public Response intercept(@NotNull Chain chain) throws IOException {
+    Request userAgentRequest = chain.request()
+      .newBuilder()
+      .header("User-Agent", userAgent)
+      .build();
+    return chain.proceed(userAgentRequest);
+  }
 }

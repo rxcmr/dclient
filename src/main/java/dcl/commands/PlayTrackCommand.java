@@ -28,20 +28,20 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class PlayTrackCommand extends Command {
-   private final Loader loader;
+  private final Loader loader;
 
-   public PlayTrackCommand() {
-      name = "play";
-      arguments = "**URL**";
-      botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
-      help = "Plays a track from URL.";
-      category = Categories.music;
-      loader = new Loader();
-   }
+  public PlayTrackCommand() {
+    name = "play";
+    arguments = "**URL**";
+    botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
+    help = "Plays a track from URL.";
+    category = Categories.music;
+    loader = new Loader();
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      loader.loadAndPlay(event.getTextChannel(), event.getArgs());
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    loader.loadAndPlay(event.getTextChannel(), event.getArgs());
+  }
 }

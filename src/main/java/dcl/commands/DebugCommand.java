@@ -29,53 +29,53 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class DebugCommand extends Command {
-   private final GroovyShell shell;
-   private final String libs;
+  private final GroovyShell shell;
+  private final String libs;
 
-   public DebugCommand() {
-      name = "debug";
-      aliases = new String[]{"eval"};
-      ownerCommand = true;
-      help = "JDA evaluator using Groovy";
-      hidden = true;
-      category = Categories.ownerOnly;
-      shell = new GroovyShell();
-      libs = "import java.io.*\n" +
-         "import java.lang.*\n" +
-         "import java.util.*\n" +
-         "import java.util.concurrent.*\n" +
-         "import net.dv8tion.jda.core.*\n" +
-         "import net.dv8tion.jda.core.entities.*\n" +
-         "import net.dv8tion.jda.core.entities.impl.*\n" +
-         "import net.dv8tion.jda.core.managers.*\n" +
-         "import net.dv8tion.jda.core.managers.impl.*\n" +
-         "import net.dv8tion.jda.core.utils.*" +
-         "import dcl.commands.*" +
-         "import dcl.listeners.*" +
-         "import dcl.commands.utils.*" +
-         "import dcl.music.*;\n";
-   }
+  public DebugCommand() {
+    name = "debug";
+    aliases = new String[]{"eval"};
+    ownerCommand = true;
+    help = "JDA evaluator using Groovy";
+    hidden = true;
+    category = Categories.ownerOnly;
+    shell = new GroovyShell();
+    libs = "import java.io.*\n" +
+      "import java.lang.*\n" +
+      "import java.util.*\n" +
+      "import java.util.concurrent.*\n" +
+      "import net.dv8tion.jda.core.*\n" +
+      "import net.dv8tion.jda.core.entities.*\n" +
+      "import net.dv8tion.jda.core.entities.impl.*\n" +
+      "import net.dv8tion.jda.core.managers.*\n" +
+      "import net.dv8tion.jda.core.managers.impl.*\n" +
+      "import net.dv8tion.jda.core.utils.*" +
+      "import dcl.commands.*" +
+      "import dcl.listeners.*" +
+      "import dcl.commands.utils.*" +
+      "import dcl.music.*;\n";
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      Logger logger = (Logger) LoggerFactory.getLogger(DebugCommand.class);
-      try {
-         shell.setProperty("args", event.getArgs());
-         shell.setProperty("event", event);
-         shell.setProperty("message", event.getMessage());
-         shell.setProperty("channel", event.getChannel());
-         shell.setProperty("jda", event.getJDA());
-         shell.setProperty("guild", event.getGuild());
-         shell.setProperty("member", event.getMember());
-         shell.setProperty("user", event.getMember().getUser());
-         shell.setProperty("logger", logger);
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    Logger logger = (Logger) LoggerFactory.getLogger(DebugCommand.class);
+    try {
+      shell.setProperty("args", event.getArgs());
+      shell.setProperty("event", event);
+      shell.setProperty("message", event.getMessage());
+      shell.setProperty("channel", event.getChannel());
+      shell.setProperty("jda", event.getJDA());
+      shell.setProperty("guild", event.getGuild());
+      shell.setProperty("member", event.getMember());
+      shell.setProperty("user", event.getMember().getUser());
+      shell.setProperty("logger", logger);
 
-         String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
-         Object out = shell.evaluate(script);
+      String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
+      Object out = shell.evaluate(script);
 
-         event.reply(out == null ? "```Finished execution.```" : String.format("```%s```", out.toString()));
-      } catch (Exception e) {
-         event.reply("```java\n" + e + " \ncause: " + (e.getCause() == null ? "nothing" : e.getCause()) + "\n```");
-      }
-   }
+      event.reply(out == null ? "```Finished execution.```" : String.format("```%s```", out.toString()));
+    } catch (Exception e) {
+      event.reply("```java\n" + e + " \ncause: " + (e.getCause() == null ? "nothing" : e.getCause()) + "\n```");
+    }
+  }
 }

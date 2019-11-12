@@ -33,24 +33,24 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class GoogleSearchCommand extends Command {
-   public GoogleSearchCommand() {
-      name = "google";
-      aliases = new String[]{"search"};
-      category = Categories.utilities;
-      cooldown = 10;
-      arguments = "**query**";
-      help = "The Google Search API";
-   }
+  public GoogleSearchCommand() {
+    name = "google";
+    aliases = new String[]{"search"};
+    category = Categories.utilities;
+    cooldown = 10;
+    arguments = "**query**";
+    help = "The Google Search API";
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      final User owner = event.getJDA().getUserById(Skeleton.ID);
-      final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
-      final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
-      final String[] queryArray = event.getArgs().split("\\s+");
-      String query = String.join(" ", queryArray);
-      GoogleSearchHandler.init(apiKey);
-      List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query);
-      event.reply(results.get(0).getSuggestedResult());
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    final User owner = event.getJDA().getUserById(Skeleton.ID);
+    final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
+    final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
+    final String[] queryArray = event.getArgs().split("\\s+");
+    String query = String.join(" ", queryArray);
+    GoogleSearchHandler.init(apiKey);
+    List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query);
+    event.reply(results.get(0).getSuggestedResult());
+  }
 }

@@ -22,53 +22,49 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author rxcmr
  */
 public class GoogleSearchResult {
-   private static Logger logger = (Logger) LoggerFactory.getLogger(GoogleSearchResult.class);
-   private String title, content, url;
+  private static Logger logger = (Logger) LoggerFactory.getLogger(GoogleSearchResult.class);
+  private String title, content, url;
 
-   @NotNull
-   public static GoogleSearchResult fromGoogle(@NotNull JSONObject googleResult) {
-      GoogleSearchResult gsr = new GoogleSearchResult();
-      gsr.title = cleanString(googleResult.getString("title"));
-      gsr.content = cleanString(googleResult.getString("snippet"));
-      try {
-         gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), "UTF-8");
-      } catch (UnsupportedEncodingException e) {
-         GoogleSearchResult.logger.warn(String.valueOf(e.getCause()));
-      }
-      return gsr;
-   }
+  @NotNull
+  public static GoogleSearchResult fromGoogle(@NotNull JSONObject googleResult) {
+    GoogleSearchResult gsr = new GoogleSearchResult();
+    gsr.title = cleanString(googleResult.getString("title"));
+    gsr.content = cleanString(googleResult.getString("snippet"));
+    gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8);
+    return gsr;
+  }
 
-   private static String cleanString(@NotNull String dirtyString) {
-      return StringEscapeUtils.unescapeJava(
-         StringEscapeUtils.unescapeHtml4(
-            dirtyString
-               .replaceAll("\\s+", " ")
-               .replaceAll("<.*?>", "")
-               .replaceAll("\"", "")
-         )
-      );
-   }
+  private static String cleanString(@NotNull String dirtyString) {
+    return StringEscapeUtils.unescapeJava(
+      StringEscapeUtils.unescapeHtml4(
+        dirtyString
+          .replaceAll("\\s+", " ")
+          .replaceAll("<.*?>", "")
+          .replaceAll("\"", "")
+      )
+    );
+  }
 
-   public String getTitle() {
-      return title;
-   }
+  public String getTitle() {
+    return title;
+  }
 
-   public String getContent() {
-      return content;
-   }
+  public String getContent() {
+    return content;
+  }
 
-   public String getUrl() {
-      return url;
-   }
+  public String getUrl() {
+    return url;
+  }
 
-   public String getSuggestedResult() {
-      return getUrl() + " - *" + getTitle() + "*: \"" + getContent() + "\"";
-   }
+  public String getSuggestedResult() {
+    return getUrl() + " - *" + getTitle() + "*: \"" + getContent() + "\"";
+  }
 }

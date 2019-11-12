@@ -27,18 +27,18 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class SkipTrackCommand extends Command {
-   private final Loader loader;
+  private final Loader loader;
 
-   public SkipTrackCommand() {
-      name = "skip";
-      help = "Skips current playing track.";
-      category = Categories.music;
-      loader = new Loader();
-   }
+  public SkipTrackCommand() {
+    name = "skip";
+    help = "Skips current playing track.";
+    category = Categories.music;
+    loader = new Loader();
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      loader.skipTrack(event.getTextChannel());
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    loader.skipTrack(event.getTextChannel());
+  }
 }

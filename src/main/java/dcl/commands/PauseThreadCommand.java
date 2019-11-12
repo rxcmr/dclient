@@ -28,26 +28,26 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class PauseThreadCommand extends Command {
-   private Logger logger = (Logger) LoggerFactory.getLogger(PauseThreadCommand.class);
+  private Logger logger = (Logger) LoggerFactory.getLogger(PauseThreadCommand.class);
 
-   public PauseThreadCommand() {
-      name = "pausethread";
-      aliases = new String[]{"halt"};
-      ownerCommand = true;
-      category = Categories.ownerOnly;
-      arguments = "**amount** (seconds)";
-      help = "Stops the current thread for a specific amount in time.";
-   }
+  public PauseThreadCommand() {
+    name = "pausethread";
+    aliases = new String[]{"halt"};
+    ownerCommand = true;
+    category = Categories.ownerOnly;
+    arguments = "**amount** (seconds)";
+    help = "Stops the current thread for a specific amount in time.";
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.reply("Stopping thread...");
-      long start = System.currentTimeMillis();
-      try {
-         Thread.sleep(Integer.parseInt(event.getArgs()) * 1000);
-      } catch (InterruptedException e) {
-         logger.error("Thread paused.", e);
-      }
-      event.reply(String.format("Resumed after %d seconds.", (System.currentTimeMillis() - start) / 1000));
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.reply("Stopping thread...");
+    long start = System.currentTimeMillis();
+    try {
+      Thread.sleep(Integer.parseInt(event.getArgs()) * 1000);
+    } catch (InterruptedException e) {
+      logger.error("Thread paused.", e);
+    }
+    event.reply(String.format("Resumed after %d seconds.", (System.currentTimeMillis() - start) / 1000));
+  }
 }

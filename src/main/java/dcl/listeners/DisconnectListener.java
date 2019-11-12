@@ -29,17 +29,17 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class DisconnectListener extends ListenerAdapter {
-   @Override
-   public void onDisconnect(@NotNull DisconnectEvent event) {
-      User owner = event.getJDA().getUserById(Skeleton.ID);
-      Logger logger = (Logger) LoggerFactory.getLogger(DisconnectListener.class);
-      logger.warn("Disconnected.");
-      logger.info("Attempting to reconnect.");
-      assert owner != null;
-      sendDirectMessage(owner);
-   }
+  @Override
+  public void onDisconnect(@NotNull DisconnectEvent event) {
+    User owner = event.getJDA().getUserById(Skeleton.ID);
+    Logger logger = (Logger) LoggerFactory.getLogger(DisconnectListener.class);
+    logger.warn("Disconnected.");
+    logger.info("Attempting to reconnect.");
+    assert owner != null;
+    sendDirectMessage(owner);
+  }
 
-   private void sendDirectMessage(@NotNull User user) {
-      user.openPrivateChannel().queue(channel -> channel.sendMessage("Disconnected!").queue());
-   }
+  private void sendDirectMessage(@NotNull User user) {
+    user.openPrivateChannel().queue(channel -> channel.sendMessage("Disconnected!").queue());
+  }
 }

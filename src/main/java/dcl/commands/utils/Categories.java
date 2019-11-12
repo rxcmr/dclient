@@ -22,10 +22,9 @@ import com.jagrosh.jdautilities.command.Command;
  * @author rxcmr
  */
 public class Categories {
-   public static Command.Category
-      ownerOnly = new Command.Category("Owner"),
-      moderation = new Command.Category("Moderation"),
-      utilities = new Command.Category("Utilities"),
-      music = new Command.Category("Music");
-
+  public static Command.Category
+    ownerOnly = new Command.Category("Owner"),
+    moderation = new Command.Category("Moderation"),
+    utilities = new Command.Category("Utilities"),
+    music = new Command.Category("Music");
 }

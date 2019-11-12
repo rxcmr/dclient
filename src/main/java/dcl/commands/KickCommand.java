@@ -26,18 +26,18 @@ import net.dv8tion.jda.api.Permission;
  */
 @SuppressWarnings("unused")
 public class KickCommand extends Command {
-   public KickCommand() {
-      name = "kick";
-      arguments = "**user**";
-      help = "Kicks a user";
-      botPermissions = new Permission[]{Permission.KICK_MEMBERS};
-      userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-      category = Categories.moderation;
-   }
+  public KickCommand() {
+    name = "kick";
+    arguments = "**user**";
+    help = "Kicks a user";
+    botPermissions = new Permission[]{Permission.KICK_MEMBERS};
+    userPermissions = new Permission[]{Permission.KICK_MEMBERS};
+    category = Categories.moderation;
+  }
 
-   @Override
-   protected void execute(CommandEvent event) {
-      event.getChannel().sendTyping().queue();
-      event.getMessage().getMentionedMembers().get(0).kick().queue();
-   }
+  @Override
+  protected void execute(CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    event.getMessage().getMentionedMembers().get(0).kick().queue();
+  }
 }

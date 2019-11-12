@@ -1,4 +1,4 @@
-package dcl.music;
+package dcl.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com>.
@@ -16,24 +16,28 @@ package dcl.music;
  * limitations under the License.
  */
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import okhttp3.Dns;
 import org.jetbrains.annotations.NotNull;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author rxcmr
  */
-public class MusicManager {
-  public final AudioPlayer player;
-  public final TrackScheduler scheduler;
-
-  public MusicManager(@NotNull AudioPlayerManager manager) {
-    player = manager.createPlayer();
-    scheduler = new TrackScheduler(player);
-    player.addListener(scheduler);
+public class CloudFlareDNS implements Dns {
+  public CloudFlareDNS() throws UnknownHostException {
+    lookup("1.1.1.1");
   }
 
-  public AudioHandler getSendHandler() {
-    return new AudioHandler(player);
+  @NotNull
+  @Override
+  public List<InetAddress> lookup(@NotNull String s) throws UnknownHostException {
+    List<InetAddress> addressList = new LinkedList<>();
+    Collections.addAll(addressList, InetAddress.getAllByName(s));
+    return addressList;
   }
 }

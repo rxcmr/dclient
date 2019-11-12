@@ -24,6 +24,6 @@ import org.jetbrains.annotations.Nullable;
  * @author rxcmr
  */
 public interface DirectMessage {
-   void send(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage);
+  void send(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage);
 }
 

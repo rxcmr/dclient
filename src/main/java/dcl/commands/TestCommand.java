@@ -31,35 +31,35 @@ import java.util.List;
  */
 @SuppressWarnings("unused")
 public class TestCommand extends Command {
-   public TestCommand() {
-      name = "test";
-      aliases = new String[]{"try"};
-      help = "???";
-      ownerCommand = true;
-      category = Categories.ownerOnly;
-      hidden = true;
-   }
+  public TestCommand() {
+    name = "test";
+    aliases = new String[]{"try"};
+    help = "???";
+    ownerCommand = true;
+    category = Categories.ownerOnly;
+    hidden = true;
+  }
 
-   @Override
-   @SuppressWarnings("ALL")
-   protected void execute(@NotNull CommandEvent event) {
-      //String[] args = event.getArgs().split("\\s+");
-      //event.getChannel().sendTyping().queue();
-      //Arrays.stream(args).forEachOrdered(event::reply);
-      List<Role> roles = event.getGuild().getRoles();
-      List<Role> emptyRoles = new LinkedList<>();
-      event.reply("Roles: " + roles);
-      event.reply("");
-      // this should return an empty List
-      event.reply("List 1: " + event.getGuild().getMembersWithRoles(roles));
-      event.reply("");
-      // ??? returns all members for some reason
-      event.reply("List 2: " + event.getGuild().getMembersWithRoles());
-      event.reply("");
-      // this should throw an exception
-      event.reply("List 3: " + event.getGuild().getMembersWithRoles((Collection<Role>) null));
-      event.reply("");
-      // this throws the same exception as passing null
-      event.reply("List 4: " + event.getGuild().getMembersWithRoles(emptyRoles));
-   }
+  @Override
+  @SuppressWarnings("ALL")
+  protected void execute(@NotNull CommandEvent event) {
+    //String[] args = event.getArgs().split("\\s+");
+    //event.getChannel().sendTyping().queue();
+    //Arrays.stream(args).forEachOrdered(event::reply);
+    List<Role> roles = event.getGuild().getRoles();
+    List<Role> emptyRoles = new LinkedList<>();
+    event.reply("Roles: " + roles);
+    event.reply("");
+    // this should return an empty List
+    event.reply("List 1: " + event.getGuild().getMembersWithRoles(roles));
+    event.reply("");
+    // ??? returns all members for some reason
+    event.reply("List 2: " + event.getGuild().getMembersWithRoles());
+    event.reply("");
+    // this should throw an exception
+    event.reply("List 3: " + event.getGuild().getMembersWithRoles((Collection<Role>) null));
+    event.reply("");
+    // this throws the same exception as passing null
+    event.reply("List 4: " + event.getGuild().getMembersWithRoles(emptyRoles));
+  }
 }

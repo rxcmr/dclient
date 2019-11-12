@@ -27,15 +27,15 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class LeaveVoiceChannelCommand extends Command {
-   public LeaveVoiceChannelCommand() {
-      name = "leave";
-      botPermissions = new Permission[]{Permission.VOICE_CONNECT};
-      help = "Leaves the voice channel.";
-      category = Categories.music;
-   }
+  public LeaveVoiceChannelCommand() {
+    name = "leave";
+    botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+    help = "Leaves the voice channel.";
+    category = Categories.music;
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
+  }
 }

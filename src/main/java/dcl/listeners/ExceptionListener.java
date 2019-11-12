@@ -30,21 +30,21 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class ExceptionListener extends ListenerAdapter {
-   private Logger logger = (Logger) LoggerFactory.getLogger(ExceptionListener.class);
-   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      a instanceof String
-         ? (c == null
-         ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
-         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
-         : (c == null
-         ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
-         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
-   );
+  private Logger logger = (Logger) LoggerFactory.getLogger(ExceptionListener.class);
+  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+    a instanceof String
+      ? (c == null
+      ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+      : (c == null
+      ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+  );
 
-   @Override
-   public void onException(@NotNull ExceptionEvent event) {
-      User owner = event.getJDA().getUserById(Skeleton.ID);
-      assert owner != null;
-      dm.send("```java\n", owner, String.format("%s\n```", event.getCause()));
-   }
+  @Override
+  public void onException(@NotNull ExceptionEvent event) {
+    User owner = event.getJDA().getUserById(Skeleton.ID);
+    assert owner != null;
+    dm.send("```java\n", owner, String.format("%s\n```", event.getCause()));
+  }
 }

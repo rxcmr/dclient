@@ -46,91 +46,93 @@ import java.util.Map;
  * @author rxcmr
  */
 public class Loader {
-   private final AudioPlayerManager playerManager;
-   private final Map<Long, MusicManager> musicManagers;
+  private final AudioPlayerManager playerManager;
+  private final Map<Long, MusicManager> musicManagers;
 
-   public Loader() {
-      playerManager = registerSourceManagers(new DefaultAudioPlayerManager());
-      musicManagers = new HashMap<>();
-   }
+  public Loader() {
+    playerManager = registerSourceManagers(new DefaultAudioPlayerManager());
+    musicManagers = new HashMap<>();
+  }
 
-   public void loadAndPlay(@NotNull final TextChannel channel, final String trackUrl) {
-      MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
-      playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
-         @Override
-         public void trackLoaded(AudioTrack track) {
-            channel.sendMessageFormat("Adding to queue: *%s*", track.getInfo().title).queue();
-            play(channel.getGuild(), musicManager, track);
-         }
-
-         @Override
-         public void playlistLoaded(AudioPlaylist playlist) {
-            AudioTrack firstTrack = playlist.getSelectedTrack();
-            if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
-            channel.sendMessageFormat("Adding to queue: *%s* *(first track of playlist %s)*",
-               firstTrack.getInfo().title,
-               playlist.getName()).queue();
-            play(channel.getGuild(), musicManager, firstTrack);
-         }
-
-         @Override
-         public void noMatches() { channel.sendMessage("Nothing found by: " + trackUrl + ".").queue(); }
-
-         @Override
-         public void loadFailed(FriendlyException exception) {
-            channel.sendMessage("Could not play: " + exception.getMessage()).queue();
-         }
-      });
-   }
-
-   private void play(@NotNull Guild guild, @NotNull MusicManager musicManager, AudioTrack track) {
-      connectToFirstVoiceChannel(guild.getAudioManager());
-      musicManager.scheduler.queue(track);
-   }
-
-   public void skipTrack(@NotNull TextChannel channel) {
-      MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
-      musicManager.scheduler.nextTrack();
-      channel.sendMessage("Skipped.").queue();
-   }
-
-   private static void connectToFirstVoiceChannel(@NotNull AudioManager audioManager) {
-      if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
-         for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
-            audioManager.openAudioConnection(voiceChannel);
-            break;
-         }
+  private static void connectToFirstVoiceChannel(@NotNull AudioManager audioManager) {
+    if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
+      for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
+        audioManager.openAudioConnection(voiceChannel);
+        break;
       }
-   }
+    }
+  }
 
-   @NotNull
-   private synchronized MusicManager getGuildAudioPlayer(@NotNull Guild guild) {
-      long guildId = Long.parseLong(guild.getId());
-      MusicManager musicManager = musicManagers.get(guildId);
-
-      if (musicManager == null) {
-         musicManager = new MusicManager(playerManager);
-         musicManagers.put(guildId, musicManager);
+  public void loadAndPlay(@NotNull final TextChannel channel, final String trackUrl) {
+    MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
+      @Override
+      public void trackLoaded(AudioTrack track) {
+        channel.sendMessageFormat("Adding to queue: *%s*", track.getInfo().title).queue();
+        play(channel.getGuild(), musicManager, track);
       }
-      guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-      return musicManager;
-   }
 
-   @NotNull
-   @Contract("_ -> param1")
-   private AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
-      YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
-      youtubeAudioSourceManager.configureRequests(
-         config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
-      );
-      manager.registerSourceManager(youtubeAudioSourceManager);
-      manager.registerSourceManager(new SoundCloudAudioSourceManager());
-      manager.registerSourceManager(new TwitchStreamAudioSourceManager());
-      manager.registerSourceManager(new BandcampAudioSourceManager());
-      manager.registerSourceManager(new VimeoAudioSourceManager());
-      manager.registerSourceManager(new BeamAudioSourceManager());
-      manager.registerSourceManager(new LocalAudioSourceManager());
-      manager.registerSourceManager(new HttpAudioSourceManager());
-      return manager;
-   }
+      @Override
+      public void playlistLoaded(AudioPlaylist playlist) {
+        AudioTrack firstTrack = playlist.getSelectedTrack();
+        if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
+        channel.sendMessageFormat("Adding to queue: *%s* *(first track of playlist %s)*",
+          firstTrack.getInfo().title,
+          playlist.getName()).queue();
+        play(channel.getGuild(), musicManager, firstTrack);
+      }
+
+      @Override
+      public void noMatches() {
+        channel.sendMessage("Nothing found by: " + trackUrl + ".").queue();
+      }
+
+      @Override
+      public void loadFailed(FriendlyException exception) {
+        channel.sendMessage("Could not play: " + exception.getMessage()).queue();
+      }
+    });
+  }
+
+  private void play(@NotNull Guild guild, @NotNull MusicManager musicManager, AudioTrack track) {
+    connectToFirstVoiceChannel(guild.getAudioManager());
+    musicManager.scheduler.queue(track);
+  }
+
+  public void skipTrack(@NotNull TextChannel channel) {
+    MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    musicManager.scheduler.nextTrack();
+    channel.sendMessage("Skipped.").queue();
+  }
+
+  @NotNull
+  private synchronized MusicManager getGuildAudioPlayer(@NotNull Guild guild) {
+    long guildId = Long.parseLong(guild.getId());
+    MusicManager musicManager = musicManagers.get(guildId);
+
+    if (musicManager == null) {
+      musicManager = new MusicManager(playerManager);
+      musicManagers.put(guildId, musicManager);
+    }
+    guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
+    return musicManager;
+  }
+
+  @NotNull
+  @Contract("_ -> param1")
+  private AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
+    YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
+    youtubeAudioSourceManager.configureRequests(
+      config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
+    );
+    manager.registerSourceManager(youtubeAudioSourceManager);
+    manager.registerSourceManager(new SoundCloudAudioSourceManager());
+    manager.registerSourceManager(new TwitchStreamAudioSourceManager());
+    manager.registerSourceManager(new BandcampAudioSourceManager());
+    manager.registerSourceManager(new VimeoAudioSourceManager());
+    manager.registerSourceManager(new BeamAudioSourceManager());
+    manager.registerSourceManager(new LocalAudioSourceManager());
+    manager.registerSourceManager(new HttpAudioSourceManager());
+    return manager;
+  }
 }

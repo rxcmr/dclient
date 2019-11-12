@@ -27,23 +27,23 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class PurgeCommand extends Command {
-   public PurgeCommand() {
-      name = "purge";
-      aliases = new String[]{"clear"};
-      botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-      arguments = "**amount** [1-100]";
-      guildOnly = true;
-      userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-      cooldown = 5;
-      help = "Purges [1-100] messages.";
-      category = Categories.utilities;
-   }
+  public PurgeCommand() {
+    name = "purge";
+    aliases = new String[]{"clear"};
+    botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
+    arguments = "**amount** [1-100]";
+    guildOnly = true;
+    userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
+    cooldown = 5;
+    help = "Purges [1-100] messages.";
+    category = Categories.utilities;
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      int amount = Integer.parseInt(event.getArgs());
-      event.getChannel().sendTyping().queue();
-      event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));
-      event.reply("Cleared " + amount + " messages.");
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    int amount = Integer.parseInt(event.getArgs());
+    event.getChannel().sendTyping().queue();
+    event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));
+    event.reply("Cleared " + amount + " messages.");
+  }
 }

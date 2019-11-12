@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
+import dcl.commands.LatencyCommand;
 import dcl.commands.ShutdownCommand;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
@@ -32,48 +33,54 @@ import java.util.Objects;
  * @author rxcmr
  */
 public class FleshListener implements CommandListener {
-   private Logger logger = (Logger) LoggerFactory.getLogger(FleshListener.class);
-   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-      a instanceof String
-         ? (c == null
-         ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
-         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
-         : (c == null
-         ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
-         : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
-   );
+  private Logger logger = (Logger) LoggerFactory.getLogger(FleshListener.class);
+  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+    a instanceof String
+      ? (c == null
+      ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+      : (c == null
+      ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+  );
 
-   @Override
-   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
-      User owner = event.getJDA().getUserById(Skeleton.ID);
-      event.getChannel().sendTyping().queue();
-      event.getMessage().addReaction("\u274C").queue();
+  @Override
+  public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
+    User owner = event.getJDA().getUserById(Skeleton.ID);
+    event.getChannel().sendTyping().queue();
+    event.getMessage().addReaction("\u274C").queue();
+    if (command instanceof LatencyCommand) {
+      event.reply("The request did not go through...");
+    } else {
       event.reply(
-         command.getArguments() == null ?
-            "Something wrong happened..." : Skeleton.prefix + command.getName() + " " + command.getArguments()
+        command.getArguments() == null ?
+          "Something wrong happened..." : Skeleton.prefix + command.getName() + " " + command.getArguments()
       );
       assert owner != null;
       dm.send("```java\n", owner, String.format("%s\n```", throwable));
-   }
+    }
+  }
 
-   @Override
-   public void onCompletedCommand(@NotNull CommandEvent event, Command command) {
-      try {
-         if (command instanceof ShutdownCommand) return;
-         event.getMessage().addReaction("\u2705").queue();
-      } catch (Exception e) { logger.warn(e.getCause().toString()); }
-   }
+  @Override
+  public void onCompletedCommand(@NotNull CommandEvent event, Command command) {
+    try {
+      if (command instanceof ShutdownCommand) return;
+      event.getMessage().addReaction("\u2705").queue();
+    } catch (Exception e) {
+      logger.warn(e.getCause().toString());
+    }
+  }
 
-   @Override
-   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
-      User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
-      event.getMessage().addReaction("\u274C").queue();
-      event.getChannel().sendTyping().queue();
-      event.reply("Unexpected behavior. Try again.");
-      dm.send(
-         "Unexpected behavior. Triggered by: ",
-         owner,
-         event.getAuthor() + " in " + event.getGuild()
-      );
-   }
+  @Override
+  public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
+    User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
+    event.getMessage().addReaction("\u274C").queue();
+    event.getChannel().sendTyping().queue();
+    event.reply("Unexpected behavior. Try again.");
+    dm.send(
+      "Unexpected behavior. Triggered by: ",
+      owner,
+      event.getAuthor() + " in " + event.getGuild()
+    );
+  }
 }

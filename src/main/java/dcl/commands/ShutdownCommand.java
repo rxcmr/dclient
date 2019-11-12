@@ -28,19 +28,19 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class ShutdownCommand extends Command {
-   public ShutdownCommand() {
-      name = "shutdown";
-      help = "Shutdown JDA, and process running it.";
-      ownerCommand = true;
-      guildOnly = false;
-      category = Categories.ownerOnly;
-      hidden = true;
-   }
+  public ShutdownCommand() {
+    name = "shutdown";
+    help = "Shutdown JDA, and process running it.";
+    ownerCommand = true;
+    guildOnly = false;
+    category = Categories.ownerOnly;
+    hidden = true;
+  }
 
-   @Override
-   protected void execute(@NotNull CommandEvent event) {
-      Logger logger = (Logger) LoggerFactory.getLogger(ShutdownCommand.class);
-      logger.warn("[!!] Shutting down.");
-      event.getJDA().shutdownNow();
-   }
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    Logger logger = (Logger) LoggerFactory.getLogger(ShutdownCommand.class);
+    logger.warn("[!!] Shutting down.");
+    event.getJDA().shutdownNow();
+  }
 }
