@@ -33,7 +33,7 @@ public class BanCommand extends Command {
     help = "Bans a user";
     botPermissions = new Permission[]{Permission.BAN_MEMBERS};
     userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    category = Categories.moderation;
+    category = Categories.Moderation;
   }
 
   @Override

@@ -37,7 +37,6 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.Compression;
 import okhttp3.OkHttpClient;
-import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -66,7 +65,7 @@ public class Skeleton {
   private CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
   private CommandClient commandClient;
   private String token;
-  private BidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+  private DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
   private List<String> commandInvocation = new LinkedList<>();
   private List<String> commandInformation = new LinkedList<>();
   private Collection<Command> commands;
@@ -114,43 +113,42 @@ public class Skeleton {
       .loadClasses()
       .get(0)
       .getFields();
-    Arrays.stream(categories).forEachOrdered(f -> logger.info("Categories: " + f));
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
     if (args.equalsIgnoreCase("utilities")) {
       // Utilities category
       embedBuilder.addField(
-        String.format("```%s:```", Categories.utilities.getName()),
+        String.format("**%s: **", Categories.Utilities.getName()),
         String.format("`Description: %s `", "General utilities"),
         false
       );
-      streamCommands(Categories.utilities);
+      streamCommands(Categories.Utilities);
     } else if (args.equalsIgnoreCase("music")) {
       // Music category
       embedBuilder.addField(
-        String.format("```%s:```", Categories.music.getName()),
+        String.format("**%s: **", Categories.Music.getName()),
         String.format("`Description: %s `", "Music related commands"),
         false);
-      streamCommands(Categories.music);
+      streamCommands(Categories.Music);
     } else if (args.equalsIgnoreCase("moderation")) {
       // Moderation category
       embedBuilder.addField(
-        String.format("```%s:```", Categories.moderation.getName()),
+        String.format("**%s: **", Categories.Moderation.getName()),
         String.format("`Description: %s `", "Moderation utilities"),
         false
       );
-      streamCommands(Categories.moderation);
+      streamCommands(Categories.Moderation);
     } else if (args.equalsIgnoreCase("ownerOnly") && author.getId().equals(ID)) {
       embedBuilder.addField(
-        String.format("```%s:```", Categories.ownerOnly.getName()),
+        String.format("**%s: **", Categories.Owner.getName()),
         String.format("`Description: %s `", "Owner-only utilities"),
         false
       );
-      streamCommands(Categories.ownerOnly);
+      streamCommands(Categories.Owner);
     } else if (args.isEmpty()) {
       Arrays.stream(categories).forEachOrdered(
         f -> embedBuilder.addField(
-          "Category: ",
-          String.format("```%shelp %s```", prefix, f.getName()),
+          "**Category: " + f.getName() + "**",
+          String.format("```py%n%shelp %s%n```", prefix, f.getName().toLowerCase()),
           false
         )
       );

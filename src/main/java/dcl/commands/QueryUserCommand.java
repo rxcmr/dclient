@@ -42,7 +42,7 @@ public class QueryUserCommand extends Command {
     cooldown = 10;
     arguments = "**user**";
     help = "Information about a user.";
-    category = Categories.utilities;
+    category = Categories.Utilities;
   }
 
   @Override

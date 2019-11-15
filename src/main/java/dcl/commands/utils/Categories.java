@@ -23,8 +23,8 @@ import com.jagrosh.jdautilities.command.Command;
  */
 public class Categories {
   public static Command.Category
-    ownerOnly = new Command.Category("Owner"),
-    moderation = new Command.Category("Moderation"),
-    utilities = new Command.Category("Utilities"),
-    music = new Command.Category("Music");
+    Owner = new Command.Category("Owner"),
+    Moderation = new Command.Category("Moderation"),
+    Utilities = new Command.Category("Utilities"),
+    Music = new Command.Category("Music");
 }

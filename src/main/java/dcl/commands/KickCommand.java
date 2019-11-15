@@ -32,7 +32,7 @@ public class KickCommand extends Command {
     help = "Kicks a user";
     botPermissions = new Permission[]{Permission.KICK_MEMBERS};
     userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-    category = Categories.moderation;
+    category = Categories.Moderation;
   }
 
   @Override

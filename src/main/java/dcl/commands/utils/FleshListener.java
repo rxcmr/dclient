@@ -37,11 +37,11 @@ public class FleshListener implements CommandListener {
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
       ? (c == null
-      ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw()))
-      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+      ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw().replace("```", "")))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw().replace("```", ""))))
       : (c == null
-      ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw()))
-      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw())))
+      ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw().replace("```", "")))
+      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw().replace("```", ""))))
   );
 
   @Override
@@ -49,9 +49,8 @@ public class FleshListener implements CommandListener {
     User owner = event.getJDA().getUserById(Skeleton.ID);
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\u274C").queue();
-    if (command instanceof LatencyCommand) {
-      event.reply("The request did not go through...");
-    } else {
+    if (command instanceof LatencyCommand) event.reply("Request did not go through.");
+    else {
       event.reply(
         command.getArguments() == null ?
           "Something wrong happened..." : Skeleton.prefix + command.getName() + " " + command.getArguments()

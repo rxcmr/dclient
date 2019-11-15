@@ -18,6 +18,7 @@ package dcl.listeners;
 
 import ch.qos.logback.classic.Logger;
 import dcl.Skeleton;
+import dcl.commands.utils.DirectMessage;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.DisconnectEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -29,6 +30,16 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class DisconnectListener extends ListenerAdapter {
+  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+    a instanceof String
+      ? (c == null
+      ? d -> d.sendMessage((String) a).queue()
+      : d -> d.sendMessage(a + c).queue())
+      : (c == null
+      ? d -> d.sendMessage(a.toString()).queue()
+      : d -> d.sendMessage(a + c).queue())
+  );
+
   @Override
   public void onDisconnect(@NotNull DisconnectEvent event) {
     User owner = event.getJDA().getUserById(Skeleton.ID);
@@ -36,10 +47,6 @@ public class DisconnectListener extends ListenerAdapter {
     logger.warn("Disconnected.");
     logger.info("Attempting to reconnect.");
     assert owner != null;
-    sendDirectMessage(owner);
-  }
-
-  private void sendDirectMessage(@NotNull User user) {
-    user.openPrivateChannel().queue(channel -> channel.sendMessage("Disconnected!").queue());
+    dm.send("Disconnected!", owner, null);
   }
 }

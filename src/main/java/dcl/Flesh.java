@@ -30,7 +30,7 @@ import java.util.List;
 public class Flesh {
   public Flesh() throws ReflectiveOperationException {
     String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    int shards = 1, poolSize = 5;
+    int shards = 2, poolSize = 10;
 
     // Commands
     ArrayList<Command> commands = new ArrayList<>();

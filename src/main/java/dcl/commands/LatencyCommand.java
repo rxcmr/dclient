@@ -20,8 +20,8 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,34 +29,31 @@ import org.jetbrains.annotations.NotNull;
  */
 @SuppressWarnings("unused")
 public class LatencyCommand extends Command {
-  private EmbedBuilder embedBuilder = new EmbedBuilder();
-
   public LatencyCommand() {
     name = "latency";
     aliases = new String[]{"ping"};
     help = "REST API ping and WebSocket ping.";
     guildOnly = false;
     ownerCommand = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     hidden = true;
+  }
+
+  @NotNull
+  public static MessageEmbed buildEmbed(@NotNull CommandEvent event) {
+    JDA jda = event.getJDA();
+    EmbedBuilder embedBuilder = new EmbedBuilder();
+    return embedBuilder
+      .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
+      .addField("**API: **", "```py\n" + jda.getRestPing().complete() + " ms\n```", true)
+      .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
+      .setColor(0xd32ce6)
+      .build();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    event.reply(buildEmbed(event.getAuthor(), event));
-    embedBuilder.clear();
-  }
-
-  @NotNull
-  private MessageEmbed buildEmbed(@NotNull User user, @NotNull CommandEvent event) {
-    event.getJDA().getRestPing().queue(
-      p -> embedBuilder
-        .addField("API: ", p + " ms", true)
-        .setThumbnail(user.getEffectiveAvatarUrl())
-        .addField("WebSocket: ", event.getJDA().getGatewayPing() + " ms", true)
-        .setColor(0xd32ce6)
-    );
-    return embedBuilder.build();
+    event.reply(buildEmbed(event));
   }
 }

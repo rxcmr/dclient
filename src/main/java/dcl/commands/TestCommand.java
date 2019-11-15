@@ -36,7 +36,7 @@ public class TestCommand extends Command {
     aliases = new String[]{"try"};
     help = "???";
     ownerCommand = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     hidden = true;
   }
 

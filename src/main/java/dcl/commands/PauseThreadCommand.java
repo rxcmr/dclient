@@ -34,7 +34,7 @@ public class PauseThreadCommand extends Command {
     name = "pausethread";
     aliases = new String[]{"halt"};
     ownerCommand = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     arguments = "**amount** (seconds)";
     help = "Stops the current thread for a specific amount in time.";
   }

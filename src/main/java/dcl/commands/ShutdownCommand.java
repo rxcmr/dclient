@@ -33,7 +33,7 @@ public class ShutdownCommand extends Command {
     help = "Shutdown JDA, and process running it.";
     ownerCommand = true;
     guildOnly = false;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     hidden = true;
   }
 

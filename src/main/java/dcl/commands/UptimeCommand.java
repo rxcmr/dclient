@@ -34,7 +34,7 @@ public class UptimeCommand extends Command {
     help = "Bot uptime.";
     ownerCommand = true;
     hidden = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
   }
 
   @Override

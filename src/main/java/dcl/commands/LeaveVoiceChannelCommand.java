@@ -31,7 +31,7 @@ public class LeaveVoiceChannelCommand extends Command {
     name = "leave";
     botPermissions = new Permission[]{Permission.VOICE_CONNECT};
     help = "Leaves the voice channel.";
-    category = Categories.music;
+    category = Categories.Music;
   }
 
   @Override

@@ -31,7 +31,7 @@ public class ShardCommand extends Command {
     aliases = new String[]{"shards"};
     help = "Sharding info.";
     ownerCommand = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     hidden = true;
   }
 

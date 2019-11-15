@@ -21,14 +21,20 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import groovy.lang.GroovyShell;
+import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
+
+import java.awt.*;
 
 /**
  * @author rxcmr
  */
 @SuppressWarnings("unused")
 public class DebugCommand extends Command {
+  private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final GroovyShell shell;
   private final String libs;
 
@@ -36,9 +42,10 @@ public class DebugCommand extends Command {
     name = "debug";
     aliases = new String[]{"eval"};
     ownerCommand = true;
-    help = "JDA evaluator using Groovy";
+    help = "JDA evaluator using GroovyShell";
+    arguments = "**code**";
     hidden = true;
-    category = Categories.ownerOnly;
+    category = Categories.Owner;
     shell = new GroovyShell();
     libs = "import java.io.*\n" +
       "import java.lang.*\n" +
@@ -49,10 +56,10 @@ public class DebugCommand extends Command {
       "import net.dv8tion.jda.core.entities.impl.*\n" +
       "import net.dv8tion.jda.core.managers.*\n" +
       "import net.dv8tion.jda.core.managers.impl.*\n" +
-      "import net.dv8tion.jda.core.utils.*" +
-      "import dcl.commands.*" +
-      "import dcl.listeners.*" +
-      "import dcl.commands.utils.*" +
+      "import net.dv8tion.jda.core.utils.*\n" +
+      "import dcl.commands.*\n" +
+      "import dcl.listeners.*\n" +
+      "import dcl.commands.utils.*\n" +
       "import dcl.music.*;\n";
   }
 
@@ -73,9 +80,46 @@ public class DebugCommand extends Command {
       String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
       Object out = shell.evaluate(script);
 
-      event.reply(out == null ? "```Finished execution.```" : String.format("```%s```", out.toString()));
+      event.reply(buildEmbed(out, event.getArgs()));
+      embedBuilder.clear();
     } catch (Exception e) {
-      event.reply("```java\n" + e + " \ncause: " + (e.getCause() == null ? "nothing" : e.getCause()) + "\n```");
+      event.reply(exceptionEmbed(e, event.getArgs()));
+      embedBuilder.clear();
     }
+  }
+
+  @NotNull
+  private MessageEmbed buildEmbed(@Nullable Object output, @NotNull String args) {
+    if (output != null) {
+      return embedBuilder
+        .setTitle("```Finished execution.```")
+        .setDescription(String.format("**Command:** ```%s```", args))
+        .addField("**Output:** ", String.format("```java%n%s%n```", output), false)
+        .build();
+    } else {
+      return embedBuilder
+        .setTitle("```Finished execution.```")
+        .setDescription(String.format("**Command:** ```%s```", args))
+        .build();
+    }
+  }
+
+  @NotNull
+  private MessageEmbed exceptionEmbed(@NotNull Exception e, @NotNull String args) {
+    String[] exceptionName = e.getClass().getCanonicalName().split("\\.");
+    String javadoc = String.format(
+      "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/%s/%s/%s.html",
+      exceptionName[0], exceptionName[1], exceptionName[2]
+    );
+    return embedBuilder
+      .setTitle(String.format("```%s```", e.getClass().getSimpleName()),
+        exceptionName[0].equalsIgnoreCase("java") ? javadoc : null
+      )
+      .setDescription(String.format("**Command:** ```%s```", args))
+      .addField("**Stack Trace:**", String.format(
+        "```java%n%s%nCause: %s%n```", e, e.getCause() == null ? "nothing" : e.getCause()), false
+      )
+      .setColor(Color.RED)
+      .build();
   }
 }

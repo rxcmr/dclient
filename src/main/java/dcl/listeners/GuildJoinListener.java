@@ -32,7 +32,7 @@ public class GuildJoinListener extends ListenerAdapter {
   public void onGuildJoin(@NotNull GuildJoinEvent event) {
     if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
       event.getGuild().getDefaultChannel().sendTyping().queue();
-      event.getGuild().getDefaultChannel().sendMessage("`hello, type fl!help`").queue();
+      event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
     }
   }
 }

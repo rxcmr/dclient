@@ -35,7 +35,7 @@ public class PlayTrackCommand extends Command {
     arguments = "**URL**";
     botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
     help = "Plays a track from URL.";
-    category = Categories.music;
+    category = Categories.Music;
     loader = new Loader();
   }
 

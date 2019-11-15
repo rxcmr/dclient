@@ -32,7 +32,7 @@ public class SkipTrackCommand extends Command {
   public SkipTrackCommand() {
     name = "skip";
     help = "Skips current playing track.";
-    category = Categories.music;
+    category = Categories.Music;
     loader = new Loader();
   }
 

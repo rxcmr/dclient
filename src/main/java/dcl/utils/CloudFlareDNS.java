@@ -30,7 +30,11 @@ import java.util.List;
  */
 public class CloudFlareDNS implements Dns {
   public CloudFlareDNS() throws UnknownHostException {
-    lookup("1.1.1.1");
+    try {
+      lookup("1.1.1.1");
+    } catch (UnknownHostException e) {
+      lookup("1.0.0.1");
+    }
   }
 
   @NotNull
