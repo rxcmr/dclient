@@ -35,7 +35,7 @@ public class PurgeCommand extends Command {
     name = "purge";
     aliases = new String[]{"clear"};
     botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-    arguments = "**amount** [1-100]";
+    arguments = "**<amount>** [1-100]";
     guildOnly = true;
     userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
     cooldown = 5;

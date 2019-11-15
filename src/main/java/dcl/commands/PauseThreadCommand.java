@@ -35,7 +35,7 @@ public class PauseThreadCommand extends Command {
     aliases = new String[]{"halt"};
     ownerCommand = true;
     category = Categories.Owner;
-    arguments = "**amount** (seconds)";
+    arguments = "**<amount>** (seconds)";
     help = "Stops the current thread for a specific amount in time.";
   }
 
@@ -48,6 +48,6 @@ public class PauseThreadCommand extends Command {
     } catch (InterruptedException e) {
       logger.error("Thread paused.", e);
     }
-    event.reply(String.format("Resumed after %d seconds.", (System.currentTimeMillis() - start) / 1000));
+    event.reply(String.format("Resumed after %s seconds.", (System.currentTimeMillis() - start) / 1000));
   }
 }

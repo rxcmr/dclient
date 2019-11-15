@@ -22,6 +22,7 @@ import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
+import dcl.commands.utils.Descriptions;
 import dcl.commands.utils.DirectMessage;
 import dcl.commands.utils.FleshListener;
 import dcl.utils.CloudFlareDNS;
@@ -114,41 +115,38 @@ public class Skeleton {
       .get(0)
       .getFields();
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
-    if (args.equalsIgnoreCase("utilities")) {
-      // Utilities category
+    if (args.equalsIgnoreCase(Categories.Utilities.getName())) {
       embedBuilder.addField(
         String.format("**%s: **", Categories.Utilities.getName()),
-        String.format("`Description: %s `", "General utilities"),
+        String.format("**Description:** *%s* ", Descriptions.UTILITIES.get()),
         false
       );
       streamCommands(Categories.Utilities);
-    } else if (args.equalsIgnoreCase("music")) {
-      // Music category
+    } else if (args.equalsIgnoreCase(Categories.Music.getName())) {
       embedBuilder.addField(
         String.format("**%s: **", Categories.Music.getName()),
-        String.format("`Description: %s `", "Music related commands"),
+        String.format("**Description:** *%s* ", Descriptions.MUSIC.get()),
         false);
       streamCommands(Categories.Music);
-    } else if (args.equalsIgnoreCase("moderation")) {
-      // Moderation category
+    } else if (args.equalsIgnoreCase(Categories.Moderation.getName())) {
       embedBuilder.addField(
         String.format("**%s: **", Categories.Moderation.getName()),
-        String.format("`Description: %s `", "Moderation utilities"),
+        String.format("**Description:** *%s* ", Descriptions.MODERATION.get()),
         false
       );
       streamCommands(Categories.Moderation);
-    } else if (args.equalsIgnoreCase("ownerOnly") && author.getId().equals(ID)) {
+    } else if (args.equalsIgnoreCase(Categories.Owner.getName()) && author.getId().equals(ID)) {
       embedBuilder.addField(
         String.format("**%s: **", Categories.Owner.getName()),
-        String.format("`Description: %s `", "Owner-only utilities"),
+        String.format("**Description:** *%s* ", Descriptions.OWNER.get()),
         false
       );
       streamCommands(Categories.Owner);
     } else if (args.isEmpty()) {
       Arrays.stream(categories).forEachOrdered(
-        f -> embedBuilder.addField(
-          "**Category: " + f.getName() + "**",
-          String.format("```py%n%shelp %s%n```", prefix, f.getName().toLowerCase()),
+        category -> embedBuilder.addField(
+          "**Category: " + category.getName() + "**",
+          String.format("```py%n%shelp %s%n```", prefix, category.getName().toLowerCase()),
           false
         )
       );

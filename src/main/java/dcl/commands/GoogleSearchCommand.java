@@ -38,7 +38,7 @@ public class GoogleSearchCommand extends Command {
     aliases = new String[]{"search"};
     category = Categories.Utilities;
     cooldown = 10;
-    arguments = "**query**";
+    arguments = "**<query>**";
     help = "The Google Search API";
   }
 

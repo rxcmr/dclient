@@ -32,7 +32,7 @@ public class PlayTrackCommand extends Command {
 
   public PlayTrackCommand() {
     name = "play";
-    arguments = "**URL**";
+    arguments = "**<URL>**";
     botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
     help = "Plays a track from URL.";
     category = Categories.Music;

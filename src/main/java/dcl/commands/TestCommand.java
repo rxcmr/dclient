@@ -35,6 +35,7 @@ public class TestCommand extends Command {
     name = "test";
     aliases = new String[]{"try"};
     help = "???";
+    arguments = "<**???**>";
     ownerCommand = true;
     category = Categories.Owner;
     hidden = true;

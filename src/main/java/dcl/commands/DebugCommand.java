@@ -43,7 +43,7 @@ public class DebugCommand extends Command {
     aliases = new String[]{"eval"};
     ownerCommand = true;
     help = "JDA evaluator using GroovyShell";
-    arguments = "**code**";
+    arguments = "**<code>**";
     hidden = true;
     category = Categories.Owner;
     shell = new GroovyShell();
