@@ -3,7 +3,9 @@
 To use, simply call a new instance of Flesh
 
 Requirements:
-- `.env` file in root directory, with TOKEN field, Google Custom Search API Token and Engine ID
+- `.env` file in root directory, with Discord API Token (TOKEN) field,
+ Google Custom Search API Token (API_KEY) field,
+ and Engine ID (ENGINE_ID) field.
 
 ```java
 package dcl;
