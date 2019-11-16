@@ -3,7 +3,7 @@
 To use, simply call a new instance of Flesh
 
 Requirements:
-- .env file in root directory, with TOKEN field
+- `.env` file in root directory, with TOKEN field
 
 ```java
 package dcl;
@@ -13,4 +13,6 @@ public class Runner {
 }
 ```
 
-See, only a one liner.
+*This project is licensed under the Apache License 2.0 and the GNU Affero General Public License v3 (AGPLv3)*
+*See [Apache License 2.0](ApacheLicense2.0.md) and [GNU Affero General Public License v3](GNUAGPLv3.md)*
+
