@@ -24,7 +24,7 @@ public enum Descriptions {
   MODERATION("Moderation utilities"),
   UTILITIES("General utilities"),
   MUSIC("Music related commands");
-  @SuppressWarnings({"FieldCanBeLocal", "unused"})
+
   private final String description;
 
   Descriptions(String description) {

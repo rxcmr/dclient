@@ -40,7 +40,7 @@ public class LatencyCommand extends Command {
   }
 
   @NotNull
-  public static MessageEmbed buildEmbed(@NotNull CommandEvent event) {
+  public synchronized MessageEmbed buildEmbed(@NotNull CommandEvent event) {
     JDA jda = event.getJDA();
     EmbedBuilder embedBuilder = new EmbedBuilder();
     return embedBuilder

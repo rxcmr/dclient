@@ -42,7 +42,7 @@ public class JavadocCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     String[] args = event.getArgs().split("\\s+");
-    if (args.length <= 2) throw new IllegalArgumentException();
+    if (args.length < 2) throw new IllegalArgumentException();
 
     String url = String.format(
       "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/java/%s/%s.html", args[0], args[1]
