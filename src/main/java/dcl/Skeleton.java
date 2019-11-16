@@ -76,19 +76,19 @@ public class Skeleton {
       : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
   );
   private ShardManager shardManager;
-  private Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
-  private EmbedBuilder embedBuilder = new EmbedBuilder();
-  private DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
-  private CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
-  private CommandClient commandClient;
-  private String token;
-  private DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
-  private List<String> commandInvocation = new LinkedList<>();
-  private List<String> commandInformation = new LinkedList<>();
-  private Collection<Command> commands;
-  private @Nullable Collection<Object> listeners;
-  private int poolSize;
-  private int shards;
+  private final Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
+  private final EmbedBuilder embedBuilder = new EmbedBuilder();
+  private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
+  private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
+  private final String token;
+  private final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+  private final List<String> commandInvocation = new LinkedList<>();
+  private final List<String> commandInformation = new LinkedList<>();
+  private final Collection<Command> commands;
+  private final @Nullable Collection<Object> listeners;
+  private final int poolSize;
+  private final int threads;
+  private final int shards;
 
   @Contract(pure = true)
   Skeleton
@@ -96,13 +96,16 @@ public class Skeleton {
      int shards,
      @NotNull Collection<Command> commands,
      @Nullable Collection<Object> listeners,
-     int poolSize) {
-    if (shards == 0 || poolSize == 0) throw new IllegalArgumentException("Shards or pool size must not equal 0.");
+     int poolSize,
+     int threads) {
+    if (shards == 0 || poolSize == 0 || threads == 0)
+      throw new IllegalArgumentException("Shards or pool size must not equal 0.");
     this.token = token;
     this.shards = shards;
     this.commands = commands;
     this.listeners = listeners;
     this.poolSize = poolSize;
+    this.threads = threads;
     logger.info("[!] Constructor initialized");
   }
 
@@ -191,7 +194,6 @@ public class Skeleton {
   }
 
   private void init() throws Exception {
-    buildCommandClient();
     logger.info("[#] Building JDA v4.0.0");
     buildShardManager();
     logger.info("[#] JDA Running");
@@ -218,8 +220,8 @@ public class Skeleton {
     managerBuilder
       .setShardsTotal(shards)
       .setToken(token)
-      .addEventListeners(commandClient)
-      .setCallbackPool(Executors.newCachedThreadPool(), true)
+      .addEventListeners(buildCommandClient())
+      .setCallbackPool(Executors.newFixedThreadPool(threads), true)
       .setGatewayPool(Executors.newScheduledThreadPool(poolSize), true)
       .setRateLimitPool(Executors.newScheduledThreadPool(poolSize), true)
       .setCompression(Compression.ZLIB)
@@ -232,7 +234,7 @@ public class Skeleton {
     shardManager = managerBuilder.build();
   }
 
-  private void buildCommandClient() {
+  private CommandClient buildCommandClient() {
     logger.info("[#] Building CommandClient");
     commandClientBuilder
       .setOwnerId(ID)
@@ -242,8 +244,8 @@ public class Skeleton {
       .setListener(new FleshListener())
       .setHelpConsumer(this::helpConsumer)
       .setShutdownAutomatically(true);
-    commands.forEach(command -> commandClientBuilder.addCommand(command));
-    commandClient = commandClientBuilder.build();
+    commands.forEach(commandClientBuilder::addCommand);
+    return commandClientBuilder.build();
   }
 
   private static class DefaultListener extends ListenerAdapter {

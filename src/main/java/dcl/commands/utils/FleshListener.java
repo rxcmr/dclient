@@ -7,6 +7,7 @@ import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
 import dcl.commands.LatencyCommand;
 import dcl.commands.ShutdownCommand;
+import dcl.commands.TestCommand;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.LoggerFactory;
@@ -66,14 +67,16 @@ public class FleshListener implements CommandListener {
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\u274C").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
+    else if (command instanceof TestCommand) event.reply("```java\nTest complete.\n Threw: " + throwable + "\n```");
     else {
       event.reply(
-        command.getArguments() == null ?
-          "Something wrong happened..." : Skeleton.prefix + command.getName() + " " + command.getArguments()
+        command.getArguments() == null
+          ? "Something wrong happened..."
+          : Skeleton.prefix + command.getName() + " " + command.getArguments()
       );
-      assert owner != null;
-      dm.send("```java\n", owner, String.format("%s\n```", throwable));
     }
+    assert owner != null;
+    dm.send("```java\n", owner, String.format("%s%n```", throwable));
   }
 
   @Override

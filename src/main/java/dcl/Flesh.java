@@ -46,7 +46,7 @@ import java.util.List;
 public class Flesh {
   public Flesh() throws ReflectiveOperationException {
     String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    int shards = 2, poolSize = 10;
+    int shards = 2, poolSize = 10, threads = 2;
 
     // Commands
     ArrayList<Command> commands = new ArrayList<>();
@@ -71,7 +71,7 @@ public class Flesh {
 
     // Instantiate the base class Skeleton
     assert token != null;
-    new Skeleton(token, shards, commands, listeners, poolSize).run();
+    new Skeleton(token, shards, commands, listeners, poolSize, threads).run();
   }
 
   public static void main(String[] args) throws Exception {

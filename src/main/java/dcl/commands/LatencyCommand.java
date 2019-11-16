@@ -40,11 +40,16 @@ import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
 public class LatencyCommand extends Command {
+  public MessageEmbed embed;
+
   public LatencyCommand() {
     name = "latency";
     aliases = new String[]{"ping"};
@@ -55,21 +60,24 @@ public class LatencyCommand extends Command {
     hidden = true;
   }
 
-  @NotNull
-  public synchronized MessageEmbed buildEmbed(@NotNull CommandEvent event) {
+  public synchronized void buildEmbed(@NotNull CommandEvent event) {
     JDA jda = event.getJDA();
     EmbedBuilder embedBuilder = new EmbedBuilder();
-    return embedBuilder
+    jda.getRestPing().queue(api -> embed = embedBuilder
       .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
-      .addField("**API: **", "```py\n" + jda.getRestPing().complete() + " ms\n```", true)
+      .addField("**API: **", "```py\n" + api + " ms\n```", true)
       .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
       .setColor(0xd32ce6)
-      .build();
+      .build()
+    );
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    event.reply(buildEmbed(event));
+    buildEmbed(event);
+    Executors.newScheduledThreadPool(1).schedule(
+      () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
+    );
   }
 }

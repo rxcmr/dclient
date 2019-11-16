@@ -1,9 +1,9 @@
-# Skeleton and Flesh
+# dclient
 
 To use, simply call a new instance of Flesh
 
 Requirements:
-- `.env` file in root directory, with TOKEN field
+- `.env` file in root directory, with TOKEN field, Google Custom Search API Token and Engine ID
 
 ```java
 package dcl;
