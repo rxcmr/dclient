@@ -14,5 +14,6 @@ public class Runner {
 ```
 
 *This project is licensed under the Apache License 2.0 and the GNU Affero General Public License v3 (AGPLv3)*
+
 *See [Apache License 2.0](ApacheLicense2.0.md) and [GNU Affero General Public License v3](GNUAGPLv3.md)*
 
