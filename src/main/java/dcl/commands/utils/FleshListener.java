@@ -68,6 +68,7 @@ public class FleshListener implements CommandListener {
     event.getMessage().addReaction("\u274C").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
     else if (command instanceof TestCommand) event.reply("```java\nTest complete.\n Threw: " + throwable + "\n```");
+    //else if (command instanceof UnloadListenerCommand) event.reply("Cannot unload the reload command.");
     else {
       event.reply(
         command.getArguments() == null

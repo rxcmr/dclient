@@ -1,4 +1,4 @@
-package dcl.listeners;
+package dcl.commands;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,22 +32,27 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.Skeleton;
+import dcl.commands.utils.Categories;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class GuildJoinListener extends ListenerAdapter {
+public class UnloadCommand extends Command {
+  public UnloadCommand() {
+    name = "unload";
+    arguments = "**<command>**";
+    ownerCommand = true;
+    category = Categories.Owner;
+  }
+
   @Override
-  public void onGuildJoin(@NotNull GuildJoinEvent event) {
-    if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
-      event.getGuild().getDefaultChannel().sendTyping().queue();
-      event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
-    }
+  protected void execute(@NotNull CommandEvent event) {
+    Skeleton.getCommandClient().removeCommand(event.getArgs());
   }
 }

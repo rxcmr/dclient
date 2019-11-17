@@ -1,4 +1,4 @@
-package dcl.listeners;
+package dcl.commands.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,22 +32,21 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class GuildJoinListener extends ListenerAdapter {
-  @Override
-  public void onGuildJoin(@NotNull GuildJoinEvent event) {
-    if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
-      event.getGuild().getDefaultChannel().sendTyping().queue();
-      event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
-    }
+public class CommandException extends RuntimeException {
+  public CommandException() {
+    super();
+  }
+
+  public CommandException(String message) {
+    super(message);
+  }
+
+  public CommandException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

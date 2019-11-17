@@ -36,6 +36,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.Permission;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -52,7 +53,7 @@ public class KickCommand extends Command {
   }
 
   @Override
-  protected void execute(CommandEvent event) {
+  protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
     event.getMessage().getMentionedMembers().get(0).kick().queue();
   }

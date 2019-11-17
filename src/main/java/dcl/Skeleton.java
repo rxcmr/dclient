@@ -76,6 +76,7 @@ public class Skeleton {
       : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
   );
   private ShardManager shardManager;
+  private static CommandClient commandClient;
   private final Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
@@ -112,6 +113,10 @@ public class Skeleton {
   @SuppressWarnings("unused")
   public ShardManager getInstance() {
     return shardManager;
+  }
+
+  public static CommandClient getCommandClient() {
+    return commandClient;
   }
 
   private void helpConsumer(@NotNull CommandEvent event) {
@@ -217,10 +222,11 @@ public class Skeleton {
   }
 
   private void buildShardManager() throws Exception {
+    buildCommandClient();
     managerBuilder
       .setShardsTotal(shards)
       .setToken(token)
-      .addEventListeners(buildCommandClient())
+      .addEventListeners(commandClient)
       .setCallbackPool(Executors.newFixedThreadPool(threads), true)
       .setGatewayPool(Executors.newScheduledThreadPool(poolSize), true)
       .setRateLimitPool(Executors.newScheduledThreadPool(poolSize), true)
@@ -234,7 +240,7 @@ public class Skeleton {
     shardManager = managerBuilder.build();
   }
 
-  private CommandClient buildCommandClient() {
+  private void buildCommandClient() {
     logger.info("[#] Building CommandClient");
     commandClientBuilder
       .setOwnerId(ID)
@@ -245,7 +251,7 @@ public class Skeleton {
       .setHelpConsumer(this::helpConsumer)
       .setShutdownAutomatically(true);
     commands.forEach(commandClientBuilder::addCommand);
-    return commandClientBuilder.build();
+    commandClient = commandClientBuilder.build();
   }
 
   private static class DefaultListener extends ListenerAdapter {

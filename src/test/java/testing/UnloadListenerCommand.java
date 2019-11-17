@@ -1,6 +1,4 @@
-package dcl.listeners;
-
-/*
+package testing;/*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,22 +30,50 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
+import io.github.classgraph.ClassGraph;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@gicloud.com>
  */
 @SuppressWarnings("unused")
-public class GuildJoinListener extends ListenerAdapter {
+public class UnloadListenerCommand extends Command {
+  public UnloadListenerCommand instance = this;
+
+  public UnloadListenerCommand() {
+    name = "lunload";
+    arguments = "**<listener>**";
+    ownerCommand = true;
+    category = Categories.Owner;
+  }
+
   @Override
-  public void onGuildJoin(@NotNull GuildJoinEvent event) {
-    if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
-      event.getGuild().getDefaultChannel().sendTyping().queue();
-      event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
+  protected void execute(@NotNull CommandEvent event) {
+    try {
+      event.getJDA().removeEventListener(loadClass(event.getArgs()));
+    } catch (ReflectiveOperationException ex) {
+      event.reply("Unloading failed.");
     }
+  }
+
+  private Object loadClass(@NotNull String className) throws ReflectiveOperationException {
+    Class<?> clazz = new ClassGraph()
+      .whitelistPackagesNonRecursive("dcl.listeners")
+      .enableAllInfo()
+      .scan()
+      .getAllClasses()
+      .loadClasses()
+      .stream()
+      .filter(c -> c.getName().equals("dcl.listeners." + className))
+      .collect(Collectors.toList())
+      .get(0);
+
+    return clazz.getField("instance").get(Object.class);
   }
 }

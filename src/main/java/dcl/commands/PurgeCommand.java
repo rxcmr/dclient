@@ -38,8 +38,6 @@ import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -61,7 +59,6 @@ public class PurgeCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    ScheduledExecutorService service = Executors.newScheduledThreadPool(1);
     int amount = Integer.parseInt(event.getArgs());
     event.getChannel().sendTyping().queue();
     event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));

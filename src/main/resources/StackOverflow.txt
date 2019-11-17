@@ -1,0 +1,13 @@
+[0.131s][warning][os,thread] Attempt to allocate stack guard pages failed.
+An unrecoverable stack overflow has occurred.
+#
+OpenJDK 64-Bit Server VM warning: Attempt to unguard stack red zone failed.
+# A fatal error has been detected by the Java Runtime Environment:
+#
+#  EXCEPTION_STACK_OVERFLOW (0xc00000fd) at pc=0x00007ffd73bef913, pid=4740, tid=9056
+#
+# JRE version: OpenJDK Runtime Environment (13.0.1+9) (build 13.0.1+9)
+# Java VM: OpenJDK 64-Bit Server VM (13.0.1+9, mixed mode, tiered, compressed oops, g1 gc, windows-amd64)
+# Problematic frame:
+# V  [jvm.dll+0x37f913]
+Process finished with exit code -1073741819 (0xC0000005)

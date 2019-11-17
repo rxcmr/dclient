@@ -48,8 +48,6 @@ import java.util.Objects;
  */
 @SuppressWarnings("unused")
 public class QueryUserCommand extends Command {
-  Member member;
-  User author;
   private EmbedBuilder embedBuilder = new EmbedBuilder();
 
   public QueryUserCommand() {
@@ -64,10 +62,11 @@ public class QueryUserCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    member = event.getMessage().getMentionedMembers().isEmpty()
+    Member member = event.getMessage().getMentionedMembers().isEmpty()
       ? (Member) event.getJDA().getUserById(event.getArgs())
       : event.getMessage().getMentionedMembers().get(0);
-    author = event.getAuthor();
+    User author = event.getAuthor();
+    assert member != null;
     event.reply(buildEmbed(member, author));
     embedBuilder.clear();
   }
