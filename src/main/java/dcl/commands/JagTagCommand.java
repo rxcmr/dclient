@@ -33,8 +33,6 @@ package dcl.commands;
  */
 
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jagrosh.jagtag.JagTag;
 import com.jagrosh.jagtag.Parser;
 import com.jagrosh.jdautilities.command.Command;
@@ -42,29 +40,59 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import dcl.commands.utils.CommandException;
 import org.jetbrains.annotations.NotNull;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
-import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@SuppressWarnings("unused")
 class Tag {
   public String ownerID;
   public String tagKey;
   public String tagValue;
 
-  protected Tag(String ownerID, String tagKey, String tagValue) {
+  public String getOwnerID() {
+    return ownerID;
+  }
+
+  public void setOwnerID(String ownerID) {
+    this.ownerID = ownerID;
+  }
+
+  public String getTagKey() {
+    return tagKey;
+  }
+
+  public void setTagKey(String tagKey) {
+    this.tagKey = tagKey;
+  }
+
+  public String getTagValue() {
+    return tagValue;
+  }
+
+  public void setTagValue(String tagValue) {
+    this.tagValue = tagValue;
+  }
+
+  protected Tag set(String ownerID, String tagKey, String tagValue) {
     this.ownerID = ownerID;
     this.tagKey = tagKey;
     this.tagValue = tagValue;
+    return this;
   }
 }
 
 @SuppressWarnings("unused")
 public class JagTagCommand extends Command {
-  File json = new File("src\\main\\resources\\JagTag.json");
-  private LinkedList<Tag> tags = new LinkedList<>();
+  File tagData = new File("src\\main\\resources\\JagTag.yaml");
+  private List<Tag> tags = new ArrayList<>();
+  private List<Tag> tagBuffer = new ArrayList<>();
 
   public JagTagCommand() throws IOException {
     name = "jagtag";
@@ -72,86 +100,105 @@ public class JagTagCommand extends Command {
     category = Categories.Utilities;
     arguments = "**<modifier>** **<name>** **<content>**";
     help = "JagTag like the one you see in Spectra";
-    if (!json.exists()) //noinspection ResultOfMethodCallIgnored
-      json.createNewFile();
-    deserializeData(json);
+    if (!tagData.exists() && tagData.createNewFile()) {
+      try (BufferedWriter wtr = new BufferedWriter(new FileWriter(tagData))) {
+        wtr.write("---");
+        deserializeData(tagData);
+      }
+    } else deserializeData(tagData);
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
+    String singleArg = event.getArgs();
     String[] args = event.getArgs().split("\\s+");
     String authorID = event.getAuthor().getId();
     Parser jagtag = JagTag.newDefaultBuilder().build();
 
-    switch (args[0]) {
-      case "create":
-        tags.stream().filter(t -> t.tagKey.equals(args[1])).forEachOrdered(t -> {
-          throw new CommandException("Tag: " + t.tagKey + " exists.");
-        });
-        tags.add(new Tag(authorID, args[1], args[2]));
-        try {
-          serializeData(tags);
-        } catch (IOException e) {
-          event.reply("Serialization error.");
-        }
-        break;
-      case "delete":
-        if (args.length != 2) throw new CommandException();
-        tags.removeIf(t -> t.tagKey.equals(args[1]) && t.ownerID.equals(authorID));
-        try {
-          serializeData(tags);
-        } catch (IOException e) {
-          event.reply("Serialization error.");
-        }
-        break;
-      case "edit":
-        tags.stream()
-          .filter(t -> t.tagKey.equals(args[1]))
-          .filter(t -> t.ownerID.equals(authorID))
-          .forEachOrdered(t -> t.tagValue = args[2]);
-        try {
-          serializeData(tags);
-        } catch (IOException e) {
-          event.reply("Serialization error.");
-        }
-        break;
-      case "raw":
-        tags.forEach(t -> {
-          if (t.tagKey.equals(args[0])) event.reply(t.tagValue);
-          else throw new CommandException("Tag: " + args[0] + " does not exist.");
-        });
-        break;
-      default:
-        tags.forEach(t -> {
-          if (t.tagKey.equals(args[0])) event.reply(jagtag.parse(t.tagValue));
-          else throw new CommandException("Tag: " + args[0] + " does not exist.");
-        });
-        break;
-    }
+    if (args.length == 3) {
+      switch (args[0]) {
+        case "create" -> {
+          if (tags.stream().anyMatch(t -> t.getTagKey().equals(args[1])))
+            throw new CommandException("Tag " + args[1] + " exists.");
+          tags.stream()
+            .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
+            .forEachOrdered(t -> {
+              tagBuffer.add(t);
+              tagBuffer.add(new Tag().set(authorID, args[1], args[2]));
+              updateTagList();
+              tagBuffer.clear();
+            });
 
-  }
-
-  private synchronized void serializeData(LinkedList<Tag> tags) throws IOException {
-    ObjectMapper serializer = new ObjectMapper();
-    String result = serializer.writerWithDefaultPrettyPrinter().writeValueAsString(tags);
-    try (BufferedWriter wtr = new BufferedWriter(new FileWriter(json))) {
-      wtr.write(result);
-    }
-  }
-
-  private synchronized void deserializeData(File json) throws IOException {
-    try (BufferedReader rdr = new BufferedReader(new FileReader(json))) {
-      ObjectMapper deserializer = new ObjectMapper();
-      LinkedList<Tag> tempTags = new LinkedList<>();
-      while (deserializer.readTree(rdr).elements().hasNext()) {
-        JsonNode elements = deserializer.readTree(rdr).elements().next();
-        String
-          ownerID = elements.get("ownerID").textValue(),
-          tagKey = elements.get("tagKey").textValue(),
-          tagValue = elements.get("tagValue").textValue();
-        tags.add(new Tag(ownerID, tagKey, tagValue));
-        deserializer.readTree(rdr).elements().remove();
+          tags.add(new Tag().set(authorID, args[1], args[2]));
+          serializeData(tags);
+        }
+        case "delete", "remove" -> tags.stream()
+          .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
+          .forEachOrdered(t -> {
+            tagBuffer.add(t);
+            updateTagList();
+            tagBuffer.clear();
+          });
+        case "edit" -> {
+          tags.removeIf(t -> t.getOwnerID().equals(authorID) && t.getTagKey().equals(args[1]));
+          tags.stream()
+            .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
+            .forEachOrdered(t -> {
+              tagBuffer.add(t);
+              tagBuffer.add(new Tag().set(authorID, args[1], args[2]));
+              updateTagList();
+              tagBuffer.clear();
+            });
+        }
+        default -> throw new CommandException("Unexpected value: " + args[0]);
       }
+    } else if (args.length == 2) {
+      switch (args[0]) {
+        case "raw", "source" -> {
+          if (tags.stream().anyMatch(t -> t.getTagKey().equals(args[1]))) {
+            tags.stream()
+              .filter(t -> t.getTagKey().equals(args[1]))
+              .map(Tag::getTagValue)
+              .forEachOrdered(event::reply);
+          }
+        }
+      }
+    } else if (args.length == 1) {
+      if (tags.stream().anyMatch(t -> t.getTagKey().equals(singleArg))) {
+        tags.stream()
+          .filter(t -> t.getTagKey().equals(singleArg))
+          .map(t -> jagtag.parse(t.getTagValue()))
+          .forEachOrdered(event::reply);
+      }
+    } else throw new CommandException();
+  }
+
+  private void updateTagList() {
+    serializeData(tagBuffer);
+    deserializeData(tagData);
+  }
+
+  private synchronized void serializeData(@NotNull List<Tag> tags) {
+    Yaml yaml = new Yaml(new Constructor(Tag.class));
+    for (Tag t : tags) {
+      try (BufferedWriter wtr = new BufferedWriter(new FileWriter(tagData, true))) {
+        try (BufferedWriter cleaner = new BufferedWriter(new FileWriter(tagData))) {
+          cleaner.write("");
+          wtr.newLine();
+          yaml.dump(t, wtr);
+        }
+      } catch (IOException e) {
+        throw new CommandException("Serialization failed.", e);
+      }
+    }
+  }
+
+  private synchronized void deserializeData(File tagData) {
+    Yaml yaml = new Yaml(new Constructor(Tag.class));
+    try (BufferedReader rdr = new BufferedReader(new FileReader(tagData))) {
+      for (Object o : yaml.loadAll(rdr)) tags.add((Tag) o);
+    } catch (IOException e) {
+      throw new CommandException("Deserialization failed.", e);
     }
   }
 }
