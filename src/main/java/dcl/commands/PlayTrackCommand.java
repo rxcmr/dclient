@@ -57,7 +57,8 @@ public class PlayTrackCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    loader.loadAndPlay(event.getTextChannel(), event.getArgs());
+    event.getChannel().sendTyping().queue(
+      v -> loader.loadAndPlay(event.getTextChannel(), event.getArgs())
+    );
   }
 }

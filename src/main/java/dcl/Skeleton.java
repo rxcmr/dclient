@@ -32,7 +32,6 @@ package dcl;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
@@ -58,6 +57,7 @@ import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
@@ -77,7 +77,7 @@ public class Skeleton {
   );
   private ShardManager shardManager;
   private static CommandClient commandClient;
-  private final Logger logger = (Logger) LoggerFactory.getLogger(Skeleton.class);
+  private final Logger logger = LoggerFactory.getLogger(Skeleton.class);
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
   private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
@@ -257,7 +257,7 @@ public class Skeleton {
   private static class DefaultListener extends ListenerAdapter {
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-      Logger logger = (Logger) LoggerFactory.getLogger(this.getClass());
+      Logger logger = LoggerFactory.getLogger(this.getClass());
       logger.info("[#] Ready");
     }
   }

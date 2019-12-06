@@ -61,14 +61,17 @@ public class QueryUserCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    Member member = event.getMessage().getMentionedMembers().isEmpty()
-      ? (Member) event.getJDA().getUserById(event.getArgs())
-      : event.getMessage().getMentionedMembers().get(0);
-    User author = event.getAuthor();
-    assert member != null;
-    event.reply(buildEmbed(member, author));
-    embedBuilder.clear();
+    event.getChannel().sendTyping().queue(
+      v -> {
+        Member member = event.getMessage().getMentionedMembers().isEmpty()
+          ? (Member) event.getJDA().getUserById(event.getArgs())
+          : event.getMessage().getMentionedMembers().get(0);
+        User author = event.getAuthor();
+        assert member != null;
+        event.reply(buildEmbed(member, author));
+        embedBuilder.clear();
+      }
+    );
   }
 
   @NotNull

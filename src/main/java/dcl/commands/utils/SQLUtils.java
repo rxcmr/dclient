@@ -1,4 +1,4 @@
-package dcl.listeners;
+package dcl.commands.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,37 +32,27 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import dcl.Skeleton;
-import dcl.commands.utils.DirectMessage;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.events.DisconnectEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class DisconnectListener extends ListenerAdapter {
-  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-    a instanceof String
-      ? (c == null
-      ? d -> d.sendMessage((String) a).queue()
-      : d -> d.sendMessage(a + c).queue())
-      : (c == null
-      ? d -> d.sendMessage(a.toString()).queue()
-      : d -> d.sendMessage(a + c).queue())
-  );
+public interface SQLUtils {
+  Connection connect() throws SQLException;
 
-  @Override
-  public void onDisconnect(@NotNull DisconnectEvent event) {
-    User owner = event.getJDA().getUserById(Skeleton.ID);
-    Logger logger = LoggerFactory.getLogger(DisconnectListener.class);
-    logger.warn("Disconnected.");
-    logger.info("Attempting to reconnect.");
-    assert owner != null;
-    dm.send("Disconnected!", owner, null);
-  }
+  void createDatabase() throws SQLException;
+
+  void createTable() throws SQLException;
+
+  void insert(@NotNull String... args) throws SQLException;
+
+  void select(@NotNull SQLItemMode mode) throws SQLException;
+
+  void delete(@NotNull String... args) throws SQLException;
+
+  void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
 }

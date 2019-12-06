@@ -32,11 +32,11 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -44,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class PauseThreadCommand extends Command {
-  private Logger logger = (Logger) LoggerFactory.getLogger(PauseThreadCommand.class);
+  private Logger logger = LoggerFactory.getLogger(PauseThreadCommand.class);
 
   public PauseThreadCommand() {
     name = "pausethread";

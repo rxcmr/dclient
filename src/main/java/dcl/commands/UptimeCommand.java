@@ -58,12 +58,10 @@ public class UptimeCommand extends Command {
     RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     long uptime = runtimeMXBean.getUptime();
     long uptimeInSeconds = uptime / 1000;
-    long numberOfHours = uptimeInSeconds / (60 * 60);
-    long numberOfMinutes = (uptimeInSeconds / 60) - (numberOfHours * 60);
-    long numberOfSeconds = uptimeInSeconds % 60;
+    long h = uptimeInSeconds / (60 * 60);
+    long m = (uptimeInSeconds / 60) - (h * 60);
+    long s = uptimeInSeconds % 60;
 
-    event.getChannel().sendMessageFormat(
-      "`%s:%s:%s`", new Object[]{numberOfHours, numberOfMinutes, numberOfSeconds}
-    ).queue();
+    event.getChannel().sendMessageFormat("`%s:%s:%s`", new Object[]{h, m, s}).queue();
   }
 }

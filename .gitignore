@@ -24,3 +24,4 @@
 # actual files
 .env
 .gitconfig
+/src/main/resources/JagTag.sqlite

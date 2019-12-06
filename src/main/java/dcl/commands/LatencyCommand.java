@@ -74,10 +74,13 @@ public class LatencyCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    buildEmbed(event);
-    Executors.newScheduledThreadPool(1).schedule(
-      () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
+    event.getChannel().sendTyping().queue(
+      v -> {
+        buildEmbed(event);
+        Executors.newScheduledThreadPool(1).schedule(
+          () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
+        );
+      }
     );
   }
 }

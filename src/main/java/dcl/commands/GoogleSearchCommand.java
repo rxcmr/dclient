@@ -60,13 +60,17 @@ public class GoogleSearchCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    final User owner = event.getJDA().getUserById(Skeleton.ID);
-    final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
-    final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
-    final String[] queryArray = event.getArgs().split("\\s+");
-    String query = String.join(" ", queryArray);
-    GoogleSearchHandler.init(apiKey);
-    List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query);
-    event.reply(results.get(0).getSuggestedResult());
+    event.getChannel().sendTyping().queue(
+      v -> {
+        final User owner = event.getJDA().getUserById(Skeleton.ID);
+        final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
+        final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
+        final String[] queryArray = event.getArgs().split("\\s+");
+        String query = String.join(" ", queryArray);
+        GoogleSearchHandler.init(apiKey);
+        List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query);
+        event.reply(results.get(0).getSuggestedResult());
+      }
+    );
   }
 }

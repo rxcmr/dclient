@@ -39,30 +39,25 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import dcl.commands.utils.CommandException;
+import dcl.commands.utils.SQLItemMode;
+import dcl.commands.utils.SQLUtils;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.StringJoiner;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
 class Tag {
-  public String ownerID;
   public String tagKey;
   public String tagValue;
-
-  public String getOwnerID() {
-    return ownerID;
-  }
-
-  public void setOwnerID(String ownerID) {
-    this.ownerID = ownerID;
-  }
+  public String ownerID;
 
   public String getTagKey() {
     return tagKey;
@@ -80,125 +75,263 @@ class Tag {
     this.tagValue = tagValue;
   }
 
-  protected Tag set(String ownerID, String tagKey, String tagValue) {
+  public String getOwnerID() {
+    return ownerID;
+  }
+
+  public void setOwnerID(String ownerID) {
     this.ownerID = ownerID;
+  }
+
+  Tag set(String tagKey, String tagValue, String ownerID) {
     this.tagKey = tagKey;
     this.tagValue = tagValue;
+    this.ownerID = ownerID;
     return this;
   }
 }
 
 @SuppressWarnings("unused")
-public class JagTagCommand extends Command {
-  File tagData = new File("src\\main\\resources\\JagTag.yaml");
-  private List<Tag> tags = new ArrayList<>();
-  private List<Tag> tagBuffer = new ArrayList<>();
+public class JagTagCommand extends Command implements SQLUtils {
+  private final HashSet<Tag> tags = new HashSet<>();
+  private final HashSet<Tag> tagCache = new HashSet<>();
 
-  public JagTagCommand() throws IOException {
+  public JagTagCommand() throws SQLException, IOException {
     name = "jagtag";
     aliases = new String[]{"tag", "t"};
     category = Categories.Utilities;
     arguments = "**<modifier>** **<name>** **<content>**";
-    help = "JagTag like the one you see in Spectra";
-    if (!tagData.exists() && tagData.createNewFile()) {
-      try (BufferedWriter wtr = new BufferedWriter(new FileWriter(tagData))) {
-        wtr.write("---");
-        deserializeData(tagData);
+    help = "JagTag like in Spectra";
+    File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\JagTag.sqlite");
+    if (!db.exists()) {
+      if (db.createNewFile()) {
+        createDatabase();
+        createTable();
       }
-    } else deserializeData(tagData);
+    } else {
+      select(SQLItemMode.ALL);
+      tags.addAll(tagCache);
+    }
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String singleArg = event.getArgs();
     String[] args = event.getArgs().split("\\s+");
     String authorID = event.getAuthor().getId();
     Parser jagtag = JagTag.newDefaultBuilder().build();
 
-    if (args.length == 3) {
-      switch (args[0]) {
-        case "create" -> {
-          if (tags.stream().anyMatch(t -> t.getTagKey().equals(args[1])))
-            throw new CommandException("Tag " + args[1] + " exists.");
-          tags.stream()
-            .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
-            .forEachOrdered(t -> {
-              tagBuffer.add(t);
-              tagBuffer.add(new Tag().set(authorID, args[1], args[2]));
-              updateTagList();
-              tagBuffer.clear();
-            });
-
-          tags.add(new Tag().set(authorID, args[1], args[2]));
-          serializeData(tags);
-        }
-        case "delete", "remove" -> tags.stream()
-          .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
-          .forEachOrdered(t -> {
-            tagBuffer.add(t);
-            updateTagList();
-            tagBuffer.clear();
-          });
-        case "edit" -> {
-          tags.removeIf(t -> t.getOwnerID().equals(authorID) && t.getTagKey().equals(args[1]));
-          tags.stream()
-            .filter(t -> !t.getOwnerID().equals(authorID) && !t.getTagKey().equals(args[1]))
-            .forEachOrdered(t -> {
-              tagBuffer.add(t);
-              tagBuffer.add(new Tag().set(authorID, args[1], args[2]));
-              updateTagList();
-              tagBuffer.clear();
-            });
-        }
-        default -> throw new CommandException("Unexpected value: " + args[0]);
-      }
-    } else if (args.length == 2) {
-      switch (args[0]) {
-        case "raw", "source" -> {
-          if (tags.stream().anyMatch(t -> t.getTagKey().equals(args[1]))) {
-            tags.stream()
-              .filter(t -> t.getTagKey().equals(args[1]))
-              .map(Tag::getTagValue)
-              .forEachOrdered(event::reply);
+    event.getChannel().sendTyping().queue(
+      v -> {
+        try {
+          switch (args[0]) {
+            case "create", "new", "add" -> {
+              if (args[1].matches(
+                "(create|new|add|delete|remove|edit|modify|raw|cblkraw)")
+              ) throw new CommandException("Be unique, these are reserved command parameters.");
+              select(SQLItemMode.ALL);
+              StringJoiner sj = new StringJoiner(" ");
+              Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+              String value = sj.toString();
+              insert(args[1], value, authorID);
+              select(SQLItemMode.ALL);
+              tags.clear();
+              tags.addAll(tagCache);
+            }
+            case "delete", "remove" -> {
+              select(SQLItemMode.ALL);
+              delete(args[1], authorID);
+              select(SQLItemMode.ALL);
+              tags.clear();
+              tags.addAll(tagCache);
+            }
+            case "edit", "modify" -> {
+              select(SQLItemMode.ALL);
+              StringJoiner sj = new StringJoiner(" ");
+              Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+              String value = sj.toString();
+              update(SQLItemMode.VALUE, args[1], value);
+              select(SQLItemMode.ALL);
+              tags.clear();
+              tags.addAll(tagCache);
+            }
+            case "raw" -> {
+              for (Tag t : tags) {
+                if (t.getTagKey().equals(args[1])) {
+                  event.reply(t.getTagValue());
+                }
+              }
+            }
+            case "cblkraw" -> {
+              for (Tag t : tags) {
+                if (t.getTagKey().equals(args[1])) {
+                  event.reply("```" + t.getTagValue() + "```");
+                }
+              }
+            }
+            default -> {
+              for (Tag t : tags) {
+                if (t.getTagKey().equals(args[0])) {
+                  event.reply(jagtag.parse(t.getTagValue()));
+                }
+              }
+            }
           }
+        } catch (SQLException s) {
+          throw new CommandException(s.getMessage());
         }
       }
-    } else if (args.length == 1) {
-      if (tags.stream().anyMatch(t -> t.getTagKey().equals(singleArg))) {
-        tags.stream()
-          .filter(t -> t.getTagKey().equals(singleArg))
-          .map(t -> jagtag.parse(t.getTagValue()))
-          .forEachOrdered(event::reply);
-      }
-    } else throw new CommandException();
+    );
+
+
   }
 
-  private void updateTagList() {
-    serializeData(tagBuffer);
-    deserializeData(tagData);
+  @Override
+  public synchronized Connection connect() throws SQLException {
+    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/JagTag.sqlite";
+    return DriverManager.getConnection(url);
   }
 
-  private synchronized void serializeData(@NotNull List<Tag> tags) {
-    Yaml yaml = new Yaml(new Constructor(Tag.class));
-    for (Tag t : tags) {
-      try (BufferedWriter wtr = new BufferedWriter(new FileWriter(tagData, true))) {
-        try (BufferedWriter cleaner = new BufferedWriter(new FileWriter(tagData))) {
-          cleaner.write("");
-          wtr.newLine();
-          yaml.dump(t, wtr);
-        }
-      } catch (IOException e) {
-        throw new CommandException("Serialization failed.", e);
+  @Override
+  public synchronized void createDatabase() throws SQLException {
+    try (Connection connection = connect()) {
+      if (connection != null) {
+        DatabaseMetaData metaData = connection.getMetaData();
       }
     }
   }
 
-  private synchronized void deserializeData(File tagData) {
-    Yaml yaml = new Yaml(new Constructor(Tag.class));
-    try (BufferedReader rdr = new BufferedReader(new FileReader(tagData))) {
-      for (Object o : yaml.loadAll(rdr)) tags.add((Tag) o);
-    } catch (IOException e) {
-      throw new CommandException("Deserialization failed.", e);
+  @Override
+  public synchronized void createTable() throws SQLException {
+    String sql = """
+      CREATE TABLE IF NOT EXISTS tags (
+      tagKey TEXT NOT NULL UNIQUE PRIMARY KEY,
+      tagValue TEXT NOT NULL,
+      ownerID TEXT NOT NULL
+      );
+      """;
+
+    try (Connection connection = connect()) {
+      connection.createStatement().execute(sql);
+    }
+  }
+
+  @Override
+  public synchronized void insert(@NotNull String... args) throws SQLException {
+    if (args.length != 3) throw new SQLException("Missing parameters.");
+    String sql = "INSERT INTO tags(tagKey, tagValue, ownerID) VALUES(?, ?, ?)";
+    try (Connection connection = connect()) {
+      try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        preparedStatement.setString(1, args[0]);
+        preparedStatement.setString(2, args[1]);
+        preparedStatement.setString(3, args[2]);
+        preparedStatement.executeUpdate();
+      }
+    }
+  }
+
+  @Override
+  public synchronized void select(@NotNull SQLItemMode mode) throws SQLException {
+    switch (mode) {
+      case ALL -> {
+        String sql = "SELECT tagKey, tagValue, ownerID FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            tagCache.add(new Tag().set(
+              resultSet.getString("tagKey"),
+              resultSet.getString("tagValue"),
+              resultSet.getString("ownerID")
+              )
+            );
+          }
+        }
+      }
+      case KEY -> {
+        String sql = "SELECT tagKey FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            for (Tag t : tags) {
+              if (t.getOwnerID().equals(resultSet.getString("tagKey")))
+                tagCache.add(t);
+            }
+          }
+        }
+      }
+      case VALUE -> {
+        String sql = "SELECT tagValue FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            for (Tag t : tags) {
+              if (t.getOwnerID().equals(resultSet.getString("tagValue")))
+                tagCache.add(t);
+            }
+          }
+        }
+      }
+      case ID -> {
+        String sql = "SELECT ownerID FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            for (Tag t : tags) {
+              if (t.getOwnerID().equals(resultSet.getString("ownerID")))
+                tagCache.add(t);
+            }
+          }
+        }
+      }
+      case KNI -> {
+        String sql = "SELECT tagKey, ownerID FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            for (Tag t : tags) {
+              if (t.getOwnerID().equals(resultSet.getString("ownerID")))
+                if (t.getTagKey().equals(resultSet.getString("tagKey")))
+                  tagCache.add(t);
+            }
+          }
+        }
+      }
+      default -> throw new SQLException("Mode incorrect.");
+    }
+  }
+
+  @Override
+  public synchronized void delete(@NotNull String... args) throws SQLException {
+    if (args.length != 2) return;
+    String sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ?";
+    try (Connection connection = connect();
+         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+      preparedStatement.setString(1, args[0]);
+      preparedStatement.setString(2, args[1]);
+      preparedStatement.executeUpdate();
+    }
+  }
+
+  @Override
+  public synchronized void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+    if (args.length != 2) return;
+    String sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ?";
+    try (Connection connection = connect();
+         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+      if (mode == SQLItemMode.VALUE) {
+        preparedStatement.setString(1, args[1]);
+        preparedStatement.setString(2, args[0]);
+        preparedStatement.executeUpdate();
+      }
     }
   }
 }

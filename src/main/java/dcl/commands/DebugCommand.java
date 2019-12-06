@@ -32,7 +32,6 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
@@ -41,6 +40,7 @@ import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.awt.*;
@@ -63,25 +63,27 @@ public class DebugCommand extends Command {
     hidden = true;
     category = Categories.Owner;
     shell = new GroovyShell();
-    libs = "import java.io.*\n" +
-      "import java.lang.*\n" +
-      "import java.util.*\n" +
-      "import java.util.concurrent.*\n" +
-      "import net.dv8tion.jda.core.*\n" +
-      "import net.dv8tion.jda.core.entities.*\n" +
-      "import net.dv8tion.jda.core.entities.impl.*\n" +
-      "import net.dv8tion.jda.core.managers.*\n" +
-      "import net.dv8tion.jda.core.managers.impl.*\n" +
-      "import net.dv8tion.jda.core.utils.*\n" +
-      "import dcl.commands.*\n" +
-      "import dcl.listeners.*\n" +
-      "import dcl.commands.utils.*\n" +
-      "import dcl.music.*;\n";
+    libs = """
+      import java.io.*
+      import java.lang.*
+      import java.util.*
+      import java.util.concurrent.*
+      import net.dv8tion.jda.core.*
+      import net.dv8tion.jda.core.entities.*
+      import net.dv8tion.jda.core.entities.impl.*
+      import net.dv8tion.jda.core.managers.*
+      import net.dv8tion.jda.core.managers.impl.*
+      import net.dv8tion.jda.core.utils.*
+      import dcl.commands.*
+      import dcl.listeners.*
+      import dcl.commands.utils.*
+      import dcl.music.*;
+      """;
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    Logger logger = (Logger) LoggerFactory.getLogger(DebugCommand.class);
+    Logger logger = LoggerFactory.getLogger(DebugCommand.class);
     try {
       shell.setProperty("args", event.getArgs());
       shell.setProperty("event", event);

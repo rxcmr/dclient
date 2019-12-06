@@ -54,7 +54,8 @@ public class KickCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    event.getMessage().getMentionedMembers().get(0).kick().queue();
+    event.getChannel().sendTyping().queue(
+      v -> event.getMessage().getMentionedMembers().get(0).kick().queue()
+    );
   }
 }

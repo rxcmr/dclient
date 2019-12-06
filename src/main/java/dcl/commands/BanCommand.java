@@ -45,6 +45,7 @@ import org.jetbrains.annotations.NotNull;
 public class BanCommand extends Command {
   public BanCommand() {
     name = "ban";
+    aliases = new String[]{"hackban"};
     arguments = "**<user>** **<amount>** (in days)";
     help = "Bans a user";
     botPermissions = new Permission[]{Permission.BAN_MEMBERS};

@@ -54,7 +54,8 @@ public class SkipTrackCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    loader.skipTrack(event.getTextChannel());
+    event.getChannel().sendTyping().queue(
+      v -> loader.skipTrack(event.getTextChannel())
+    );
   }
 }

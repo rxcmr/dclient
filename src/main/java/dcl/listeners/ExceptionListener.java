@@ -32,13 +32,13 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import dcl.Skeleton;
 import dcl.commands.utils.DirectMessage;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.ExceptionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  */
 @SuppressWarnings("unused")
 public class ExceptionListener extends ListenerAdapter {
-  private Logger logger = (Logger) LoggerFactory.getLogger(ExceptionListener.class);
+  private Logger logger = LoggerFactory.getLogger(ExceptionListener.class);
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
       ? (c == null
