@@ -39,8 +39,11 @@ package dcl.commands.utils;
 public enum SQLItemMode {
   ALL,
   KEY,
-  VALUE,
+  LVALUE,
+  GVALUE,
   ID,
-  KNI
+  GID,
+  KNI,
+  NULL
 }
 

@@ -58,6 +58,7 @@ class Tag {
   public String tagKey;
   public String tagValue;
   public String ownerID;
+  public String guildID;
 
   public String getTagKey() {
     return tagKey;
@@ -83,10 +84,19 @@ class Tag {
     this.ownerID = ownerID;
   }
 
-  Tag set(String tagKey, String tagValue, String ownerID) {
+  public String getGuildID() {
+    return guildID;
+  }
+
+  public void setGuildID(String guildID) {
+    this.guildID = guildID;
+  }
+
+  Tag set(String tagKey, String tagValue, String ownerID, String guildID) {
     this.tagKey = tagKey;
     this.tagValue = tagValue;
     this.ownerID = ownerID;
+    this.guildID = guildID;
     return this;
   }
 }
@@ -102,7 +112,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     category = Categories.Utilities;
     arguments = "**<modifier>** **<name>** **<content>**";
     help = "JagTag like in Spectra";
-    File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\JagTag.sqlite");
+    final File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\JagTag.sqlite");
     if (!db.exists()) {
       if (db.createNewFile()) {
         createDatabase();
@@ -118,28 +128,32 @@ public class JagTagCommand extends Command implements SQLUtils {
   protected void execute(@NotNull CommandEvent event) {
     String[] args = event.getArgs().split("\\s+");
     String authorID = event.getAuthor().getId();
+    String guildID = event.getGuild().getId();
     Parser jagtag = JagTag.newDefaultBuilder().build();
-
-    event.getChannel().sendTyping().queue(
-      v -> {
-        try {
-          switch (args[0]) {
+    event.getChannel().sendTyping().queue();
+    try {
+      switch (args[0]) {
+        case "global", "g" -> {
+          switch (args[1]) {
             case "create", "new", "add" -> {
-              if (args[1].matches(
-                "(create|new|add|delete|remove|edit|modify|raw|cblkraw)")
+              if (args[2].matches(
+                "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
               ) throw new CommandException("Be unique, these are reserved command parameters.");
               select(SQLItemMode.ALL);
               StringJoiner sj = new StringJoiner(" ");
-              Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+              Arrays.stream(args)
+                .filter(s -> !s.equals(args[0]) && !s.equals(args[1]) && !s.equals(args[2]))
+                .forEachOrdered(sj::add);
               String value = sj.toString();
-              insert(args[1], value, authorID);
+              insert(SQLItemMode.GVALUE, args[2], value, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
               tags.addAll(tagCache);
             }
             case "delete", "remove" -> {
               select(SQLItemMode.ALL);
-              delete(args[1], authorID);
+              if (exists(SQLItemMode.GVALUE, args[2])) delete(SQLItemMode.LVALUE, args[2], authorID);
+              else throw new CommandException("Deleting something that does not exist.");
               select(SQLItemMode.ALL);
               tags.clear();
               tags.addAll(tagCache);
@@ -147,42 +161,85 @@ public class JagTagCommand extends Command implements SQLUtils {
             case "edit", "modify" -> {
               select(SQLItemMode.ALL);
               StringJoiner sj = new StringJoiner(" ");
-              Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+              Arrays.stream(args)
+                .filter(s -> !s.equals(args[0]) && !s.equals(args[1]) && !s.equals(args[2]))
+                .forEachOrdered(sj::add);
               String value = sj.toString();
-              update(SQLItemMode.VALUE, args[1], value);
+              update(SQLItemMode.GVALUE, args[2], value, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
               tags.addAll(tagCache);
             }
-            case "raw" -> {
-              for (Tag t : tags) {
-                if (t.getTagKey().equals(args[1])) {
-                  event.reply(t.getTagValue());
-                }
-              }
-            }
-            case "cblkraw" -> {
-              for (Tag t : tags) {
-                if (t.getTagKey().equals(args[1])) {
-                  event.reply("```" + t.getTagValue() + "```");
-                }
-              }
-            }
-            default -> {
-              for (Tag t : tags) {
-                if (t.getTagKey().equals(args[0])) {
-                  event.reply(jagtag.parse(t.getTagValue()));
-                }
-              }
-            }
           }
-        } catch (SQLException s) {
-          throw new CommandException(s.getMessage());
+        }
+        case "create", "new", "add" -> {
+          if (args[1].matches(
+            "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
+          ) throw new CommandException("Be unique, these are reserved command parameters.");
+          select(SQLItemMode.ALL);
+          StringJoiner sj = new StringJoiner(" ");
+          Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+          String value = sj.toString();
+          insert(SQLItemMode.LVALUE, args[1], value, authorID, guildID);
+          select(SQLItemMode.ALL);
+          tags.clear();
+          tags.addAll(tagCache);
+        }
+        case "delete", "remove" -> {
+          select(SQLItemMode.ALL);
+          if (exists(SQLItemMode.LVALUE, args[1], guildID)) delete(SQLItemMode.LVALUE, args[1], authorID, guildID);
+          else throw new CommandException("Deleting something that does not exist.");
+          select(SQLItemMode.ALL);
+          tags.clear();
+          tags.addAll(tagCache);
+        }
+        case "edit", "modify" -> {
+          select(SQLItemMode.ALL);
+          StringJoiner sj = new StringJoiner(" ");
+          Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
+          String value = sj.toString();
+          update(SQLItemMode.LVALUE, args[1], value, authorID, guildID);
+          select(SQLItemMode.ALL);
+          tags.clear();
+          tags.addAll(tagCache);
+        }
+        case "raw" -> {
+          for (Tag t : tags) {
+            if (t.getTagKey().equals(args[0])) {
+              if (t.getGuildID().equals(guildID)) {
+                event.reply(t.getTagValue());
+              } else if (t.getGuildID().equals("GLOBAL")) {
+                event.reply(t.getTagValue());
+              } else throw new CommandException("Tag not found.");
+            } else throw new CommandException("Tag not found.");
+          }
+        }
+        case "cblkraw" -> {
+          for (Tag t : tags) {
+            if (t.getTagKey().equals(args[0])) {
+              if (t.getGuildID().equals(guildID)) {
+                event.reply("```" + t.getTagValue() + "```");
+              } else if (t.getGuildID().equals("GLOBAL")) {
+                event.reply("```" + t.getTagValue() + "```");
+              } else throw new CommandException("Tag not found.");
+            } else throw new CommandException("Tag not found.");
+          }
+        }
+        default -> {
+          for (Tag t : tags) {
+            if (t.getTagKey().equals(args[0])) {
+              if (t.getGuildID().equals(guildID)) {
+                event.reply(jagtag.parse(t.getTagValue()));
+              } else if (t.getGuildID().equals("GLOBAL")) {
+                event.reply(jagtag.parse(t.getTagValue()));
+              } else throw new CommandException("Tag not found.");
+            } else throw new CommandException("Tag not found.");
+          }
         }
       }
-    );
-
-
+    } catch (SQLException s) {
+      throw new CommandException(s.getMessage());
+    }
   }
 
   @Override
@@ -203,10 +260,12 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public synchronized void createTable() throws SQLException {
     String sql = """
+      PRAGMA auto_vacuum = FULL
       CREATE TABLE IF NOT EXISTS tags (
       tagKey TEXT NOT NULL UNIQUE PRIMARY KEY,
       tagValue TEXT NOT NULL,
-      ownerID TEXT NOT NULL
+      ownerID TEXT NOT NULL,
+      guildID TEXT NOT NULL
       );
       """;
 
@@ -216,33 +275,46 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized void insert(@NotNull String... args) throws SQLException {
-    if (args.length != 3) throw new SQLException("Missing parameters.");
-    String sql = "INSERT INTO tags(tagKey, tagValue, ownerID) VALUES(?, ?, ?)";
+  public synchronized void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+    if (args.length < 3) throw new SQLException("Missing parameters.");
+    String sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)";
     try (Connection connection = connect()) {
       try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-        preparedStatement.setString(1, args[0]);
-        preparedStatement.setString(2, args[1]);
-        preparedStatement.setString(3, args[2]);
-        preparedStatement.executeUpdate();
+        switch (mode) {
+          case LVALUE -> {
+            preparedStatement.setString(1, args[0]);
+            preparedStatement.setString(2, args[1]);
+            preparedStatement.setString(3, args[2]);
+            preparedStatement.setString(4, args[3]);
+            preparedStatement.executeUpdate();
+          }
+          case GVALUE -> {
+            preparedStatement.setString(1, args[0]);
+            preparedStatement.setString(2, args[1]);
+            preparedStatement.setString(3, args[2]);
+            preparedStatement.setString(4, "GLOBAL");
+            preparedStatement.executeUpdate();
+          }
+        }
       }
     }
   }
 
   @Override
-  public synchronized void select(@NotNull SQLItemMode mode) throws SQLException {
+  public synchronized void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     switch (mode) {
       case ALL -> {
-        String sql = "SELECT tagKey, tagValue, ownerID FROM tags";
+        String sql = "SELECT tagKey, tagValue, ownerID, guildID FROM tags WHERE guildID LIKE '%'";
         try (Connection connection = connect();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(sql);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
           tagCache.clear();
           while (resultSet.next()) {
             tagCache.add(new Tag().set(
               resultSet.getString("tagKey"),
               resultSet.getString("tagValue"),
-              resultSet.getString("ownerID")
+              resultSet.getString("ownerID"),
+              resultSet.getString("guildID")
               )
             );
           }
@@ -262,7 +334,7 @@ public class JagTagCommand extends Command implements SQLUtils {
           }
         }
       }
-      case VALUE -> {
+      case LVALUE, GVALUE -> {
         String sql = "SELECT tagValue FROM tags";
         try (Connection connection = connect();
              Statement statement = connection.createStatement();
@@ -290,6 +362,20 @@ public class JagTagCommand extends Command implements SQLUtils {
           }
         }
       }
+      case GID -> {
+        String sql = "SELECT guildID FROM tags";
+        try (Connection connection = connect();
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery(sql)) {
+          tagCache.clear();
+          while (resultSet.next()) {
+            for (Tag t : tags) {
+              if (t.getOwnerID().equals(resultSet.getString("guildID")))
+                tagCache.add(t);
+            }
+          }
+        }
+      }
       case KNI -> {
         String sql = "SELECT tagKey, ownerID FROM tags";
         try (Connection connection = connect();
@@ -310,27 +396,80 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized void delete(@NotNull String... args) throws SQLException {
-    if (args.length != 2) return;
-    String sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ?";
+  public synchronized void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+    if (args.length < 2) return;
+    String sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
     try (Connection connection = connect();
          PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-      preparedStatement.setString(1, args[0]);
-      preparedStatement.setString(2, args[1]);
-      preparedStatement.executeUpdate();
+      switch (mode) {
+        case LVALUE -> {
+          preparedStatement.setString(1, args[0]);
+          preparedStatement.setString(2, args[1]);
+          preparedStatement.setString(3, args[2]);
+          preparedStatement.executeUpdate();
+        }
+        case GVALUE -> {
+          preparedStatement.setString(1, args[0]);
+          preparedStatement.setString(2, args[1]);
+          preparedStatement.setString(3, "GLOBAL");
+          preparedStatement.executeUpdate();
+        }
+      }
     }
   }
 
   @Override
   public synchronized void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
-    if (args.length != 2) return;
-    String sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ?";
+    if (args.length < 3) return;
+    String sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
     try (Connection connection = connect();
          PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
-      if (mode == SQLItemMode.VALUE) {
-        preparedStatement.setString(1, args[1]);
-        preparedStatement.setString(2, args[0]);
-        preparedStatement.executeUpdate();
+      switch (mode) {
+        case LVALUE -> {
+          preparedStatement.setString(1, args[1]);
+          preparedStatement.setString(2, args[0]);
+          preparedStatement.setString(3, args[2]);
+          preparedStatement.setString(4, args[3]);
+          preparedStatement.executeUpdate();
+        }
+        case GVALUE -> {
+          preparedStatement.setString(1, args[1]);
+          preparedStatement.setString(2, args[0]);
+          preparedStatement.setString(3, args[2]);
+          preparedStatement.setString(4, "GLOBAL");
+          preparedStatement.executeUpdate();
+        }
+      }
+    }
+  }
+
+  @Override
+  public boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+    String sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)";
+    boolean result;
+    switch (mode) {
+      case LVALUE -> {
+        try (Connection connection = connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+          preparedStatement.setString(1, args[0]);
+          preparedStatement.setString(2, args[1]);
+          try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            return resultSet.getInt(1) == 1;
+          }
+        }
+      }
+      case GVALUE -> {
+        try (Connection connection = connect();
+             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+          preparedStatement.setString(1, args[0]);
+          preparedStatement.setString(2, "GLOBAL");
+          try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            return resultSet.getInt(1) == 1;
+          }
+        }
+      }
+      default -> {
+        return false;
       }
     }
   }

@@ -39,7 +39,6 @@ import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManag
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.local.LocalAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
@@ -142,7 +141,6 @@ public class Loader {
       config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
     );
     manager.registerSourceManager(youtubeAudioSourceManager);
-    manager.registerSourceManager(new SoundCloudAudioSourceManager());
     manager.registerSourceManager(new TwitchStreamAudioSourceManager());
     manager.registerSourceManager(new BandcampAudioSourceManager());
     manager.registerSourceManager(new VimeoAudioSourceManager());

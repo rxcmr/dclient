@@ -48,11 +48,13 @@ public interface SQLUtils {
 
   void createTable() throws SQLException;
 
-  void insert(@NotNull String... args) throws SQLException;
+  void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
 
-  void select(@NotNull SQLItemMode mode) throws SQLException;
+  void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
 
-  void delete(@NotNull String... args) throws SQLException;
+  void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
 
   void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+
+  boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
 }

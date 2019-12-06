@@ -5,6 +5,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
+import dcl.commands.JagTagCommand;
 import dcl.commands.LatencyCommand;
 import dcl.commands.ShutdownCommand;
 import dcl.commands.TestCommand;
@@ -67,8 +68,14 @@ public class FleshListener implements CommandListener {
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\u274C").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
-    else if (command instanceof TestCommand) event.reply("```java\nTest complete.\n Threw: " + throwable + "\n```");
-    //else if (command instanceof UnloadListenerCommand) event.reply("Cannot unload the reload command.");
+    else if (command instanceof TestCommand) event.reply("""
+      ```java
+      Test complete.
+      Threw:
+       """ + throwable + """
+      ```
+      """);
+    else if (command instanceof JagTagCommand) event.reply(throwable.getMessage());
     else {
       event.reply(
         command.getArguments() == null
