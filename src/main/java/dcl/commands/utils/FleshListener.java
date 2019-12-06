@@ -72,7 +72,7 @@ public class FleshListener implements CommandListener {
       ```java
       Test complete.
       Threw:
-       """ + throwable + """
+      """ + throwable + """
       ```
       """);
     else if (command instanceof JagTagCommand) event.reply(throwable.getMessage());
