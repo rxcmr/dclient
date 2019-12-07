@@ -273,23 +273,25 @@ public class JagTagCommand extends Command implements SQLUtils {
     }
   }
 
-  private Parser buildParser(@NotNull CommandEvent event) {
-    return JagTag.newDefaultBuilder().addMethods(
-      Arrays.asList(
-        new Method("author", e -> event.getAuthor().getName()),
-        new Method("argslen", e -> String.valueOf(event.getArgs().split("\\s+").length - 1)),
+  private Parser buildParser(@NotNull Object event) {
+    if (event instanceof CommandEvent) {
+      return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
+        new Method("author", e -> ((CommandEvent) event).getAuthor().getName()),
+        new Method("argslen", e ->
+          String.valueOf(((CommandEvent) event).getArgs().split("\\s+").length - 1)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
-      )
-    ).build();
-  }
-
-  private Parser buildParser(@NotNull GuildMessageReceivedEvent event) {
-    return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
-      new Method("author", e -> event.getAuthor().getName()),
-      new Method("argslen", e -> String.valueOf(event.getMessage().getContentRaw().split("\\s+").length)),
-      new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
-      )
-    ).build();
+        )
+      ).build();
+    } else {
+      assert event instanceof GuildMessageReceivedEvent;
+      return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
+        new Method("author", e -> ((GuildMessageReceivedEvent) event).getAuthor().getName()),
+        new Method("argslen", e ->
+          String.valueOf(((GuildMessageReceivedEvent) event).getMessage().getContentRaw().split("\\s+").length)),
+        new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
+        )
+      ).build();
+    }
   }
 
   @Override
