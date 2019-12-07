@@ -69,8 +69,8 @@ public class ReadyEventListener extends ListenerAdapter {
       logger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Shard ID: " + shardInfo.getShardId());
       logger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + inviteURL);
       logger.info("|                            | Account type: " + jda.getAccountType());
-      logger.info("|    [version   4.0.0_70]    | WebSocket Ping: " + jda.getGatewayPing());
-      logger.info("|    [dcl version 1.6.0l]    | API Ping: " + api);
+      logger.info("|    [version   4.0.0_72]    | WebSocket Ping: " + jda.getGatewayPing());
+      logger.info("|    [dcl version 1.6.3l]    | API Ping: " + api);
       logger.info("|                            | Shards: " + relativeShardString);
     });
   }

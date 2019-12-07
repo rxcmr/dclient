@@ -34,6 +34,7 @@ package dcl.commands;
 
 
 import com.jagrosh.jagtag.JagTag;
+import com.jagrosh.jagtag.Method;
 import com.jagrosh.jagtag.Parser;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -41,12 +42,17 @@ import dcl.commands.utils.Categories;
 import dcl.commands.utils.CommandException;
 import dcl.commands.utils.SQLItemMode;
 import dcl.commands.utils.SQLUtils;
+import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.StringJoiner;
 
@@ -129,7 +135,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     String[] args = event.getArgs().split("\\s+");
     String authorID = event.getAuthor().getId();
     String guildID = event.getGuild().getId();
-    Parser jagtag = JagTag.newDefaultBuilder().build();
+    Parser jagtag = buildParser(event);
     event.getChannel().sendTyping().queue();
     try {
       switch (args[0]) {
@@ -140,11 +146,9 @@ public class JagTagCommand extends Command implements SQLUtils {
                 "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
               ) throw new CommandException("Be unique, these are reserved command parameters.");
               select(SQLItemMode.ALL);
-              StringJoiner sj = new StringJoiner(" ");
-              Arrays.stream(args)
-                .filter(s -> !s.equals(args[0]) && !s.equals(args[1]) && !s.equals(args[2]))
-                .forEachOrdered(sj::add);
-              String value = sj.toString();
+              StringJoiner stringJoiner = new StringJoiner(" ");
+              Arrays.stream(args).skip(3).forEachOrdered(stringJoiner::add);
+              String value = stringJoiner.toString();
               insert(SQLItemMode.GVALUE, args[2], value, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
@@ -160,11 +164,9 @@ public class JagTagCommand extends Command implements SQLUtils {
             }
             case "edit", "modify" -> {
               select(SQLItemMode.ALL);
-              StringJoiner sj = new StringJoiner(" ");
-              Arrays.stream(args)
-                .filter(s -> !s.equals(args[0]) && !s.equals(args[1]) && !s.equals(args[2]))
-                .forEachOrdered(sj::add);
-              String value = sj.toString();
+              StringJoiner stringJoiner = new StringJoiner(" ");
+              Arrays.stream(args).skip(3).forEachOrdered(stringJoiner::add);
+              String value = stringJoiner.toString();
               update(SQLItemMode.GVALUE, args[2], value, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
@@ -173,19 +175,21 @@ public class JagTagCommand extends Command implements SQLUtils {
           }
         }
         case "create", "new", "add" -> {
+          if (event.isFromType(ChannelType.PRIVATE)) throw new CommandException("Use the global parameter.");
           if (args[1].matches(
             "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
           ) throw new CommandException("Be unique, these are reserved command parameters.");
           select(SQLItemMode.ALL);
-          StringJoiner sj = new StringJoiner(" ");
-          Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
-          String value = sj.toString();
+          StringJoiner stringJoiner = new StringJoiner(" ");
+          Arrays.stream(args).skip(2).forEachOrdered(stringJoiner::add);
+          String value = stringJoiner.toString();
           insert(SQLItemMode.LVALUE, args[1], value, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
           tags.addAll(tagCache);
         }
         case "delete", "remove" -> {
+          if (event.isFromType(ChannelType.PRIVATE)) throw new CommandException("Use the global parameter.");
           select(SQLItemMode.ALL);
           if (exists(SQLItemMode.LVALUE, args[1], guildID)) delete(SQLItemMode.LVALUE, args[1], authorID, guildID);
           else throw new CommandException("Deleting something that does not exist.");
@@ -194,10 +198,11 @@ public class JagTagCommand extends Command implements SQLUtils {
           tags.addAll(tagCache);
         }
         case "edit", "modify" -> {
+          if (event.isFromType(ChannelType.PRIVATE)) throw new CommandException("Use the global parameter.");
           select(SQLItemMode.ALL);
-          StringJoiner sj = new StringJoiner(" ");
-          Arrays.stream(args).filter(s -> !s.equals(args[0]) && !s.equals(args[1])).forEachOrdered(sj::add);
-          String value = sj.toString();
+          StringJoiner stringJoiner = new StringJoiner(" ");
+          Arrays.stream(args).skip(2).forEachOrdered(stringJoiner::add);
+          String value = stringJoiner.toString();
           update(SQLItemMode.LVALUE, args[1], value, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
@@ -211,7 +216,7 @@ public class JagTagCommand extends Command implements SQLUtils {
               } else if (t.getGuildID().equals("GLOBAL")) {
                 event.reply(t.getTagValue());
               } else throw new CommandException("Tag not found.");
-            } else throw new CommandException("Tag not found.");
+            }
           }
         }
         case "cblkraw" -> {
@@ -222,8 +227,29 @@ public class JagTagCommand extends Command implements SQLUtils {
               } else if (t.getGuildID().equals("GLOBAL")) {
                 event.reply("```" + t.getTagValue() + "```");
               } else throw new CommandException("Tag not found.");
-            } else throw new CommandException("Tag not found.");
+            }
           }
+        }
+        case "eval" -> {
+          event.reply("Type `!!stop` to exit.");
+          String id = event.getChannel().getId();
+          event.getJDA().addEventListener(
+            new ListenerAdapter() {
+              @Override
+              public void onGuildMessageReceived(@NotNull GuildMessageReceivedEvent event) {
+                if (event.getAuthor().isBot() || event.getAuthor().isFake() || !event.getChannel().getId().equals(id))
+                  return;
+                event.getChannel().sendTyping().queue();
+                String[] message = event.getMessage().getContentRaw().split("\\s+");
+                StringJoiner stringJoiner = new StringJoiner(" ");
+                Arrays.stream(message).forEachOrdered(stringJoiner::add);
+                Parser parser = buildParser(event);
+                if (message[0].equals("!!stop"))
+                  event.getJDA().removeEventListener(this);
+                else event.getChannel().sendMessage(parser.parse(stringJoiner.toString())).queue();
+              }
+            }
+          );
         }
         default -> {
           for (Tag t : tags) {
@@ -233,13 +259,37 @@ public class JagTagCommand extends Command implements SQLUtils {
               } else if (t.getGuildID().equals("GLOBAL")) {
                 event.reply(jagtag.parse(t.getTagValue()));
               } else throw new CommandException("Tag not found.");
-            } else throw new CommandException("Tag not found.");
+            }
           }
         }
       }
     } catch (SQLException s) {
-      throw new CommandException(s.getMessage());
+      event.reply(s.getMessage());
+      switch (s.getErrorCode()) {
+        case 1 -> throw new CommandException("SQLite: column doesn't exist");
+        case 19 -> throw new CommandException("Tag exists or missing parameters.");
+        default -> throw new CommandException(s.getMessage() + s.getMessage());
+      }
     }
+  }
+
+  private Parser buildParser(@NotNull CommandEvent event) {
+    return JagTag.newDefaultBuilder().addMethods(
+      Arrays.asList(
+        new Method("author", e -> event.getAuthor().getName()),
+        new Method("argslen", e -> String.valueOf(event.getArgs().split("\\s+").length - 1)),
+        new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
+      )
+    ).build();
+  }
+
+  private Parser buildParser(@NotNull GuildMessageReceivedEvent event) {
+    return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
+      new Method("author", e -> event.getAuthor().getName()),
+      new Method("argslen", e -> String.valueOf(event.getMessage().getContentRaw().split("\\s+").length)),
+      new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
+      )
+    ).build();
   }
 
   @Override
@@ -260,13 +310,15 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public synchronized void createTable() throws SQLException {
     String sql = """
-      PRAGMA auto_vacuum = FULL
       CREATE TABLE IF NOT EXISTS tags (
-      tagKey TEXT NOT NULL UNIQUE PRIMARY KEY,
+      tagKey TEXT NOT NULL,
       tagValue TEXT NOT NULL,
       ownerID TEXT NOT NULL,
-      guildID TEXT NOT NULL
+      guildID TEXT NOT NULL,
+      UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
+      CHECK (length (tagKey) != 0 AND length (tagValue) != 0)
       );
+      PRAGMA tags.auto_vacuum = FULL;
       """;
 
     try (Connection connection = connect()) {
