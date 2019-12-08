@@ -46,7 +46,6 @@ import java.util.Objects;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class QueryUserCommand extends Command {
   private EmbedBuilder embedBuilder = new EmbedBuilder();
 
@@ -56,7 +55,7 @@ public class QueryUserCommand extends Command {
     cooldown = 10;
     arguments = "**<user>**";
     help = "Information about a user.";
-    category = Categories.Utilities;
+    category = Categories.UTILITIES.getCategory();
   }
 
   @Override

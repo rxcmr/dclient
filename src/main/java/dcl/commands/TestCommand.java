@@ -45,7 +45,6 @@ import java.util.List;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class TestCommand extends Command {
   public TestCommand() {
     name = "test";
@@ -53,7 +52,7 @@ public class TestCommand extends Command {
     help = "???";
     arguments = "<**???**>";
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     hidden = true;
   }
 

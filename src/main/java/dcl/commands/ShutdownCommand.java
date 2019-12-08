@@ -35,28 +35,25 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
+import dcl.utils.GLogger;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class ShutdownCommand extends Command {
   public ShutdownCommand() {
     name = "shutdown";
     help = "Shutdown JDA, and process running it.";
     ownerCommand = true;
     guildOnly = false;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     hidden = true;
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    Logger logger = LoggerFactory.getLogger(ShutdownCommand.class);
-    logger.warn("[!!] Shutting down.");
+    GLogger.warn("[!!] Shutting down.");
     event.getJDA().shutdownNow();
   }
 }

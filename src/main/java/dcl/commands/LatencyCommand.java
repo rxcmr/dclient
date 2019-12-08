@@ -46,7 +46,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class LatencyCommand extends Command {
   public MessageEmbed embed;
 
@@ -56,7 +55,7 @@ public class LatencyCommand extends Command {
     help = "REST API ping and WebSocket ping.";
     guildOnly = false;
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     hidden = true;
   }
 

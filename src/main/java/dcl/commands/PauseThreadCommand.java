@@ -35,22 +35,18 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
+import dcl.utils.GLogger;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class PauseThreadCommand extends Command {
-  private Logger logger = LoggerFactory.getLogger(PauseThreadCommand.class);
-
   public PauseThreadCommand() {
     name = "pausethread";
     aliases = new String[]{"halt"};
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     arguments = "**<amount>** (seconds)";
     help = "Stops the current thread for a specific amount in time.";
   }
@@ -62,7 +58,7 @@ public class PauseThreadCommand extends Command {
     try {
       Thread.sleep(Integer.parseInt(event.getArgs()) * 1000);
     } catch (InterruptedException e) {
-      logger.error("Thread paused.", e);
+      GLogger.error("Thread paused.", e);
     }
     event.reply(String.format("Resumed after %s seconds.", (System.currentTimeMillis() - start) / 1000));
   }

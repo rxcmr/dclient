@@ -32,11 +32,9 @@ package dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -45,7 +43,6 @@ import java.nio.charset.StandardCharsets;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class GoogleSearchResult {
-  private static Logger logger = (Logger) LoggerFactory.getLogger(GoogleSearchResult.class);
   private String title, content, url;
 
   @NotNull

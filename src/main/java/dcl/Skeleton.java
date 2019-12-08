@@ -41,6 +41,7 @@ import dcl.commands.utils.Descriptions;
 import dcl.commands.utils.DirectMessage;
 import dcl.commands.utils.FleshListener;
 import dcl.utils.CloudFlareDNS;
+import dcl.utils.GLogger;
 import io.github.classgraph.ClassGraph;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -57,8 +58,6 @@ import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
@@ -77,7 +76,6 @@ public class Skeleton {
   );
   private ShardManager shardManager;
   private static CommandClient commandClient;
-  private final Logger logger = LoggerFactory.getLogger(Skeleton.class);
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
   private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
@@ -107,7 +105,7 @@ public class Skeleton {
     this.listeners = listeners;
     this.poolSize = poolSize;
     this.threads = threads;
-    logger.info("[!] Constructor initialized");
+    GLogger.info("[!] Constructor initialized");
   }
 
   @SuppressWarnings("unused")
@@ -139,33 +137,33 @@ public class Skeleton {
       .get(0)
       .getFields();
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
-    if (args.equalsIgnoreCase(Categories.Utilities.getName())) {
+    if (args.equalsIgnoreCase(Categories.UTILITIES.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.Utilities.getName()),
-        String.format("**Description:** *%s* ", Descriptions.UTILITIES.get()),
+        String.format("**%s: **", Categories.UTILITIES.getName()),
+        String.format("**Description:** *%s* ", Descriptions.UTILITIES.getDescription()),
         false
       );
-      streamCommands(Categories.Utilities);
-    } else if (args.equalsIgnoreCase(Categories.Music.getName())) {
+      streamCommands(Categories.UTILITIES.getCategory());
+    } else if (args.equalsIgnoreCase(Categories.MUSIC.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.Music.getName()),
-        String.format("**Description:** *%s* ", Descriptions.MUSIC.get()),
+        String.format("**%s: **", Categories.MUSIC.getName()),
+        String.format("**Description:** *%s* ", Descriptions.MUSIC.getDescription()),
         false);
-      streamCommands(Categories.Music);
-    } else if (args.equalsIgnoreCase(Categories.Moderation.getName())) {
+      streamCommands(Categories.MUSIC.getCategory());
+    } else if (args.equalsIgnoreCase(Categories.MODERATION.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.Moderation.getName()),
-        String.format("**Description:** *%s* ", Descriptions.MODERATION.get()),
+        String.format("**%s: **", Categories.MODERATION.getName()),
+        String.format("**Description:** *%s* ", Descriptions.MODERATION.getDescription()),
         false
       );
-      streamCommands(Categories.Moderation);
-    } else if (args.equalsIgnoreCase(Categories.Owner.getName()) && author.getId().equals(ID)) {
+      streamCommands(Categories.MODERATION.getCategory());
+    } else if (args.equalsIgnoreCase(Categories.OWNER.getName()) && author.getId().equals(ID)) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.Owner.getName()),
-        String.format("**Description:** *%s* ", Descriptions.OWNER.get()),
+        String.format("**%s: **", Categories.OWNER.getName()),
+        String.format("**Description:** *%s* ", Descriptions.OWNER.getDescription()),
         false
       );
-      streamCommands(Categories.Owner);
+      streamCommands(Categories.OWNER.getCategory());
     } else if (args.isEmpty()) {
       Arrays.stream(categories).forEachOrdered(
         category -> embedBuilder.addField(
@@ -199,13 +197,13 @@ public class Skeleton {
   }
 
   private void init() throws Exception {
-    logger.info("[#] Building JDA v4.0.0");
+    GLogger.info("[#] Building JDA v4.0.0");
     buildShardManager();
-    logger.info("[#] JDA Running");
-    logger.info(String.format(shards > 1 ? "[#] %s shards active" : "[#] %s shard active", shards));
-    commands.forEach(command -> logger.info(String.format("[#] Command loaded: %s", command)));
+    GLogger.info("[#] JDA Running");
+    GLogger.info(String.format(shards > 1 ? "[#] %s shards active" : "[#] %s shard active", shards));
+    commands.forEach(command -> GLogger.info(String.format("[#] Command loaded: %s", command)));
     if (listeners == null) return;
-    listeners.forEach(eventListener -> logger.info("[#] EventListener loaded: " + eventListener));
+    listeners.forEach(eventListener -> GLogger.info("[#] EventListener loaded: " + eventListener));
   }
 
   void run() {
@@ -213,10 +211,10 @@ public class Skeleton {
       try {
         init();
       } catch (Exception e) {
-        logger.error("[!!!] LoginException occurred: ", e);
+        GLogger.error("[!!!] LoginException occurred: ", e);
         if (e instanceof IllegalArgumentException)
-          logger.warn("[!!!] Commands / EventListeners loading failed!");
-        logger.warn("[!!!] Cannot connect to REST API, CloudFlare DNS, or invalid token.");
+          GLogger.warn("[!!!] Commands / EventListeners loading failed!");
+        GLogger.warn("[!!!] Cannot connect to REST API, CloudFlare DNS, or invalid token.");
       }
     });
   }
@@ -241,7 +239,7 @@ public class Skeleton {
   }
 
   private void buildCommandClient() {
-    logger.info("[#] Building CommandClient");
+    GLogger.info("[#] Building CommandClient");
     commandClientBuilder
       .setOwnerId(ID)
       .setPrefix(prefix)
@@ -257,8 +255,7 @@ public class Skeleton {
   private static class DefaultListener extends ListenerAdapter {
     @Override
     public void onReady(@Nonnull ReadyEvent event) {
-      Logger logger = LoggerFactory.getLogger(this.getClass());
-      logger.info("[#] Ready");
+      GLogger.info("[#] Ready");
     }
   }
 }

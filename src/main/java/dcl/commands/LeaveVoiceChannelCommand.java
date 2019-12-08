@@ -41,13 +41,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class LeaveVoiceChannelCommand extends Command {
   public LeaveVoiceChannelCommand() {
     name = "leave";
     botPermissions = new Permission[]{Permission.VOICE_CONNECT};
     help = "Leaves the voice channel.";
-    category = Categories.Music;
+    category = Categories.MUSIC.getCategory();
   }
 
   @Override

@@ -42,7 +42,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class PlayTrackCommand extends Command {
   private final Loader loader;
 
@@ -51,7 +50,7 @@ public class PlayTrackCommand extends Command {
     arguments = "**<URL>**";
     botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
     help = "Plays a track from URL.";
-    category = Categories.Music;
+    category = Categories.MUSIC.getCategory();
     loader = new Loader();
   }
 

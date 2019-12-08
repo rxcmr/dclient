@@ -41,7 +41,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class BanCommand extends Command {
   public BanCommand() {
     name = "ban";
@@ -50,7 +49,7 @@ public class BanCommand extends Command {
     help = "Bans a user";
     botPermissions = new Permission[]{Permission.BAN_MEMBERS};
     userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    category = Categories.Moderation;
+    category = Categories.MODERATION.getCategory();
   }
 
   @Override

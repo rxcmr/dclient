@@ -1,6 +1,5 @@
 package dcl.commands.utils;
 
-import ch.qos.logback.classic.Logger;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
@@ -9,9 +8,9 @@ import dcl.commands.JagTagCommand;
 import dcl.commands.LatencyCommand;
 import dcl.commands.ShutdownCommand;
 import dcl.commands.TestCommand;
+import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
 
@@ -51,15 +50,14 @@ import java.util.Objects;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class FleshListener implements CommandListener {
-  private Logger logger = (Logger) LoggerFactory.getLogger(FleshListener.class);
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
       ? (c == null
-      ? d -> d.sendMessage((String) a).queue(e -> logger.info(e.getContentRaw().replace("```", "")))
-      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw().replace("```", ""))))
+      ? d -> d.sendMessage((String) a).queue(e -> GLogger.info(e.getContentRaw().replace("```", "")))
+      : d -> d.sendMessage(a + c).queue(e -> GLogger.info(e.getContentRaw().replace("```", ""))))
       : (c == null
-      ? d -> d.sendMessage(a.toString()).queue(e -> logger.info(e.getContentRaw().replace("```", "")))
-      : d -> d.sendMessage(a + c).queue(e -> logger.info(e.getContentRaw().replace("```", ""))))
+      ? d -> d.sendMessage(a.toString()).queue(e -> GLogger.info(e.getContentRaw().replace("```", "")))
+      : d -> d.sendMessage(a + c).queue(e -> GLogger.info(e.getContentRaw().replace("```", ""))))
   );
 
   @Override
@@ -93,7 +91,7 @@ public class FleshListener implements CommandListener {
       if (command instanceof ShutdownCommand) return;
       event.getMessage().addReaction("\u2705").queue();
     } catch (Exception e) {
-      logger.warn(e.getCause().toString());
+      GLogger.warn(e.getCause().toString());
     }
   }
 

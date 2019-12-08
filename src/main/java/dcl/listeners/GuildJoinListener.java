@@ -41,7 +41,6 @@ import java.util.Objects;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class GuildJoinListener extends ListenerAdapter {
   @Override
   public void onGuildJoin(@NotNull GuildJoinEvent event) {

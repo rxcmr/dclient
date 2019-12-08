@@ -37,10 +37,23 @@ import com.jagrosh.jdautilities.command.Command;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class Categories {
-  public static Command.Category
-    Owner = new Command.Category("Owner"),
-    Moderation = new Command.Category("Moderation"),
-    Utilities = new Command.Category("Utilities"),
-    Music = new Command.Category("Music");
+public enum Categories {
+  OWNER(new Command.Category("Owner")),
+  MODERATION(new Command.Category("Moderation")),
+  UTILITIES(new Command.Category("Utilities")),
+  MUSIC(new Command.Category("Music"));
+
+  private final Command.Category category;
+
+  Categories(Command.Category category) {
+    this.category = category;
+  }
+
+  public Command.Category getCategory() {
+    return category;
+  }
+
+  public String getName() {
+    return category.getName();
+  }
 }

@@ -35,20 +35,18 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
+import dcl.utils.GLogger;
 import groovy.lang.GroovyShell;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class DebugCommand extends Command {
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final GroovyShell shell;
@@ -61,7 +59,7 @@ public class DebugCommand extends Command {
     help = "JDA evaluator using GroovyShell";
     arguments = "**<code>**";
     hidden = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     shell = new GroovyShell();
     libs = """
       import java.io.*
@@ -83,7 +81,6 @@ public class DebugCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    Logger logger = LoggerFactory.getLogger(DebugCommand.class);
     try {
       shell.setProperty("args", event.getArgs());
       shell.setProperty("event", event);
@@ -93,7 +90,7 @@ public class DebugCommand extends Command {
       shell.setProperty("guild", event.getGuild());
       shell.setProperty("member", event.getMember());
       shell.setProperty("user", event.getMember().getUser());
-      shell.setProperty("logger", logger);
+      shell.setProperty("logger", GLogger.class);
 
       String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
       Object out = shell.evaluate(script);

@@ -34,17 +34,15 @@ package dcl.listeners;
 
 import dcl.Skeleton;
 import dcl.commands.utils.DirectMessage;
+import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.DisconnectEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class DisconnectListener extends ListenerAdapter {
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
@@ -59,9 +57,8 @@ public class DisconnectListener extends ListenerAdapter {
   @Override
   public void onDisconnect(@NotNull DisconnectEvent event) {
     User owner = event.getJDA().getUserById(Skeleton.ID);
-    Logger logger = LoggerFactory.getLogger(DisconnectListener.class);
-    logger.warn("Disconnected.");
-    logger.info("Attempting to reconnect.");
+    GLogger.warn("Disconnected.");
+    GLogger.info("Attempting to reconnect.");
     assert owner != null;
     dm.send("Disconnected!", owner, null);
   }

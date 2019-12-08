@@ -43,7 +43,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class PurgeCommand extends Command {
   public PurgeCommand() {
     name = "purge";
@@ -54,7 +53,7 @@ public class PurgeCommand extends Command {
     userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
     cooldown = 5;
     help = "Purges [1-100] messages.";
-    category = Categories.Utilities;
+    category = Categories.UTILITIES.getCategory();
   }
 
   @Override

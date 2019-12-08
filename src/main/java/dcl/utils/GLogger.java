@@ -1,5 +1,4 @@
-package dcl.commands;
-
+package dcl.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,44 +31,33 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class JavadocCommand extends Command {
-  public JavadocCommand() {
-    name = "javadoc";
-    aliases = new String[]{"docs"};
-    arguments = "**<package>** **<class>**";
-    help = "Gets the URL of Javadocs for JDK 13";
-    category = Categories.UTILITIES.getCategory();
+@SuppressWarnings("unused")
+public class GLogger {
+  private static StackWalker.Option retainReference = StackWalker.Option.RETAIN_CLASS_REFERENCE;
+
+  public static void info(String msg) {
+    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).info(msg);
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
-    if (args.length < 2) throw new IllegalArgumentException();
+  public static void warn(String msg) {
+    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).warn(msg);
+  }
 
-    String url = String.format(
-      "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/java/%s/%s.html", args[0], args[1]
-    );
-    OkHttpClient okHttpClient = new OkHttpClient();
-    Request request = new Request.Builder().url(url).head().build();
+  public static void error(String msg) {
+    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).error(msg);
+  }
 
-    try (Response response = okHttpClient.newCall(request).execute()) {
-      if (response.code() == 404) event.reply("Not found.");
-      else event.reply(url);
-    } catch (IOException e) {
-      event.reply("Something went wrong...");
-    }
+  public static void error(String msg, Exception e) {
+    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).error(msg, e);
+  }
+
+  public static void debug(String msg) {
+    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).debug(msg);
   }
 }

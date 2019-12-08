@@ -47,12 +47,11 @@ import java.util.List;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class GoogleSearchCommand extends Command {
   public GoogleSearchCommand() {
     name = "google";
     aliases = new String[]{"search"};
-    category = Categories.Utilities;
+    category = Categories.UTILITIES.getCategory();
     cooldown = 10;
     arguments = "**<query>**";
     help = "The Google Search API";

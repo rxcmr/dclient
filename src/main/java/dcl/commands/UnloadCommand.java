@@ -42,13 +42,12 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class UnloadCommand extends Command {
   public UnloadCommand() {
     name = "unload";
     arguments = "**<command>**";
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override

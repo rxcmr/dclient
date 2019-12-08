@@ -41,7 +41,6 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class KickCommand extends Command {
   public KickCommand() {
     name = "kick";
@@ -49,7 +48,7 @@ public class KickCommand extends Command {
     help = "Kicks a user";
     botPermissions = new Permission[]{Permission.KICK_MEMBERS};
     userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-    category = Categories.Moderation;
+    category = Categories.MODERATION.getCategory();
   }
 
   @Override

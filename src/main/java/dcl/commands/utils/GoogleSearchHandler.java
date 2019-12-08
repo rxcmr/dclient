@@ -32,7 +32,6 @@ package dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -41,7 +40,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -63,7 +61,6 @@ public class GoogleSearchHandler {
   private static String googleAPIKey = null;
   private static LocalDateTime startingDate = null;
   private static int APIUsageCounter = 0;
-  private static Logger logger = (Logger) LoggerFactory.getLogger(GoogleSearchHandler.class);
 
   public static void init(String googleAPIKey) {
     GoogleSearchHandler.googleAPIKey = googleAPIKey;

@@ -41,14 +41,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class SkipTrackCommand extends Command {
   private final Loader loader;
 
   public SkipTrackCommand() {
     name = "skip";
     help = "Skips current playing track.";
-    category = Categories.Music;
+    category = Categories.MUSIC.getCategory();
     loader = new Loader();
   }
 

@@ -40,14 +40,13 @@ import org.jetbrains.annotations.NotNull;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class ShardCommand extends Command {
   public ShardCommand() {
     name = "shardinfo";
     aliases = new String[]{"shards"};
     help = "Sharding info.";
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
     hidden = true;
   }
 

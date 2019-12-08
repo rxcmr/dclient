@@ -42,6 +42,7 @@ import dcl.commands.utils.Categories;
 import dcl.commands.utils.CommandException;
 import dcl.commands.utils.SQLItemMode;
 import dcl.commands.utils.SQLUtils;
+import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -107,7 +108,6 @@ class Tag {
   }
 }
 
-@SuppressWarnings("unused")
 public class JagTagCommand extends Command implements SQLUtils {
   private final HashSet<Tag> tags = new HashSet<>();
   private final HashSet<Tag> tagCache = new HashSet<>();
@@ -115,7 +115,7 @@ public class JagTagCommand extends Command implements SQLUtils {
   public JagTagCommand() throws SQLException, IOException {
     name = "jagtag";
     aliases = new String[]{"tag", "t"};
-    category = Categories.Utilities;
+    category = Categories.UTILITIES.getCategory();
     arguments = "**<modifier>** **<name>** **<content>**";
     help = "JagTag like in Spectra";
     final File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\JagTag.sqlite");
@@ -277,7 +277,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     if (event instanceof CommandEvent) {
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
         new Method("author", e -> ((CommandEvent) event).getAuthor().getName()),
-        new Method("argslen", e ->
+        new Method("strlen", e ->
           String.valueOf(((CommandEvent) event).getArgs().split("\\s+").length - 1)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
         )
@@ -286,7 +286,7 @@ public class JagTagCommand extends Command implements SQLUtils {
       assert event instanceof GuildMessageReceivedEvent;
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
         new Method("author", e -> ((GuildMessageReceivedEvent) event).getAuthor().getName()),
-        new Method("argslen", e ->
+        new Method("strlen", e ->
           String.valueOf(((GuildMessageReceivedEvent) event).getMessage().getContentRaw().split("\\s+").length)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
         )
@@ -305,6 +305,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     try (Connection connection = connect()) {
       if (connection != null) {
         DatabaseMetaData metaData = connection.getMetaData();
+        GLogger.info(metaData.getDriverName());
       }
     }
   }
@@ -313,12 +314,12 @@ public class JagTagCommand extends Command implements SQLUtils {
   public synchronized void createTable() throws SQLException {
     String sql = """
       CREATE TABLE IF NOT EXISTS tags (
-      tagKey TEXT NOT NULL,
-      tagValue TEXT NOT NULL,
-      ownerID TEXT NOT NULL,
-      guildID TEXT NOT NULL,
-      UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
-      CHECK (length (tagKey) != 0 AND length (tagValue) != 0)
+        tagKey TEXT NOT NULL,
+        tagValue TEXT NOT NULL,
+        ownerID TEXT NOT NULL,
+        guildID TEXT NOT NULL,
+        UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
+        CHECK (length (tagKey) != 0 AND length (tagValue) != 0)
       );
       PRAGMA tags.auto_vacuum = FULL;
       """;
@@ -500,7 +501,6 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     String sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)";
-    boolean result;
     switch (mode) {
       case LVALUE -> {
         try (Connection connection = connect();

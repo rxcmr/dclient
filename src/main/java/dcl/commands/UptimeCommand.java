@@ -43,14 +43,13 @@ import java.lang.management.RuntimeMXBean;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class UptimeCommand extends Command {
   public UptimeCommand() {
     name = "uptime";
     help = "Bot uptime.";
     ownerCommand = true;
     hidden = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override

@@ -32,22 +32,18 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import ch.qos.logback.classic.Logger;
 import dcl.Skeleton;
+import dcl.utils.GLogger;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 public class ReadyEventListener extends ListenerAdapter {
-  private Logger logger = (Logger) LoggerFactory.getLogger(ReadyEventListener.class);
-
   @Override
   public void onReady(@NotNull ReadyEvent event) {
     JDA jda = event.getJDA();
@@ -61,17 +57,17 @@ public class ReadyEventListener extends ListenerAdapter {
       Permission.MANAGE_SERVER
     );
     jda.getRestPing().queue(api -> {
-      logger.info("|       R U N N I N G        | Status: " + jda.getStatus());
-      logger.info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
-      logger.info("|       ██╗██████╗  █████╗   | Guilds available: " + event.getGuildAvailableCount());
-      logger.info("|       ██║██╔══██╗██╔══██╗  | Owner ID: " + Skeleton.ID);
-      logger.info("|  ██   ██║██║  ██║██╔══██║  | Guilds: " + jda.getGuilds());
-      logger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Shard ID: " + shardInfo.getShardId());
-      logger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + inviteURL);
-      logger.info("|                            | Account type: " + jda.getAccountType());
-      logger.info("|    [version   4.0.0_72]    | WebSocket Ping: " + jda.getGatewayPing());
-      logger.info("|    [dcl version 1.6.3l]    | API Ping: " + api);
-      logger.info("|                            | Shards: " + relativeShardString);
+      GLogger.info("|       R U N N I N G        | Status: " + jda.getStatus());
+      GLogger.info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
+      GLogger.info("|       ██╗██████╗  █████╗   | Guilds available: " + event.getGuildAvailableCount());
+      GLogger.info("|       ██║██╔══██╗██╔══██╗  | Owner ID: " + Skeleton.ID);
+      GLogger.info("|  ██   ██║██║  ██║██╔══██║  | Guilds: " + jda.getGuilds());
+      GLogger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Shard ID: " + shardInfo.getShardId());
+      GLogger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + inviteURL);
+      GLogger.info("|                            | Account type: " + jda.getAccountType());
+      GLogger.info("|    [version   4.0.0_72]    | WebSocket Ping: " + jda.getGatewayPing());
+      GLogger.info("|    [dcl version 1.6.3l]    | API Ping: " + api);
+      GLogger.info("|                            | Shards: " + relativeShardString);
     });
   }
 }

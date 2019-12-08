@@ -47,7 +47,7 @@ public enum Descriptions {
     this.description = description;
   }
 
-  public final String get() {
+  public final String getDescription() {
     return description;
   }
 }
