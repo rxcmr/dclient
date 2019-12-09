@@ -51,7 +51,7 @@ public class QueryUserCommand extends Command {
 
   public QueryUserCommand() {
     name = "queryuser";
-    aliases = new String[]{"about", "userinfo"};
+    aliases = new String[]{"userinfo"};
     cooldown = 10;
     arguments = "**<user>**";
     help = "Information about a user.";

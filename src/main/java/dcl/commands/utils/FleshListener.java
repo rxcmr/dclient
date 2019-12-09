@@ -4,10 +4,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import dcl.Skeleton;
-import dcl.commands.JagTagCommand;
-import dcl.commands.LatencyCommand;
-import dcl.commands.ShutdownCommand;
-import dcl.commands.TestCommand;
+import dcl.commands.*;
 import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
@@ -74,6 +71,7 @@ public class FleshListener implements CommandListener {
       ```
       """);
     else if (command instanceof JagTagCommand) event.reply(throwable.getMessage());
+    else if (command instanceof CustomQueryCommand) event.reply("Not valid SQLite query.");
     else {
       event.reply(
         command.getArguments() == null

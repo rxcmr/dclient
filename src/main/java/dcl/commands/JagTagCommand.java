@@ -60,7 +60,6 @@ import java.util.StringJoiner;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
 class Tag {
   public String tagKey;
   public String tagValue;
@@ -71,6 +70,7 @@ class Tag {
     return tagKey;
   }
 
+  @SuppressWarnings("unused")
   public void setTagKey(String tagKey) {
     this.tagKey = tagKey;
   }
@@ -79,6 +79,7 @@ class Tag {
     return tagValue;
   }
 
+  @SuppressWarnings("unused")
   public void setTagValue(String tagValue) {
     this.tagValue = tagValue;
   }
@@ -87,6 +88,7 @@ class Tag {
     return ownerID;
   }
 
+  @SuppressWarnings("unused")
   public void setOwnerID(String ownerID) {
     this.ownerID = ownerID;
   }
@@ -95,6 +97,7 @@ class Tag {
     return guildID;
   }
 
+  @SuppressWarnings("unused")
   public void setGuildID(String guildID) {
     this.guildID = guildID;
   }
@@ -208,28 +211,20 @@ public class JagTagCommand extends Command implements SQLUtils {
           tags.clear();
           tags.addAll(tagCache);
         }
-        case "raw" -> {
-          for (Tag t : tags) {
-            if (t.getTagKey().equals(args[0])) {
-              if (t.getGuildID().equals(guildID)) {
-                event.reply(t.getTagValue());
-              } else if (t.getGuildID().equals("GLOBAL")) {
-                event.reply(t.getTagValue());
-              } else throw new CommandException("Tag not found.");
-            }
-          }
-        }
-        case "cblkraw" -> {
-          for (Tag t : tags) {
-            if (t.getTagKey().equals(args[0])) {
-              if (t.getGuildID().equals(guildID)) {
-                event.reply("```" + t.getTagValue() + "```");
-              } else if (t.getGuildID().equals("GLOBAL")) {
-                event.reply("```" + t.getTagValue() + "```");
-              } else throw new CommandException("Tag not found.");
-            }
-          }
-        }
+        case "raw" -> tags.stream().filter(t -> t.getTagKey().equals(args[0])).forEachOrdered(t -> {
+          if (t.getGuildID().equals(guildID)) {
+            event.reply(t.getTagValue());
+          } else if (t.getGuildID().equals("GLOBAL")) {
+            event.reply(t.getTagValue());
+          } else throw new CommandException("Tag not found.");
+        });
+        case "cblkraw" -> tags.stream().filter(t -> t.getTagKey().equals(args[0])).forEachOrdered(t -> {
+          if (t.getGuildID().equals(guildID)) {
+            event.reply("```" + t.getTagValue() + "```");
+          } else if (t.getGuildID().equals("GLOBAL")) {
+            event.reply("```" + t.getTagValue() + "```");
+          } else throw new CommandException("Tag not found.");
+        });
         case "eval" -> {
           event.reply("Type `!!stop` to exit.");
           String id = event.getChannel().getId();
@@ -244,24 +239,18 @@ public class JagTagCommand extends Command implements SQLUtils {
                 StringJoiner stringJoiner = new StringJoiner(" ");
                 Arrays.stream(message).forEachOrdered(stringJoiner::add);
                 Parser parser = buildParser(event);
-                if (message[0].equals("!!stop"))
-                  event.getJDA().removeEventListener(this);
+                if (message[0].equals("!!stop")) event.getJDA().removeEventListener(this);
                 else event.getChannel().sendMessage(parser.parse(stringJoiner.toString())).queue();
               }
-            }
-          );
+            });
         }
-        default -> {
-          for (Tag t : tags) {
-            if (t.getTagKey().equals(args[0])) {
-              if (t.getGuildID().equals(guildID)) {
-                event.reply(jagtag.parse(t.getTagValue()));
-              } else if (t.getGuildID().equals("GLOBAL")) {
-                event.reply(jagtag.parse(t.getTagValue()));
-              } else throw new CommandException("Tag not found.");
-            }
-          }
-        }
+        default -> tags.stream().filter(t -> t.getTagKey().equals(args[0])).forEachOrdered(t -> {
+          if (t.getGuildID().equals(guildID)) {
+            event.reply(jagtag.parse(t.getTagValue()));
+          } else if (t.getGuildID().equals("GLOBAL")) {
+            event.reply(jagtag.parse(t.getTagValue()));
+          } else throw new CommandException("Tag not found.");
+        });
       }
     } catch (SQLException s) {
       event.reply(s.getMessage());
@@ -359,20 +348,18 @@ public class JagTagCommand extends Command implements SQLUtils {
   public synchronized void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     switch (mode) {
       case ALL -> {
-        String sql = "SELECT tagKey, tagValue, ownerID, guildID FROM tags WHERE guildID LIKE '%'";
+        String sql = "SELECT * FROM tags";
         try (Connection connection = connect();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery()) {
           tagCache.clear();
-          while (resultSet.next()) {
-            tagCache.add(new Tag().set(
-              resultSet.getString("tagKey"),
-              resultSet.getString("tagValue"),
-              resultSet.getString("ownerID"),
-              resultSet.getString("guildID")
-              )
-            );
-          }
+          while (resultSet.next()) tagCache.add(new Tag().set(
+            resultSet.getString("tagKey"),
+            resultSet.getString("tagValue"),
+            resultSet.getString("ownerID"),
+            resultSet.getString("guildID")
+            )
+          );
         }
       }
       case KEY -> {
@@ -381,12 +368,8 @@ public class JagTagCommand extends Command implements SQLUtils {
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
-          while (resultSet.next()) {
-            for (Tag t : tags) {
-              if (t.getOwnerID().equals(resultSet.getString("tagKey")))
-                tagCache.add(t);
-            }
-          }
+          while (resultSet.next())
+            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("tagKey"))) tagCache.add(t);
         }
       }
       case LVALUE, GVALUE -> {
@@ -395,12 +378,8 @@ public class JagTagCommand extends Command implements SQLUtils {
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
-          while (resultSet.next()) {
-            for (Tag t : tags) {
-              if (t.getOwnerID().equals(resultSet.getString("tagValue")))
-                tagCache.add(t);
-            }
-          }
+          while (resultSet.next())
+            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("tagValue"))) tagCache.add(t);
         }
       }
       case ID -> {
@@ -409,12 +388,8 @@ public class JagTagCommand extends Command implements SQLUtils {
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
-          while (resultSet.next()) {
-            for (Tag t : tags) {
-              if (t.getOwnerID().equals(resultSet.getString("ownerID")))
-                tagCache.add(t);
-            }
-          }
+          while (resultSet.next())
+            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("ownerID"))) tagCache.add(t);
         }
       }
       case GID -> {
@@ -423,12 +398,8 @@ public class JagTagCommand extends Command implements SQLUtils {
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
-          while (resultSet.next()) {
-            for (Tag t : tags) {
-              if (t.getOwnerID().equals(resultSet.getString("guildID")))
-                tagCache.add(t);
-            }
-          }
+          while (resultSet.next())
+            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("guildID"))) tagCache.add(t);
         }
       }
       case KNI -> {
@@ -437,14 +408,12 @@ public class JagTagCommand extends Command implements SQLUtils {
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
-          while (resultSet.next()) {
-            for (Tag t : tags) {
-              if (t.getOwnerID().equals(resultSet.getString("ownerID")))
-                if (t.getTagKey().equals(resultSet.getString("tagKey")))
-                  tagCache.add(t);
-            }
-          }
+          while (resultSet.next()) for (Tag t : tags)
+            if (t.getOwnerID().equals(resultSet.getString("ownerID")))
+              if (t.getTagKey().equals(resultSet.getString("tagKey"))) tagCache.add(t);
         }
+      }
+      case NULL -> {
       }
       default -> throw new SQLException("Mode incorrect.");
     }

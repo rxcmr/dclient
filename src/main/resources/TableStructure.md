@@ -13,7 +13,7 @@
 - Both `tagKey` and `guildID` are unique together,
 there can be no row whose `tagKey` and `guildID` are the same.
 
-- So, having a different `tagKey` with a non-unique `guildID`
+- So, having a unique `tagKey` with a non-unique `guildID`
 is perfectly allowed as with it's converse,
 but they can't be both non-unique.
 

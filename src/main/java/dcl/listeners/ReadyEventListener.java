@@ -65,7 +65,7 @@ public class ReadyEventListener extends ListenerAdapter {
       GLogger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Shard ID: " + shardInfo.getShardId());
       GLogger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + inviteURL);
       GLogger.info("|                            | Account type: " + jda.getAccountType());
-      GLogger.info("|    [version   4.0.0_72]    | WebSocket Ping: " + jda.getGatewayPing());
+      GLogger.info("|    [version   4.0.0_73]    | WebSocket Ping: " + jda.getGatewayPing());
       GLogger.info("|    [dcl version 1.6.3l]    | API Ping: " + api);
       GLogger.info("|                            | Shards: " + relativeShardString);
     });
