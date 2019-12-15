@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.owner;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,25 +32,26 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.Machina;
 import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class LeaveVoiceChannelCommand extends Command {
-  public LeaveVoiceChannelCommand() {
-    name = "leave";
-    botPermissions = new Permission[]{Permission.VOICE_CONNECT};
-    help = "Leaves the voice channel.";
-    category = Categories.MUSIC.getCategory();
+public class UnloadCommand extends Command {
+  public UnloadCommand() {
+    name = "unload";
+    arguments = "**<command>**";
+    ownerCommand = true;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
+    Machina.getCommandClient().removeCommand(event.getArgs());
   }
 }

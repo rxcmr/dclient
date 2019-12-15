@@ -1,5 +1,4 @@
-package dcl.commands;
-
+package dcl.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,54 +31,24 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.entities.MessageEmbed;
+
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class LatencyCommand extends Command {
-  public MessageEmbed embed;
+public class PilotThreadFactory implements ThreadFactory {
+  private String name;
+  private int threadCount = 0;
 
-  public LatencyCommand() {
-    name = "latency";
-    aliases = new String[]{"ping"};
-    help = "REST API ping and WebSocket ping.";
-    guildOnly = false;
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
-    hidden = true;
-  }
-
-  public synchronized void buildEmbed(@NotNull CommandEvent event) {
-    JDA jda = event.getJDA();
-    EmbedBuilder embedBuilder = new EmbedBuilder();
-    jda.getRestPing().queue(api -> embed = embedBuilder
-      .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
-      .addField("**API: **", "```py\n" + api + " ms\n```", true)
-      .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
-      .setColor(0xd32ce6)
-      .build()
-    );
+  public PilotThreadFactory(String name) {
+    this.name = name;
   }
 
   @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> {
-        buildEmbed(event);
-        Executors.newScheduledThreadPool(1).schedule(
-          () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
-        );
-      }
-    );
+  public Thread newThread(@NotNull Runnable r) {
+    return new Thread(r, name + " - " + threadCount++);
   }
 }

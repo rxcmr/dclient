@@ -32,7 +32,7 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import dcl.Skeleton;
+import dcl.Machina;
 import dcl.commands.utils.DirectMessage;
 import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
@@ -56,7 +56,7 @@ public class ExceptionListener extends ListenerAdapter {
 
   @Override
   public void onException(@NotNull ExceptionEvent event) {
-    User owner = event.getJDA().getUserById(Skeleton.ID);
+    User owner = event.getJDA().getUserById(Machina.ID);
     assert owner != null;
     dm.send("```java\n", owner, String.format("%s\n```", event.getCause()));
   }

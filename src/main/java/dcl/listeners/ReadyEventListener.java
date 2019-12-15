@@ -32,13 +32,16 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import dcl.Skeleton;
-import dcl.utils.GLogger;
+import dcl.Machina;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.StringJoiner;
+
+import static dcl.utils.GLogger.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -48,7 +51,7 @@ public class ReadyEventListener extends ListenerAdapter {
   public void onReady(@NotNull ReadyEvent event) {
     JDA jda = event.getJDA();
     JDA.ShardInfo shardInfo = jda.getShardInfo();
-    String relativeShardString = String.format("[%s/%s]", shardInfo.getShardId() + 1, shardInfo.getShardTotal());
+    String shards = String.format("\033[1;91m[%s/%s]\033[0m", shardInfo.getShardId() + 1, shardInfo.getShardTotal());
     String inviteURL = jda.getInviteUrl(
       Permission.BAN_MEMBERS,
       Permission.KICK_MEMBERS,
@@ -56,18 +59,20 @@ public class ReadyEventListener extends ListenerAdapter {
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     );
+    StringJoiner stringJoiner = new StringJoiner(", ");
+    jda.getGuilds().forEach(g -> stringJoiner.add(g.getName()));
     jda.getRestPing().queue(api -> {
-      GLogger.info("|       R U N N I N G        | Status: " + jda.getStatus());
-      GLogger.info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
-      GLogger.info("|       ██╗██████╗  █████╗   | Guilds available: " + event.getGuildAvailableCount());
-      GLogger.info("|       ██║██╔══██╗██╔══██╗  | Owner ID: " + Skeleton.ID);
-      GLogger.info("|  ██   ██║██║  ██║██╔══██║  | Guilds: " + jda.getGuilds());
-      GLogger.info("|  ╚█████╔╝██████╔╝██║  ██║  | Shard ID: " + shardInfo.getShardId());
-      GLogger.info("|   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  | Invite URL: " + inviteURL);
-      GLogger.info("|                            | Account type: " + jda.getAccountType());
-      GLogger.info("|    [version   4.0.0_73]    | WebSocket Ping: " + jda.getGatewayPing());
-      GLogger.info("|    [dcl version 1.6.3l]    | API Ping: " + api);
-      GLogger.info("|                            | Shards: " + relativeShardString);
+      info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
+      info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
+      info("|\033[1;95m       ██╗██████╗  █████╗   \033[0m| Guilds available: " + event.getGuildAvailableCount());
+      info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Machina.ID);
+      info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + stringJoiner.toString());
+      info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
+      info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
+      info("|                            | Account type: " + jda.getAccountType());
+      info("|\033[1;92m    [version   4.0.0_74]    \033[0m| WebSocket Ping: " + jda.getGatewayPing());
+      info("|\033[1;92m    [dcl version 1.6.3l]    \033[0m| API Ping: " + api);
+      info("|                            | Shards: " + shards);
     });
   }
 }

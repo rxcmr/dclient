@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.owner;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -35,38 +35,25 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.Permission;
+import dcl.utils.GLogger;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class PurgeCommand extends Command {
-  public PurgeCommand() {
-    name = "purge";
-    aliases = new String[]{"clear"};
-    botPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-    arguments = "**<amount>** [1-100]";
-    guildOnly = true;
-    userPermissions = new Permission[]{Permission.MESSAGE_MANAGE};
-    cooldown = 5;
-    help = "Purges [1-100] messages.";
-    category = Categories.UTILITIES.getCategory();
+public class ShutdownCommand extends Command {
+  public ShutdownCommand() {
+    name = "shutdown";
+    help = "Shutdown JDA, and process running it.";
+    ownerCommand = true;
+    guildOnly = false;
+    category = Categories.OWNER.getCategory();
+    hidden = true;
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    int amount = Integer.parseInt(event.getArgs());
-    event.getChannel().sendTyping().queue(
-      v -> {
-        event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));
-        event.getChannel().sendMessage("Cleared " + amount + " messages.").submit()
-          .thenCompose(msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS))
-          .whenComplete((s, e) -> {
-            if (e != null) event.reply("I was not able to remove my message.");
-          });
-      });
+    GLogger.warn("[!!] Shutting down.");
+    event.getJDA().shutdownNow();
   }
 }

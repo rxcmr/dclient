@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.owner;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -35,27 +35,32 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
+
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class BanCommand extends Command {
-  public BanCommand() {
-    name = "ban";
-    aliases = new String[]{"hackban"};
-    arguments = "**<user>** **<amount>** (in days)";
-    help = "Bans a user";
-    botPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    category = Categories.MODERATION.getCategory();
+public class UptimeCommand extends Command {
+  public UptimeCommand() {
+    name = "uptime";
+    help = "Bot uptime.";
+    ownerCommand = true;
+    hidden = true;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
-    event.getChannel().sendTyping().queue();
-    event.getMessage().getMentionedMembers().get(0).ban(Integer.parseInt(args[1])).queue();
+    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    long uptime = runtimeMXBean.getUptime();
+    long uptimeInSeconds = uptime / 1000;
+    long h = uptimeInSeconds / (60 * 60);
+    long m = (uptimeInSeconds / 60) - (h * 60);
+    long s = uptimeInSeconds % 60;
+
+    event.getChannel().sendMessageFormat("`%s:%s:%s`", new Object[]{h, m, s}).queue();
   }
 }

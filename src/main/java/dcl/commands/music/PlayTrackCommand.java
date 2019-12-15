@@ -1,4 +1,4 @@
-package dcl;
+package dcl.commands.music;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -33,48 +33,31 @@ package dcl;
  */
 
 import com.jagrosh.jdautilities.command.Command;
-import io.github.cdimascio.dotenv.Dotenv;
-import io.github.classgraph.ClassGraph;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
+import dcl.commands.utils.Loader;
+import net.dv8tion.jda.api.Permission;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class Flesh {
-  public Flesh() throws ReflectiveOperationException {
-    String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    int shards = 2, poolSize = 10, threads = 2;
+public class PlayTrackCommand extends Command {
+  private final Loader loader;
 
-    // Commands
-    ArrayList<Command> commands = new ArrayList<>();
-    // EventListeners
-    ArrayList<Object> listeners = new ArrayList<>();
-
-    // Get all commands and put new instances of it in the ArrayList commands
-    List<Class<Command>> commandClassList = new ClassGraph()
-      .whitelistPackagesNonRecursive("dcl.commands")
-      .scan()
-      .getAllClasses()
-      .loadClasses(Command.class);
-    for (Class<Command> c : commandClassList) commands.add(c.getDeclaredConstructor().newInstance());
-
-    // Get all listeners and put new instances of it in the ArrayList listeners
-    List<Class<ListenerAdapter>> listenerClassList = new ClassGraph()
-      .whitelistPackagesNonRecursive("dcl.listeners")
-      .scan()
-      .getAllClasses()
-      .loadClasses(ListenerAdapter.class);
-    for (Class<ListenerAdapter> l : listenerClassList) listeners.add(l.getDeclaredConstructor().newInstance());
-
-    // Instantiate the base class Skeleton
-    assert token != null;
-    new Skeleton(token, shards, commands, listeners, poolSize, threads).run();
+  public PlayTrackCommand() {
+    name = "play";
+    arguments = "**<URL>**";
+    botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
+    help = "Plays a track from URL.";
+    category = Categories.MUSIC.getCategory();
+    loader = new Loader();
   }
 
-  public static void main(String[] args) throws Exception {
-    new Flesh();
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue(
+      v -> loader.loadAndPlay(event.getTextChannel(), event.getArgs())
+    );
   }
 }

@@ -1,4 +1,4 @@
-package dcl.music;
+package dcl.commands.owner;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,24 +32,50 @@ package dcl.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
+import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class MusicManager {
-  public final AudioPlayer player;
-  public final TrackScheduler scheduler;
-
-  public MusicManager(@NotNull AudioPlayerManager manager) {
-    player = manager.createPlayer();
-    scheduler = new TrackScheduler(player);
-    player.addListener(scheduler);
+public class TestCommand extends Command {
+  public TestCommand() {
+    name = "test";
+    aliases = new String[]{"try"};
+    help = "???";
+    arguments = "<**???**>";
+    ownerCommand = true;
+    category = Categories.OWNER.getCategory();
+    hidden = true;
   }
 
-  public AudioHandler getSendHandler() {
-    return new AudioHandler(player);
+  @Override
+  @SuppressWarnings("ALL")
+  protected void execute(@NotNull CommandEvent event) {
+    //String[] args = event.getArgs().split("\\s+");
+    //event.getChannel().sendTyping().queue();
+    //Arrays.stream(args).forEachOrdered(event::reply);
+    List<Role> roles = event.getGuild().getRoles();
+    List<Role> emptyRoles = new LinkedList<>();
+    event.reply("Roles: " + roles);
+    event.reply("");
+    // this should return an empty List
+    event.reply("List 1: " + event.getGuild().getMembersWithRoles(roles));
+    event.reply("");
+    // ??? returns all members for some reason
+    event.reply("List 2: " + event.getGuild().getMembersWithRoles());
+    event.reply("");
+    // this should throw an exception
+    event.reply("List 3: " + event.getGuild().getMembersWithRoles((Collection<Role>) null));
+    event.reply("");
+    // this throws the same exception as passing null
+    event.reply("List 4: " + event.getGuild().getMembersWithRoles(emptyRoles));
   }
 }

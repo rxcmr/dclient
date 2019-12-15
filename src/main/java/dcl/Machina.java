@@ -36,12 +36,9 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
-import dcl.commands.utils.Descriptions;
-import dcl.commands.utils.DirectMessage;
-import dcl.commands.utils.FleshListener;
+import dcl.commands.utils.*;
 import dcl.utils.CloudFlareDNS;
-import dcl.utils.GLogger;
+import dcl.utils.PilotThreadFactory;
 import io.github.classgraph.ClassGraph;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -52,6 +49,7 @@ import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.Compression;
 import okhttp3.OkHttpClient;
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
@@ -59,53 +57,50 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+
+import static dcl.utils.GLogger.error;
+import static dcl.utils.GLogger.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class Skeleton {
+public class Machina extends Thread {
   public static String prefix = "fl!", ID = "175610330217447424";
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof MessageEmbed
       ? (c == null ? d -> d.sendMessage((MessageEmbed) a).queue() : d -> d.sendMessage(a + c).queue())
       : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
   );
+  private final @NotNull String token;
   private ShardManager shardManager;
   private static CommandClient commandClient;
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
   private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
-  private final String token;
+  private final @NotNull Collection<Command> commands;
   private final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
   private final List<String> commandInvocation = new LinkedList<>();
   private final List<String> commandInformation = new LinkedList<>();
-  private final Collection<Command> commands;
+  private ThreadFactory factory = new PilotThreadFactory("Von Bolt");
   private final @Nullable Collection<Object> listeners;
-  private final int poolSize;
-  private final int threads;
   private final int shards;
 
   @Contract(pure = true)
-  Skeleton
-    (@NotNull String token,
-     int shards,
-     @NotNull Collection<Command> commands,
-     @Nullable Collection<Object> listeners,
-     int poolSize,
-     int threads) {
-    if (shards == 0 || poolSize == 0 || threads == 0)
-      throw new IllegalArgumentException("Shards or pool size must not equal 0.");
+  Machina
+    (@NotNull final String token,
+     final int shards,
+     @NotNull final Collection<Command> commands,
+     @Nullable final Collection<Object> listeners) {
+    if (shards == 0) throw new IllegalArgumentException("Shards must not equal 0.");
     this.token = token;
     this.shards = shards;
     this.commands = commands;
     this.listeners = listeners;
-    this.poolSize = poolSize;
-    this.threads = threads;
-    GLogger.info("[!] Constructor initialized");
+    info("Constructor initialized");
   }
 
   @SuppressWarnings("unused")
@@ -137,13 +132,13 @@ public class Skeleton {
       .get(0)
       .getFields();
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
-    if (args.equalsIgnoreCase(Categories.UTILITIES.getName())) {
+    if (args.equalsIgnoreCase(Categories.GADGETS.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.UTILITIES.getName()),
-        String.format("**Description:** *%s* ", Descriptions.UTILITIES.getDescription()),
+        String.format("**%s: **", Categories.GADGETS.getName()),
+        String.format("**Description:** *%s* ", Descriptions.GADGETS.getDescription()),
         false
       );
-      streamCommands(Categories.UTILITIES.getCategory());
+      streamCommands(Categories.GADGETS.getCategory());
     } else if (args.equalsIgnoreCase(Categories.MUSIC.getName())) {
       embedBuilder.addField(
         String.format("**%s: **", Categories.MUSIC.getName()),
@@ -182,7 +177,7 @@ public class Skeleton {
   private void streamCommands(Command.Category category) {
     commandInformation.clear();
     commandContent.clear();
-    commands.stream().filter(c -> c.getCategory() == category).forEachOrdered(c -> {
+    commands.stream().filter(c -> c.getCategory() == category && !c.isHidden()).forEachOrdered(c -> {
       commandInvocation.add(String.format("`%s%s`", prefix, c.getName()));
       commandInformation.add(
         c.getArguments() == null
@@ -197,26 +192,15 @@ public class Skeleton {
   }
 
   private void init() throws Exception {
-    GLogger.info("[#] Building JDA v4.0.0");
+    info("Building \033[1;93mShardManager\033[0m.");
     buildShardManager();
-    GLogger.info("[#] JDA Running");
-    GLogger.info(String.format(shards > 1 ? "[#] %s shards active" : "[#] %s shard active", shards));
-    commands.forEach(command -> GLogger.info(String.format("[#] Command loaded: %s", command)));
+    info("Running.");
+    info(String.format(shards > 1
+      ? "\033[1;91m%s\033[0m shards active," : "\033[1;91m%s\033[0m shard active.", shards));
+    commands.forEach(command -> info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m", command)));
     if (listeners == null) return;
-    listeners.forEach(eventListener -> GLogger.info("[#] EventListener loaded: " + eventListener));
-  }
-
-  void run() {
-    Executors.newCachedThreadPool().execute(() -> {
-      try {
-        init();
-      } catch (Exception e) {
-        GLogger.error("[!!!] LoginException occurred: ", e);
-        if (e instanceof IllegalArgumentException)
-          GLogger.warn("[!!!] Commands / EventListeners loading failed!");
-        GLogger.warn("[!!!] Cannot connect to REST API, CloudFlare DNS, or invalid token.");
-      }
-    });
+    listeners.forEach(eventListener -> info(String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m",
+      eventListener)));
   }
 
   private void buildShardManager() throws Exception {
@@ -225,37 +209,52 @@ public class Skeleton {
       .setShardsTotal(shards)
       .setToken(token)
       .addEventListeners(commandClient)
-      .setCallbackPool(Executors.newFixedThreadPool(threads), true)
-      .setGatewayPool(Executors.newScheduledThreadPool(poolSize), true)
-      .setRateLimitPool(Executors.newScheduledThreadPool(poolSize), true)
       .setCompression(Compression.ZLIB)
-      .setHttpClientBuilder(new OkHttpClient.Builder().dns(new CloudFlareDNS()))
+      .setCallbackPool(Executors.newFixedThreadPool(shards, factory), true)
+      .setGatewayPool(Executors.newScheduledThreadPool(shards, factory), true)
+      .setRateLimitPool(Executors.newScheduledThreadPool(shards, factory), true)
+      .setHttpClientBuilder(new OkHttpClient.Builder()
+        .dns(new CloudFlareDNS())
+        .addInterceptor(new UserAgentInterceptor()))
       .setUseShutdownNow(true)
       .setRelativeRateLimit(false)
-      .setContextEnabled(true);
+      .setContextEnabled(true)
+      .setChunkingFilter(ChunkingFilter.NONE);
     if (listeners != null) managerBuilder.addEventListeners(listeners);
     else managerBuilder.addEventListeners(new DefaultListener());
     shardManager = managerBuilder.build();
   }
 
   private void buildCommandClient() {
-    GLogger.info("[#] Building CommandClient");
+    info("Building \033[1;93mCommandClient\033[0m.");
     commandClientBuilder
       .setOwnerId(ID)
       .setPrefix(prefix)
       .setActivity(Activity.listening("events."))
-      .setStatus(OnlineStatus.IDLE)
-      .setListener(new FleshListener())
+      .setStatus(OnlineStatus.DO_NOT_DISTURB)
+      .setListener(new PilotCommandListener())
       .setHelpConsumer(this::helpConsumer)
       .setShutdownAutomatically(true);
     commands.forEach(commandClientBuilder::addCommand);
     commandClient = commandClientBuilder.build();
   }
 
+  @Override
+  public synchronized void start() {
+    try {
+      init();
+    } catch (Exception e) {
+      error("LoginException occurred: ", e);
+      if (e instanceof IllegalArgumentException)
+        error("Commands / EventListeners loading failed!");
+      error("Cannot connect to REST API, CloudFlare DNS, or invalid token.");
+    }
+  }
+
   private static class DefaultListener extends ListenerAdapter {
     @Override
-    public void onReady(@Nonnull ReadyEvent event) {
-      GLogger.info("[#] Ready");
+    public void onReady(@NotNull ReadyEvent event) {
+      info("Ready");
     }
   }
 }

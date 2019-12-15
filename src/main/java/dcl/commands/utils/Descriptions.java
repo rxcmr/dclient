@@ -36,10 +36,10 @@ package dcl.commands.utils;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public enum Descriptions {
-  OWNER("Owner-only utilities"),
-  MODERATION("Moderation utilities"),
-  UTILITIES("General utilities"),
-  MUSIC("Music related commands");
+  GADGETS("Gadgets and fun!"),
+  MODERATION("Moderation utilities."),
+  MUSIC("Music related commands."),
+  OWNER("Owner-only utilities.");
 
   private final String description;
 

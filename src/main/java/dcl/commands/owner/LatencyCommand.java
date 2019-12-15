@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.owner;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -36,57 +36,50 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class QueryUserCommand extends Command {
-  private EmbedBuilder embedBuilder = new EmbedBuilder();
+public class LatencyCommand extends Command {
+  public MessageEmbed embed;
 
-  public QueryUserCommand() {
-    name = "queryuser";
-    aliases = new String[]{"userinfo"};
-    cooldown = 10;
-    arguments = "**<user>**";
-    help = "Information about a user.";
-    category = Categories.UTILITIES.getCategory();
+  public LatencyCommand() {
+    name = "latency";
+    aliases = new String[]{"ping"};
+    help = "REST API ping and WebSocket ping.";
+    guildOnly = false;
+    ownerCommand = true;
+    category = Categories.OWNER.getCategory();
+    hidden = true;
+  }
+
+  public synchronized void buildEmbed(@NotNull CommandEvent event) {
+    JDA jda = event.getJDA();
+    EmbedBuilder embedBuilder = new EmbedBuilder();
+    jda.getRestPing().queue(api -> embed = embedBuilder
+      .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
+      .addField("**API: **", "```py\n" + api + " ms\n```", true)
+      .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
+      .setColor(0xd32ce6)
+      .build()
+    );
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue(
       v -> {
-        Member member = event.getMessage().getMentionedMembers().isEmpty()
-          ? (Member) event.getJDA().getUserById(event.getArgs())
-          : event.getMessage().getMentionedMembers().get(0);
-        User author = event.getAuthor();
-        assert member != null;
-        event.reply(buildEmbed(member, author));
-        embedBuilder.clear();
+        buildEmbed(event);
+        Executors.newScheduledThreadPool(1).schedule(
+          () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
+        );
       }
     );
-  }
-
-  @NotNull
-  private MessageEmbed buildEmbed(@NotNull Member member, @NotNull User author) {
-    User user = member.getUser();
-    embedBuilder
-      .setTitle("**Queried: **" + user.getName())
-      .setDescription(String.format("**Member: **`%s`%nUser: `%s`", user, member))
-      .setImage(user.getEffectiveAvatarUrl())
-      .addField("**Avatar ID: **", user.getAvatarId(), false)
-      .addField("**Avatar URL: **", user.getEffectiveAvatarUrl(), false)
-      .addField("**Name: **", String.format("%s#%s", user.getName(), user.getDiscriminator()), false)
-      .addField("**Nickname: **", member.getNickname() == null ? "No nickname" : member.getNickname(), false)
-      .addField("**ID: **", user.getId(), false)
-      .setColor(0x41 + 0x64 + 0x64 + 0x65 + 0x72)
-      .setFooter("requested by: " + author.getName(), Objects.requireNonNull(author.getAvatarUrl()));
-    return embedBuilder.build();
   }
 }

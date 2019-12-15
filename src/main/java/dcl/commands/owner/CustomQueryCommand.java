@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.owner;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -122,6 +122,27 @@ public class CustomQueryCommand extends Command {
             resultSet.getString(2),
             resultSet.getString(3),
             resultSet.getString(4)));
+          markdown.append("\n```");
+          event.reply(markdown.toString());
+        }
+        case 5 -> {
+          StringBuilder markdown = new StringBuilder(String.format("""
+              ```ini
+              [ %s ] | [ %s ] | [ %s ] | [ %s ] | [ %s ]
+              """,
+            resultSetMetaData.getColumnName(1),
+            resultSetMetaData.getColumnName(2),
+            resultSetMetaData.getColumnName(3),
+            resultSetMetaData.getColumnName(4),
+            resultSetMetaData.getColumnName(5)));
+          while (resultSet.next()) markdown.append(String.format("""
+              [ %s ] | [ %s ] | [ %s ] | [ %s ] | [ %s ]
+              """,
+            resultSet.getString(1),
+            resultSet.getString(2),
+            resultSet.getString(3),
+            resultSet.getString(4),
+            resultSet.getString(5)));
           markdown.append("\n```");
           event.reply(markdown.toString());
         }

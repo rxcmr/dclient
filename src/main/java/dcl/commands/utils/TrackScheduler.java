@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,26 +32,39 @@ package dcl.commands;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.Skeleton;
-import dcl.commands.utils.Categories;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class UnloadCommand extends Command {
-  public UnloadCommand() {
-    name = "unload";
-    arguments = "**<command>**";
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
+public class TrackScheduler extends AudioEventAdapter {
+  private final AudioPlayer player;
+  private final BlockingQueue<AudioTrack> queue;
+
+  @Contract(pure = true)
+  public TrackScheduler(AudioPlayer player) {
+    this.player = player;
+    this.queue = new LinkedBlockingQueue<>();
+  }
+
+  public void queue(AudioTrack track) {
+    if (!player.startTrack(track, true)) queue.offer(track);
+  }
+
+  public void nextTrack() {
+    player.startTrack(queue.poll(), false);
   }
 
   @Override
-  protected void execute(@NotNull CommandEvent event) {
-    Skeleton.getCommandClient().removeCommand(event.getArgs());
+  public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
+    if (reason.mayStartNext) nextTrack();
   }
 }

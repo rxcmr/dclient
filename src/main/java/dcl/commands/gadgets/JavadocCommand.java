@@ -1,4 +1,4 @@
-package dcl.music;
+package dcl.commands.gadgets;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,42 +32,47 @@ package dcl.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import net.dv8tion.jda.api.audio.AudioSendHandler;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import dcl.commands.utils.Categories;
+import dcl.commands.utils.JavadocPackages;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
+import java.io.IOException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class AudioHandler implements AudioSendHandler {
-  private final AudioPlayer player;
-  private final ByteBuffer buffer;
-  private final MutableAudioFrame frame;
-
-  public AudioHandler(AudioPlayer player) {
-    this.player = player;
-    this.buffer = ByteBuffer.allocate(1024);
-    this.frame = new MutableAudioFrame();
-    this.frame.setBuffer(buffer);
+public class JavadocCommand extends Command {
+  public JavadocCommand() {
+    name = "javadoc";
+    aliases = new String[]{"docs"};
+    arguments = "**<package>** **<class>**";
+    help = "Gets the URL of Javadocs for JDK 13";
+    category = Categories.GADGETS.getCategory();
   }
 
   @Override
-  public boolean canProvide() {
-    return player.provide(frame);
-  }
+  protected void execute(@NotNull CommandEvent event) {
+    for (JavadocPackages j : JavadocPackages.values()) {
+      String formatted = String.format(j.getUrl(), event.getArgs());
+      OkHttpClient okHttpClient = new OkHttpClient();
+      Request request = new Request.Builder().url(formatted).head().build();
 
-  @Nullable
-  @Override
-  public ByteBuffer provide20MsAudio() {
-    buffer.flip();
-    return buffer;
-  }
-
-  @Override
-  public boolean isOpus() {
-    return true;
+      try (Response response = okHttpClient.newCall(request).execute()) {
+        switch (response.code()) {
+          case 404, 504 -> response.close();
+          default -> {
+            event.reply(formatted);
+            response.close();
+          }
+        }
+      } catch (IOException e) {
+        event.reply("Something went wrong...");
+      }
+    }
   }
 }

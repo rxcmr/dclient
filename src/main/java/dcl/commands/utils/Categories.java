@@ -38,10 +38,10 @@ import com.jagrosh.jdautilities.command.Command;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public enum Categories {
-  OWNER(new Command.Category("Owner")),
+  GADGETS(new Command.Category("Gadgets")),
   MODERATION(new Command.Category("Moderation")),
-  UTILITIES(new Command.Category("Utilities")),
-  MUSIC(new Command.Category("Music"));
+  MUSIC(new Command.Category("Music")),
+  OWNER(new Command.Category("Owner"));
 
   private final Command.Category category;
 

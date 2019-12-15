@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.moderation;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -34,42 +34,27 @@ package dcl.commands;
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.Skeleton;
 import dcl.commands.utils.Categories;
-import dcl.commands.utils.GoogleSearchHandler;
-import dcl.commands.utils.GoogleSearchResult;
-import io.github.cdimascio.dotenv.Dotenv;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class GoogleSearchCommand extends Command {
-  public GoogleSearchCommand() {
-    name = "google";
-    aliases = new String[]{"search"};
-    category = Categories.UTILITIES.getCategory();
-    cooldown = 10;
-    arguments = "**<query>**";
-    help = "The Google Search API";
+public class KickCommand extends Command {
+  public KickCommand() {
+    name = "kick";
+    arguments = "**<user>**";
+    help = "Kicks a user";
+    botPermissions = new Permission[]{Permission.KICK_MEMBERS};
+    userPermissions = new Permission[]{Permission.KICK_MEMBERS};
+    category = Categories.MODERATION.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> {
-        final User owner = event.getJDA().getUserById(Skeleton.ID);
-        final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
-        final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
-        final String[] queryArray = event.getArgs().split("\\s+");
-        String query = String.join(" ", queryArray);
-        GoogleSearchHandler.init(apiKey);
-        List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query);
-        event.reply(results.get(0).getSuggestedResult());
-      }
-    );
+    event.getChannel().sendTyping().queue();
+    for (Member m : event.getMessage().getMentionedMembers()) m.kick().queue();
   }
 }

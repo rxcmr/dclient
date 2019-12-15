@@ -3,8 +3,12 @@ package dcl.commands.utils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
-import dcl.Skeleton;
-import dcl.commands.*;
+import dcl.Machina;
+import dcl.commands.gadgets.JagTagCommand;
+import dcl.commands.owner.CustomQueryCommand;
+import dcl.commands.owner.LatencyCommand;
+import dcl.commands.owner.ShutdownCommand;
+import dcl.commands.owner.TestCommand;
 import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
@@ -46,8 +50,8 @@ import java.util.Objects;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class FleshListener implements CommandListener {
-  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
+public class PilotCommandListener implements CommandListener {
+  private final DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
       ? (c == null
       ? d -> d.sendMessage((String) a).queue(e -> GLogger.info(e.getContentRaw().replace("```", "")))
@@ -59,7 +63,7 @@ public class FleshListener implements CommandListener {
 
   @Override
   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
-    User owner = event.getJDA().getUserById(Skeleton.ID);
+    final User owner = event.getJDA().getUserById(Machina.ID);
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\u274C").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
@@ -76,7 +80,7 @@ public class FleshListener implements CommandListener {
       event.reply(
         command.getArguments() == null
           ? "Something wrong happened..."
-          : Skeleton.prefix + command.getName() + " " + command.getArguments()
+          : Machina.prefix + command.getName() + " " + command.getArguments()
       );
     }
     assert owner != null;
@@ -95,7 +99,7 @@ public class FleshListener implements CommandListener {
 
   @Override
   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
-    User owner = Objects.requireNonNull(event.getJDA().getUserById(Skeleton.ID));
+    final User owner = Objects.requireNonNull(event.getJDA().getUserById(Machina.ID));
     event.getMessage().addReaction("\u274C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");

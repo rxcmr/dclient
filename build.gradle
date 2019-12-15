@@ -6,13 +6,16 @@ plugins {
 
 mainClassName = 'dcl.Flesh'
 group 'io.github.rxcmr'
-version '1.6.3l'
+version '1.7.0l'
 
+targetCompatibility = 13
 sourceCompatibility = 13
 
 dependencies {
-  implementation group: "net.dv8tion", name: "JDA", version: "4.0.0_73"
+  implementation group: "net.dv8tion", name: "JDA", version: "4.0.0_74"
   //implementation group: "com.github.DV8FromTheWorld", name: "JDA", version: "development-SNAPSHOT"
+  implementation group: "org.jsoup", name: "jsoup", version: "1.12.1"
+  implementation group: "org.fusesource.jansi", name: "jansi", version: "1.18"
   implementation group: "io.github.cdimascio", name: "java-dotenv", version: "5.1.3"
   implementation group: "ch.qos.logback", name: "logback-classic", version: "1.3.0-alpha4"
   implementation group: "org.slf4j", name: "slf4j-api", version: "2.0.0-alpha1"
@@ -40,6 +43,10 @@ shadowJar {
 
 tasks.withType(JavaCompile).each {
   it.options.compilerArgs.add('--enable-preview')
+}
+
+compileJava {
+  options.compilerArgs += ["--enable-preview"]
 }
 
 test {

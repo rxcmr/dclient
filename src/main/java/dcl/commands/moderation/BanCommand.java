@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.moderation;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -35,41 +35,28 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class JavadocCommand extends Command {
-  public JavadocCommand() {
-    name = "javadoc";
-    aliases = new String[]{"docs"};
-    arguments = "**<package>** **<class>**";
-    help = "Gets the URL of Javadocs for JDK 13";
-    category = Categories.UTILITIES.getCategory();
+public class BanCommand extends Command {
+  public BanCommand() {
+    name = "ban";
+    aliases = new String[]{"hackban"};
+    arguments = "**<user>** **<amount>** (in days)";
+    help = "Bans a user";
+    botPermissions = new Permission[]{Permission.BAN_MEMBERS};
+    userPermissions = new Permission[]{Permission.BAN_MEMBERS};
+    category = Categories.MODERATION.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
     String[] args = event.getArgs().split("\\s+");
-    if (args.length < 2) throw new IllegalArgumentException();
-
-    String url = String.format(
-      "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/java/%s/%s.html", args[0], args[1]
-    );
-    OkHttpClient okHttpClient = new OkHttpClient();
-    Request request = new Request.Builder().url(url).head().build();
-
-    try (Response response = okHttpClient.newCall(request).execute()) {
-      if (response.code() == 404) event.reply("Not found.");
-      else event.reply(url);
-    } catch (IOException e) {
-      event.reply("Something went wrong...");
-    }
+    event.getChannel().sendTyping().queue();
+    for (Member m : event.getMessage().getMentionedMembers()) m.ban(Integer.parseInt(args[1])).queue();
   }
 }

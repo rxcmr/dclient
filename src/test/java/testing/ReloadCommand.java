@@ -33,7 +33,7 @@ package testing;/*
 
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.Skeleton;
+import dcl.Machina;
 import dcl.commands.utils.Categories;
 import io.github.classgraph.ClassGraph;
 import org.jetbrains.annotations.NotNull;
@@ -49,13 +49,13 @@ public class ReloadCommand extends Command {
     name = "reload";
     arguments = "**<command>**";
     ownerCommand = true;
-    category = Categories.Owner;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
     try {
-      Skeleton.getCommandClient().addCommand((Command) loadClass(event.getArgs()));
+      Machina.getCommandClient().addCommand((Command) loadClass(event.getArgs()));
     } catch (ReflectiveOperationException e) {
       event.reply("Loading failed.");
     }

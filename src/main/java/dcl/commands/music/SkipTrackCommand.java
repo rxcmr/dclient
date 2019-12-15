@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.music;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -35,25 +35,26 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import dcl.utils.GLogger;
+import dcl.commands.utils.Loader;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class ShutdownCommand extends Command {
-  public ShutdownCommand() {
-    name = "shutdown";
-    help = "Shutdown JDA, and process running it.";
-    ownerCommand = true;
-    guildOnly = false;
-    category = Categories.OWNER.getCategory();
-    hidden = true;
+public class SkipTrackCommand extends Command {
+  private final Loader loader;
+
+  public SkipTrackCommand() {
+    name = "skip";
+    help = "Skips current playing track.";
+    category = Categories.MUSIC.getCategory();
+    loader = new Loader();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    GLogger.warn("[!!] Shutting down.");
-    event.getJDA().shutdownNow();
+    event.getChannel().sendTyping().queue(
+      v -> loader.skipTrack(event.getTextChannel())
+    );
   }
 }

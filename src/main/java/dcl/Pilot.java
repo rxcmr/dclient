@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -33,28 +33,42 @@ package dcl.commands;
  */
 
 import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import dcl.commands.utils.Categories;
-import net.dv8tion.jda.api.Permission;
-import org.jetbrains.annotations.NotNull;
+import io.github.cdimascio.dotenv.Dotenv;
+import io.github.classgraph.ClassGraph;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
+
+import java.util.LinkedList;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class KickCommand extends Command {
-  public KickCommand() {
-    name = "kick";
-    arguments = "**<user>**";
-    help = "Kicks a user";
-    botPermissions = new Permission[]{Permission.KICK_MEMBERS};
-    userPermissions = new Permission[]{Permission.KICK_MEMBERS};
-    category = Categories.MODERATION.getCategory();
+public class Pilot {
+  public Pilot() throws ReflectiveOperationException {
+    final String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
+    final int shards = 2;
+    final LinkedList<Command> commands = new LinkedList<>();
+    final LinkedList<Object> listeners = new LinkedList<>();
+
+    for (Class<Command> c : new ClassGraph()
+      .blacklistPackages("dcl.commands.utils")
+      .whitelistPackages("dcl.commands.*")
+      .scan()
+      .getAllClasses()
+      .loadClasses(Command.class))
+      commands.add(c.getDeclaredConstructor().newInstance());
+
+    for (Class<ListenerAdapter> l : new ClassGraph()
+      .whitelistPackagesNonRecursive("dcl.listeners")
+      .scan()
+      .getAllClasses()
+      .loadClasses(ListenerAdapter.class))
+      listeners.add(l.getDeclaredConstructor().newInstance());
+
+    assert token != null;
+    new Machina(token, shards, commands, listeners).start();
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> event.getMessage().getMentionedMembers().get(0).kick().queue()
-    );
+  public static void main(String[] args) throws Exception {
+    new Pilot();
   }
 }

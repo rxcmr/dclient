@@ -34,14 +34,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>
-                %d{HH:mm:ss.SSS} %boldCyan(%thread) %boldRed(%1X{jda.shard}) %boldGreen(%logger{0}) %highlight(%-0level)
-                %msg%n
+                %d %boldMagenta(%thread) %boldWhite(->) %boldGreen(%logger{0}) %boldWhite(->) %highlight(%-0level)
+                %boldWhite(->) %msg%n
             </pattern>
         </encoder>
     </appender>
-    <logger name="com.rxcmr" level="debug" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
     <root level="info">
         <appender-ref ref="CONSOLE"/>
     </root>

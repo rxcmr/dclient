@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.gadgets;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -118,10 +118,10 @@ public class JagTagCommand extends Command implements SQLUtils {
   public JagTagCommand() throws SQLException, IOException {
     name = "jagtag";
     aliases = new String[]{"tag", "t"};
-    category = Categories.UTILITIES.getCategory();
+    category = Categories.GADGETS.getCategory();
     arguments = "**<modifier>** **<name>** **<content>**";
     help = "JagTag like in Spectra";
-    final File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\JagTag.sqlite");
+    File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\PilotDB.sqlite");
     if (!db.exists()) {
       if (db.createNewFile()) {
         createDatabase();
@@ -285,7 +285,7 @@ public class JagTagCommand extends Command implements SQLUtils {
 
   @Override
   public synchronized Connection connect() throws SQLException {
-    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/JagTag.sqlite";
+    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
     return DriverManager.getConnection(url);
   }
 

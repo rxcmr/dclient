@@ -1,4 +1,4 @@
-package dcl.commands;
+package dcl.commands.gadgets;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -35,26 +35,35 @@ package dcl.commands;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import dcl.music.Loader;
+import dcl.commands.utils.GoogleSearchHandler;
+import dcl.commands.utils.GoogleSearchResult;
+import io.github.cdimascio.dotenv.Dotenv;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class SkipTrackCommand extends Command {
-  private final Loader loader;
-
-  public SkipTrackCommand() {
-    name = "skip";
-    help = "Skips current playing track.";
-    category = Categories.MUSIC.getCategory();
-    loader = new Loader();
+public class GoogleSearchCommand extends Command {
+  public GoogleSearchCommand() {
+    name = "google";
+    aliases = new String[]{"search"};
+    category = Categories.GADGETS.getCategory();
+    cooldown = 10;
+    arguments = "**<query>**";
+    help = "The Google Search API";
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> loader.skipTrack(event.getTextChannel())
-    );
+    event.getChannel().sendTyping().queue();
+    final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
+    final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
+    final String[] queryArray = event.getArgs().split("\\s+");
+    String query = String.join(" ", queryArray);
+    GoogleSearchHandler.init(apiKey);
+    List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(engineID, query, event.getJDA());
+    event.reply(results.get(0).getSuggestedResult());
   }
 }

@@ -1,4 +1,4 @@
-package dcl.music;
+package dcl.commands.utils;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.

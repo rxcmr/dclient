@@ -32,6 +32,7 @@ package dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import net.dv8tion.jda.api.JDA;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -67,12 +68,12 @@ public class GoogleSearchHandler {
     startingDate = LocalDateTime.now();
   }
 
-  public static List<GoogleSearchResult> performSearch(String engineId, String terms) {
-    return performSearch(engineId, terms, 1);
+  public static List<GoogleSearchResult> performSearch(String engineId, String terms, JDA jda) {
+    return performSearch(engineId, terms, 1, jda);
   }
 
   @Nullable
-  public static List<GoogleSearchResult> performSearch(String engineId, String terms, int requiredResultsCount) {
+  public static List<GoogleSearchResult> performSearch(String engineId, String terms, int resultCount, JDA jda) {
     try {
       if (googleAPIKey == null) throw new IllegalStateException("API Key must not be null!");
       if (engineId == null || engineId.isEmpty()) throw new IllegalArgumentException("Engine ID must not be empty!");
@@ -82,9 +83,9 @@ public class GoogleSearchHandler {
         APIUsageCounter = 1;
       } else if (APIUsageCounter >= 80) throw new IllegalStateException("Limit reached. (80)");
       terms = terms.replace(" ", "%20");
-      String searchUrl = String.format(googleURL, engineId, googleAPIKey, requiredResultsCount, terms);
+      String searchUrl = String.format(googleURL, engineId, googleAPIKey, resultCount, terms);
       URL searchURL = new URL(searchUrl);
-      OkHttpClient httpClient = new OkHttpClient.Builder().addInterceptor(new UserAgentInterceptor()).build();
+      OkHttpClient httpClient = jda.getHttpClient();
       Request request = new Request.Builder().url(searchURL).build();
       try (Response response = httpClient.newCall(request).execute()) {
         if (!response.isSuccessful()) throw new RequestAbortedException("Failed to get search results.");

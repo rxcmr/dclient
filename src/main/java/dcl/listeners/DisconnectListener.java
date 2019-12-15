@@ -32,13 +32,15 @@ package dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import dcl.Skeleton;
+import dcl.Machina;
 import dcl.commands.utils.DirectMessage;
-import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.DisconnectEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+
+import static dcl.utils.GLogger.info;
+import static dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -56,9 +58,9 @@ public class DisconnectListener extends ListenerAdapter {
 
   @Override
   public void onDisconnect(@NotNull DisconnectEvent event) {
-    User owner = event.getJDA().getUserById(Skeleton.ID);
-    GLogger.warn("Disconnected.");
-    GLogger.info("Attempting to reconnect.");
+    User owner = event.getJDA().getUserById(Machina.ID);
+    warn("Disconnected.");
+    info("Attempting to reconnect.");
     assert owner != null;
     dm.send("Disconnected!", owner, null);
   }
