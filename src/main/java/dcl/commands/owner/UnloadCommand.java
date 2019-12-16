@@ -48,6 +48,7 @@ public class UnloadCommand extends Command {
     arguments = "**<command>**";
     ownerCommand = true;
     category = Categories.OWNER.getCategory();
+    hidden = true;
   }
 
   @Override

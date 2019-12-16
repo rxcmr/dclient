@@ -42,7 +42,6 @@ import dcl.commands.utils.Categories;
 import dcl.commands.utils.CommandException;
 import dcl.commands.utils.SQLItemMode;
 import dcl.commands.utils.SQLUtils;
-import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -284,23 +283,7 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized Connection connect() throws SQLException {
-    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
-    return DriverManager.getConnection(url);
-  }
-
-  @Override
-  public synchronized void createDatabase() throws SQLException {
-    try (Connection connection = connect()) {
-      if (connection != null) {
-        DatabaseMetaData metaData = connection.getMetaData();
-        GLogger.info(metaData.getDriverName());
-      }
-    }
-  }
-
-  @Override
-  public synchronized void createTable() throws SQLException {
+  public void createTable() throws SQLException {
     String sql = """
       CREATE TABLE IF NOT EXISTS tags (
         tagKey TEXT NOT NULL,
@@ -310,7 +293,7 @@ public class JagTagCommand extends Command implements SQLUtils {
         UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
         CHECK (length (tagKey) != 0 AND length (tagValue) != 0)
       );
-      PRAGMA tags.auto_vacuum = FULL;
+      PRAGMA auto_vacuum = FULL;
       """;
 
     try (Connection connection = connect()) {
@@ -319,7 +302,7 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 3) throw new SQLException("Missing parameters.");
     String sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)";
     try (Connection connection = connect()) {
@@ -345,7 +328,7 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     switch (mode) {
       case ALL -> {
         String sql = "SELECT * FROM tags";
@@ -362,16 +345,6 @@ public class JagTagCommand extends Command implements SQLUtils {
           );
         }
       }
-      case KEY -> {
-        String sql = "SELECT tagKey FROM tags";
-        try (Connection connection = connect();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-          tagCache.clear();
-          while (resultSet.next())
-            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("tagKey"))) tagCache.add(t);
-        }
-      }
       case LVALUE, GVALUE -> {
         String sql = "SELECT tagValue FROM tags";
         try (Connection connection = connect();
@@ -382,45 +355,12 @@ public class JagTagCommand extends Command implements SQLUtils {
             for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("tagValue"))) tagCache.add(t);
         }
       }
-      case ID -> {
-        String sql = "SELECT ownerID FROM tags";
-        try (Connection connection = connect();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-          tagCache.clear();
-          while (resultSet.next())
-            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("ownerID"))) tagCache.add(t);
-        }
-      }
-      case GID -> {
-        String sql = "SELECT guildID FROM tags";
-        try (Connection connection = connect();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-          tagCache.clear();
-          while (resultSet.next())
-            for (Tag t : tags) if (t.getOwnerID().equals(resultSet.getString("guildID"))) tagCache.add(t);
-        }
-      }
-      case KNI -> {
-        String sql = "SELECT tagKey, ownerID FROM tags";
-        try (Connection connection = connect();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(sql)) {
-          tagCache.clear();
-          while (resultSet.next()) for (Tag t : tags)
-            if (t.getOwnerID().equals(resultSet.getString("ownerID")))
-              if (t.getTagKey().equals(resultSet.getString("tagKey"))) tagCache.add(t);
-        }
-      }
-      case NULL -> {
-      }
       default -> throw new SQLException("Mode incorrect.");
     }
   }
 
   @Override
-  public synchronized void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 2) return;
     String sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
     try (Connection connection = connect();
@@ -443,7 +383,7 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public synchronized void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 3) return;
     String sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
     try (Connection connection = connect();

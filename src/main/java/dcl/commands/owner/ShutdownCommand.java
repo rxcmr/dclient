@@ -35,8 +35,9 @@ package dcl.commands.owner;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import dcl.utils.GLogger;
 import org.jetbrains.annotations.NotNull;
+
+import static dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -53,7 +54,7 @@ public class ShutdownCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    GLogger.warn("[!!] Shutting down.");
+    warn("Shutting down.");
     event.getJDA().shutdownNow();
   }
 }

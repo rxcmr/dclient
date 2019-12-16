@@ -49,6 +49,7 @@ public class PauseThreadCommand extends Command {
     category = Categories.OWNER.getCategory();
     arguments = "**<amount>** (seconds)";
     help = "Stops the current thread for a specific amount in time.";
+    hidden = true;
   }
 
   @Override

@@ -1,6 +1,6 @@
 # dclient
 
-To use, simply call a new instance of Flesh
+To use, simply call a new instance of Pilot passing in a token, prefix and shards
 
 Requirements:
 - `.env` file in root directory, with Discord API Token (TOKEN) field,
@@ -11,7 +11,8 @@ Requirements:
 package dcl;
 @SuppressWarnings("ALL")
 public class Runner {
-   public static void main(String[] args) throws ReflectiveOperationException { new Flesh(); }
+  int shards = 1;
+  public static void main(String[] args) throws ReflectiveOperationException { new Flesh("token", "prefix", shards); }
 }
 ```
 

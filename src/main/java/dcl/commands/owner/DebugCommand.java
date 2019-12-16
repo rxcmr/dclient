@@ -50,7 +50,7 @@ import java.awt.*;
 public class DebugCommand extends Command {
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final GroovyShell shell;
-  private final String libs;
+  private final String imports;
 
   public DebugCommand() {
     name = "debug";
@@ -61,11 +61,12 @@ public class DebugCommand extends Command {
     hidden = true;
     category = Categories.OWNER.getCategory();
     shell = new GroovyShell();
-    libs = """
+    imports = """
       import java.io.*
       import java.lang.*
       import java.util.*
       import java.util.concurrent.*
+      import net.dv8tion.jda.api.*
       import net.dv8tion.jda.core.*
       import net.dv8tion.jda.core.entities.*
       import net.dv8tion.jda.core.entities.impl.*
@@ -92,7 +93,7 @@ public class DebugCommand extends Command {
       shell.setProperty("user", event.getMember().getUser());
       shell.setProperty("logger", GLogger.class);
 
-      String script = libs + event.getMessage().getContentRaw().split("\\s+", 2)[1];
+      String script = imports + event.getMessage().getContentRaw().split("\\s+", 2)[1];
       Object out = shell.evaluate(script);
 
       event.reply(buildEmbed(out, event.getArgs()));
@@ -131,9 +132,7 @@ public class DebugCommand extends Command {
         exceptionName[0].equalsIgnoreCase("java") ? javadoc : null
       )
       .setDescription(String.format("**Command:** ```%s```", args))
-      .addField("**Stack Trace:**", String.format(
-        "```java%n%s%nCause: %s%n```", e, e.getCause() == null ? "nothing" : e.getCause()), false
-      )
+      .addField("**Stack Trace:**", String.format("```java%n%s```", e), false)
       .setColor(Color.RED)
       .build();
   }

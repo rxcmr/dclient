@@ -36,6 +36,7 @@ package dcl.commands.utils;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@SuppressWarnings("unused")
 public enum SQLItemMode {
   ALL,
   KEY,
@@ -44,6 +45,8 @@ public enum SQLItemMode {
   ID,
   GID,
   KNI,
-  NULL
+  NULL,
+  WILDCARD_ALPHA,
+  WILDCARD_BETA
 }
 

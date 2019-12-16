@@ -36,15 +36,29 @@ package dcl.commands.utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+
+import static dcl.utils.GLogger.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public interface SQLUtils {
-  Connection connect() throws SQLException;
+  default Connection connect() throws SQLException {
+    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
+    return DriverManager.getConnection(url);
+  }
 
-  void createDatabase() throws SQLException;
+  default void createDatabase() throws SQLException {
+    try (Connection connection = connect()) {
+      if (connection != null) {
+        DatabaseMetaData metaData = connection.getMetaData();
+        info(metaData.getDriverName());
+      }
+    }
+  }
 
   void createTable() throws SQLException;
 

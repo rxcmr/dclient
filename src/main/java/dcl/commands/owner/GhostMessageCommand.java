@@ -1,5 +1,4 @@
-package dcl.commands.music;
-
+package dcl.commands.owner;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,31 +31,44 @@ package dcl.commands.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import dcl.commands.utils.Categories;
-import dcl.commands.utils.Loader;
-import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.StringJoiner;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class PlayTrackCommand extends Command {
-  private final Loader loader;
-
-  public PlayTrackCommand() {
-    name = "play";
-    arguments = "**<URL>**";
-    botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
-    help = "Plays a track from URL.";
-    category = Categories.MUSIC.getCategory();
-    loader = new Loader();
+public class GhostMessageCommand extends Command {
+  public GhostMessageCommand() {
+    name = "ghost";
+    help = "Sends a message to a server remotely.";
+    arguments = "**<guildID>** **<channelID>** **<message>**";
+    hidden = true;
+    ownerCommand = true;
+    category = Categories.OWNER.getCategory();
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    loader.loadAndPlay(event.getTextChannel(), event.getArgs());
+    String[] args = event.getArgs().split("\\s+");
+    TextChannel channel = Objects.requireNonNull(event.getJDA().getGuildById(args[0])).getTextChannelById(args[1]);
+    StringJoiner stringJoiner = new StringJoiner(" ");
+    Arrays.stream(args).skip(2).forEach(stringJoiner::add);
+    assert channel != null;
+    channel.sendTyping().queue();
+    try {
+      channel.sendMessage(stringJoiner.toString()).queue();
+    } catch (InsufficientPermissionException e) {
+      event.reply("Lacking permissions.");
+    }
   }
 }
+

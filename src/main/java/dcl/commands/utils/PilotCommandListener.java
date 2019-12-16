@@ -9,11 +9,13 @@ import dcl.commands.owner.CustomQueryCommand;
 import dcl.commands.owner.LatencyCommand;
 import dcl.commands.owner.ShutdownCommand;
 import dcl.commands.owner.TestCommand;
-import dcl.utils.GLogger;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
+
+import static dcl.utils.GLogger.info;
+import static dcl.utils.GLogger.warn;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -54,11 +56,15 @@ public class PilotCommandListener implements CommandListener {
   private final DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof String
       ? (c == null
-      ? d -> d.sendMessage((String) a).queue(e -> GLogger.info(e.getContentRaw().replace("```", "")))
-      : d -> d.sendMessage(a + c).queue(e -> GLogger.info(e.getContentRaw().replace("```", ""))))
+      ? d -> d.sendMessage((String) a).queue(e ->
+      info(e.getContentRaw().replaceAll("(```|java)|(```java)", "")))
+      : d -> d.sendMessage(a + c).queue(e ->
+      info(e.getContentRaw().replaceAll("(```|java)|(```java)", ""))))
       : (c == null
-      ? d -> d.sendMessage(a.toString()).queue(e -> GLogger.info(e.getContentRaw().replace("```", "")))
-      : d -> d.sendMessage(a + c).queue(e -> GLogger.info(e.getContentRaw().replace("```", ""))))
+      ? d -> d.sendMessage(a.toString()).queue(e ->
+      info(e.getContentRaw().replaceAll("(```|java)|(```java)", "")))
+      : d -> d.sendMessage(a + c).queue(e ->
+      info(e.getContentRaw().replaceAll("(```|java)|(```java)", ""))))
   );
 
   @Override
@@ -93,7 +99,7 @@ public class PilotCommandListener implements CommandListener {
       if (command instanceof ShutdownCommand) return;
       event.getMessage().addReaction("\u2705").queue();
     } catch (Exception e) {
-      GLogger.warn(e.getCause().toString());
+      warn(e.getCause().toString());
     }
   }
 

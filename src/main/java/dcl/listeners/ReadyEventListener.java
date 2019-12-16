@@ -34,6 +34,7 @@ package dcl.listeners;
 
 import dcl.Machina;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -42,6 +43,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.StringJoiner;
 
 import static dcl.utils.GLogger.info;
+import static dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -59,6 +61,8 @@ public class ReadyEventListener extends ListenerAdapter {
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     );
+    warn("Performing garbage collection...");
+    System.gc();
     StringJoiner stringJoiner = new StringJoiner(", ");
     jda.getGuilds().forEach(g -> stringJoiner.add(g.getName()));
     jda.getRestPing().queue(api -> {
@@ -70,8 +74,9 @@ public class ReadyEventListener extends ListenerAdapter {
       info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
       info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
       info("|                            | Account type: " + jda.getAccountType());
-      info("|\033[1;92m    [version   4.0.0_74]    \033[0m| WebSocket Ping: " + jda.getGatewayPing());
-      info("|\033[1;92m    [dcl version 1.6.3l]    \033[0m| API Ping: " + api);
+      info(String.format("|\033[1;92m    [version   %s]    \033[0m| WebSocket Ping: " + jda.getGatewayPing(),
+        JDAInfo.VERSION));
+      info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: " + api, Machina.VERSION));
       info("|                            | Shards: " + shards);
     });
   }

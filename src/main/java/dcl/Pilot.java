@@ -43,9 +43,14 @@ import java.util.LinkedList;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class Pilot {
-  public Pilot() throws ReflectiveOperationException {
-    final String token = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    final int shards = 2;
+  final String token;
+  final String delimiter;
+  final int shards;
+
+  public Pilot(String token, String delimiter, int shards) throws ReflectiveOperationException {
+    this.token = token;
+    this.delimiter = delimiter;
+    this.shards = shards;
     final LinkedList<Command> commands = new LinkedList<>();
     final LinkedList<Object> listeners = new LinkedList<>();
 
@@ -64,11 +69,16 @@ public class Pilot {
       .loadClasses(ListenerAdapter.class))
       listeners.add(l.getDeclaredConstructor().newInstance());
 
-    assert token != null;
-    new Machina(token, shards, commands, listeners).start();
+    new Machina(token, delimiter, shards, commands, listeners).start();
   }
 
   public static void main(String[] args) throws Exception {
-    new Pilot();
+    final String mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
+    final String mainDelimiter = "fl!";
+    //final String subToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("SUBTOKEN");
+    //final String subDelimiter = "rg!";
+    final int shards = 2;
+    new Pilot(mainToken, mainDelimiter, shards);
+    //new Pilot(subToken, subDelimiter, shards);
   }
 }

@@ -69,7 +69,9 @@ import static dcl.utils.GLogger.info;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class Machina extends Thread {
-  public static String prefix = "fl!", ID = "175610330217447424";
+  public static String prefix;
+  public static String ID = "175610330217447424";
+  public static String VERSION = "1.7.0l";
   private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
     a instanceof MessageEmbed
       ? (c == null ? d -> d.sendMessage((MessageEmbed) a).queue() : d -> d.sendMessage(a + c).queue())
@@ -92,11 +94,13 @@ public class Machina extends Thread {
   @Contract(pure = true)
   Machina
     (@NotNull final String token,
+     @NotNull final String delimiter,
      final int shards,
      @NotNull final Collection<Command> commands,
      @Nullable final Collection<Object> listeners) {
     if (shards == 0) throw new IllegalArgumentException("Shards must not equal 0.");
     this.token = token;
+    prefix = delimiter;
     this.shards = shards;
     this.commands = commands;
     this.listeners = listeners;

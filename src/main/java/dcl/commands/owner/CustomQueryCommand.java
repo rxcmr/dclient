@@ -51,6 +51,7 @@ public class CustomQueryCommand extends Command {
     arguments = "**<SQLite query>**";
     help = "Executes a SQLite query.";
     category = Categories.OWNER.getCategory();
+    hidden = true;
   }
 
   @Override
