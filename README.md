@@ -8,7 +8,7 @@ Requirements:
  and Engine ID (ENGINE_ID) field.
 
 ```java
-package dcl;
+package com.fortuneteller.dcl;
 @SuppressWarnings("ALL")
 public class Runner {
   int shards = 1;
