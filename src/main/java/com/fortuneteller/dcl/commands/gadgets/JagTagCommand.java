@@ -43,6 +43,7 @@ import com.jagrosh.jagtag.Parser;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
@@ -52,8 +53,11 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.sql.*;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -148,9 +152,8 @@ public class JagTagCommand extends Command implements SQLUtils {
                 "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
               ) throw new CommandException("Be unique, these are reserved command parameters.");
               select(SQLItemMode.ALL);
-              StringJoiner stringJoiner = new StringJoiner(" ");
-              Arrays.stream(args).skip(3).forEachOrdered(stringJoiner::add);
-              insert(SQLItemMode.GVALUE, args[2], stringJoiner.toString(), authorID);
+              String tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
+              insert(SQLItemMode.GVALUE, args[2], tagValue, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
               tags.addAll(tagCache);
@@ -165,9 +168,8 @@ public class JagTagCommand extends Command implements SQLUtils {
             }
             case "edit", "modify" -> {
               select(SQLItemMode.ALL);
-              StringJoiner stringJoiner = new StringJoiner(" ");
-              Arrays.stream(args).skip(3).forEachOrdered(stringJoiner::add);
-              update(SQLItemMode.GVALUE, args[2], stringJoiner.toString(), authorID);
+              String tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
+              update(SQLItemMode.GVALUE, args[2], tagValue, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
               tags.addAll(tagCache);
@@ -180,9 +182,8 @@ public class JagTagCommand extends Command implements SQLUtils {
             "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
           ) throw new CommandException("Be unique, these are reserved command parameters.");
           select(SQLItemMode.ALL);
-          StringJoiner stringJoiner = new StringJoiner(" ");
-          Arrays.stream(args).skip(2).forEachOrdered(stringJoiner::add);
-          insert(SQLItemMode.LVALUE, args[1], stringJoiner.toString(), authorID, guildID);
+          String tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+          insert(SQLItemMode.LVALUE, args[1], tagValue, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
           tags.addAll(tagCache);
@@ -199,9 +200,8 @@ public class JagTagCommand extends Command implements SQLUtils {
         case "edit", "modify" -> {
           if (event.isFromType(ChannelType.PRIVATE)) throw new CommandException("Use the global parameter.");
           select(SQLItemMode.ALL);
-          StringJoiner stringJoiner = new StringJoiner(" ");
-          Arrays.stream(args).skip(2).forEachOrdered(stringJoiner::add);
-          update(SQLItemMode.LVALUE, args[1], stringJoiner.toString(), authorID, guildID);
+          String tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+          update(SQLItemMode.LVALUE, args[1], tagValue, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
           tags.addAll(tagCache);
@@ -231,11 +231,11 @@ public class JagTagCommand extends Command implements SQLUtils {
                   return;
                 event.getChannel().sendTyping().queue();
                 String[] message = event.getMessage().getContentRaw().split("\\s+");
-                StringJoiner stringJoiner = new StringJoiner(" ");
-                Arrays.stream(message).forEachOrdered(stringJoiner::add);
+                String args = String.join(" ", message);
                 Parser parser = buildParser(event);
-                if (message[0].equals("!!stop")) event.getJDA().removeEventListener(this);
-                else event.getChannel().sendMessage(parser.parse(stringJoiner.toString())).queue();
+                if (message[0].equalsIgnoreCase("!!stop"))
+                  event.getJDA().removeEventListener(this);
+                else event.getChannel().sendMessage(parser.parse(args)).queue();
               }
             });
         }
@@ -269,11 +269,8 @@ public class JagTagCommand extends Command implements SQLUtils {
         new Method("owner", e ->
           Objects.requireNonNull(((CommandEvent) event).getGuild().getOwner()).getEffectiveName()),
         new Method("ownerID", e -> Objects.requireNonNull(((CommandEvent) event).getGuild().getOwner()).getId()),
-        new Method("roles", e -> {
-          StringJoiner stringJoiner = new StringJoiner(", ");
-          ((CommandEvent) event).getGuild().getRoles().forEach(r -> stringJoiner.add(r.getName()));
-          return stringJoiner.toString();
-        }),
+        new Method("roles", e -> ((CommandEvent) event).getGuild()
+          .getRoles().stream().map(Role::getName).collect(Collectors.joining(", "))),
         new Method("randMember", e ->
           ((CommandEvent) event).getGuild().getMembers()
             .get(new SecureRandom().nextInt(((CommandEvent) event).getGuild().getMembers().size())).getEffectiveName()),
@@ -291,17 +288,16 @@ public class JagTagCommand extends Command implements SQLUtils {
         new Method("mAuthor", e -> ((GuildMessageReceivedEvent) event).getAuthor().getAsMention()),
         new Method("guild", e -> ((GuildMessageReceivedEvent) event).getGuild().getName()),
         new Method("guildID", e -> ((GuildMessageReceivedEvent) event).getGuild().getId()),
-        new Method("memberCount", e -> String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getMemberCount())),
-        new Method("boostCount", e -> String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getBoostCount())),
+        new Method("memberCount", e ->
+          String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getMemberCount())),
+        new Method("boostCount", e ->
+          String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getBoostCount())),
         new Method("owner", e ->
           Objects.requireNonNull(((GuildMessageReceivedEvent) event).getGuild().getOwner()).getEffectiveName()),
         new Method("ownerID", e ->
           Objects.requireNonNull(((GuildMessageReceivedEvent) event).getGuild().getOwner()).getId()),
-        new Method("roles", e -> {
-          StringJoiner stringJoiner = new StringJoiner(", ");
-          ((GuildMessageReceivedEvent) event).getGuild().getRoles().forEach(r -> stringJoiner.add(r.getName()));
-          return stringJoiner.toString();
-        }),
+        new Method("roles", e -> ((GuildMessageReceivedEvent) event).getGuild()
+          .getRoles().stream().map(Role::getName).collect(Collectors.joining(", "))),
         new Method("randMember", e ->
           ((GuildMessageReceivedEvent) event).getGuild().getMembers()
             .get(new SecureRandom().nextInt(((GuildMessageReceivedEvent) event).getGuild().getMembers().size()))

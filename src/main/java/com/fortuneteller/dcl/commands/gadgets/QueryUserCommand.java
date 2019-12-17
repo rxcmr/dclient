@@ -36,13 +36,12 @@ import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -75,12 +74,11 @@ public class QueryUserCommand extends Command {
   @NotNull
   private MessageEmbed buildEmbed(@NotNull Member member, @NotNull User author) {
     User user = member.getUser();
-    StringJoiner permissions = new StringJoiner(", ");
-    member.getPermissions().forEach(p -> permissions.add(p.toString()));
-    StringJoiner roles = new StringJoiner(", ");
-    member.getRoles().forEach(r -> roles.add(r.getName()));
-    StringJoiner clientType = new StringJoiner(", ");
-    member.getActiveClients().forEach(c -> clientType.add(c.getKey()));
+    String permissions = member.getPermissions().stream()
+      .map(Permission::getName).collect(Collectors.joining(", "));
+    String roles = member.getRoles().stream().map(Role::getName).collect(Collectors.joining(", "));
+    String clientType = member.getActiveClients().stream()
+      .map(ClientType::getKey).collect(Collectors.joining(", "));
     embedBuilder
       .setTitle("**Queried: **" + user.getName())
       .setDescription(String.format("**Member: **`%s`%n**User: **`%s`", user, member))
@@ -93,9 +91,9 @@ public class QueryUserCommand extends Command {
       .addField("**Discord Join Date: **", user.getTimeCreated().toString(), false)
       .addField("**Guild Join Date: **", member.getTimeJoined().toString(), false)
       .addField("**Status: **", member.getOnlineStatus().getKey(), false)
-      .addField("**Permissions: **", permissions.toString(), false)
-      .addField("**Roles: **", member.getRoles().isEmpty() ? "None" : roles.toString(), false)
-      .addField("**Type: **", clientType.toString(), false)
+      .addField("**Permissions: **", permissions, false)
+      .addField("**Roles: **", member.getRoles().isEmpty() ? "None" : roles, false)
+      .addField("**Type: **", clientType, false)
       .setColor(0x41 + 0x64 + 0x64 + 0x65 + 0x72)
       .setFooter("requested by: " + author.getName(), Objects.requireNonNull(author.getAvatarUrl()));
     return embedBuilder.build();

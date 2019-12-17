@@ -36,13 +36,15 @@ import com.fortuneteller.dcl.Machina;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import static com.fortuneteller.dcl.utils.GLogger.info;
+import static com.fortuneteller.dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -61,14 +63,13 @@ public class ReadyEventListener extends ListenerAdapter {
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     );
-    StringJoiner stringJoiner = new StringJoiner(", ");
-    jda.getGuilds().forEach(g -> stringJoiner.add(g.getName()));
+    String guilds = jda.getGuilds().stream().map(Guild::getName).collect(Collectors.joining(", "));
     jda.getRestPing().queue(api -> {
       info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
       info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
       info("|\033[1;95m       ██╗██████╗  █████╗   \033[0m| Guilds available: " + event.getGuildAvailableCount());
       info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Machina.ID);
-      info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + stringJoiner.toString());
+      info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + guilds);
       info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
       info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
       info("|                            | Account type: " + jda.getAccountType());
@@ -77,5 +78,7 @@ public class ReadyEventListener extends ListenerAdapter {
       info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: %s", Machina.VERSION, api));
       info("|                            | Shards: " + shards);
     });
+    System.gc();
+    warn("Garbage collection happening soon...");
   }
 }

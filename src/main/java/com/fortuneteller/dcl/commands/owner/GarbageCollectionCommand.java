@@ -35,40 +35,25 @@ package com.fortuneteller.dcl.commands.owner;
 import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import static com.fortuneteller.dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class GhostMessageCommand extends Command {
-  public GhostMessageCommand() {
-    name = "ghost";
-    help = "Sends a message to a server remotely.";
-    arguments = "**<guildID>** **<channelID>** **<message>**";
-    hidden = true;
+public class GarbageCollectionCommand extends Command {
+  public GarbageCollectionCommand() {
+    name = "gc";
+    help = "Perform garbage collection.";
     ownerCommand = true;
+    hidden = true;
     category = Categories.OWNER.getCategory();
   }
 
   @Override
-  protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
-    TextChannel channel = Objects.requireNonNull(event.getJDA().getGuildById(args[0])).getTextChannelById(args[1]);
-    String message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
-    assert channel != null;
-    channel.sendTyping().queue();
-    try {
-      channel.sendMessage(message).queue();
-    } catch (InsufficientPermissionException e) {
-      event.reply("Lacking permissions.");
-    }
+  protected void execute(CommandEvent event) {
+    warn("Garbage collection happening soon...");
+    System.gc();
   }
 }
-
