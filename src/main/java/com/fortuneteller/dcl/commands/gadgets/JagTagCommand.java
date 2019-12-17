@@ -49,12 +49,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.SecureRandom;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.StringJoiner;
+import java.util.*;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -262,15 +261,55 @@ public class JagTagCommand extends Command implements SQLUtils {
     if (event instanceof CommandEvent) {
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
         new Method("author", e -> ((CommandEvent) event).getAuthor().getName()),
+        new Method("mAuthor", e -> ((CommandEvent) event).getAuthor().getAsMention()),
+        new Method("guild", e -> ((CommandEvent) event).getGuild().getName()),
+        new Method("guildID", e -> ((CommandEvent) event).getGuild().getId()),
+        new Method("memberCount", e -> String.valueOf(((CommandEvent) event).getGuild().getMemberCount())),
+        new Method("boostCount", e -> String.valueOf(((CommandEvent) event).getGuild().getBoostCount())),
+        new Method("owner", e ->
+          Objects.requireNonNull(((CommandEvent) event).getGuild().getOwner()).getEffectiveName()),
+        new Method("ownerID", e -> Objects.requireNonNull(((CommandEvent) event).getGuild().getOwner()).getId()),
+        new Method("roles", e -> {
+          StringJoiner stringJoiner = new StringJoiner(", ");
+          ((CommandEvent) event).getGuild().getRoles().forEach(r -> stringJoiner.add(r.getName()));
+          return stringJoiner.toString();
+        }),
+        new Method("randMember", e ->
+          ((CommandEvent) event).getGuild().getMembers()
+            .get(new SecureRandom().nextInt(((CommandEvent) event).getGuild().getMembers().size())).getEffectiveName()),
+        new Method("randChannel", e ->
+          ((CommandEvent) event).getGuild().getChannels()
+            .get(new SecureRandom().nextInt(((CommandEvent) event).getGuild().getChannels().size())).getName()),
         new Method("strlen", e ->
           String.valueOf(((CommandEvent) event).getArgs().split("\\s+").length - 1)),
-        new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
-        )
+        new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date())))
       ).build();
     } else {
       assert event instanceof GuildMessageReceivedEvent;
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
         new Method("author", e -> ((GuildMessageReceivedEvent) event).getAuthor().getName()),
+        new Method("mAuthor", e -> ((GuildMessageReceivedEvent) event).getAuthor().getAsMention()),
+        new Method("guild", e -> ((GuildMessageReceivedEvent) event).getGuild().getName()),
+        new Method("guildID", e -> ((GuildMessageReceivedEvent) event).getGuild().getId()),
+        new Method("memberCount", e -> String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getMemberCount())),
+        new Method("boostCount", e -> String.valueOf(((GuildMessageReceivedEvent) event).getGuild().getBoostCount())),
+        new Method("owner", e ->
+          Objects.requireNonNull(((GuildMessageReceivedEvent) event).getGuild().getOwner()).getEffectiveName()),
+        new Method("ownerID", e ->
+          Objects.requireNonNull(((GuildMessageReceivedEvent) event).getGuild().getOwner()).getId()),
+        new Method("roles", e -> {
+          StringJoiner stringJoiner = new StringJoiner(", ");
+          ((GuildMessageReceivedEvent) event).getGuild().getRoles().forEach(r -> stringJoiner.add(r.getName()));
+          return stringJoiner.toString();
+        }),
+        new Method("randMember", e ->
+          ((GuildMessageReceivedEvent) event).getGuild().getMembers()
+            .get(new SecureRandom().nextInt(((GuildMessageReceivedEvent) event).getGuild().getMembers().size()))
+            .getEffectiveName()),
+        new Method("randChannel", e ->
+          ((GuildMessageReceivedEvent) event).getGuild().getChannels()
+            .get(new SecureRandom().nextInt(((GuildMessageReceivedEvent) event).getGuild().getChannels().size()))
+            .getName()),
         new Method("strlen", e ->
           String.valueOf(((GuildMessageReceivedEvent) event).getMessage().getContentRaw().split("\\s+").length)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))

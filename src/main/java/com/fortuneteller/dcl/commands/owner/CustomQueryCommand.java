@@ -155,7 +155,7 @@ public class CustomQueryCommand extends Command {
   }
 
   public Connection connect() throws SQLException {
-    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/JagTag.sqlite";
+    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
     return DriverManager.getConnection(url);
   }
 }

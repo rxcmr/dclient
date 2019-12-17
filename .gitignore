@@ -24,4 +24,4 @@
 # actual files
 .env
 .gitconfig
-/src/main/resources/JagTag.sqlite
+/src/main/resources/PilotDB.sqlite

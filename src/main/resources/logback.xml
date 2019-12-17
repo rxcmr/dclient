@@ -34,8 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
   <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
       <pattern>
-        %d %boldMagenta(%thread) %boldWhite(->) %boldGreen(%logger{0}) %boldWhite(->) %highlight(%-0level)
-        %boldWhite(->) %msg%n
+        %d %boldMagenta(%thread) -> %boldGreen(%logger{0}) -> %highlight(%-0level) -> %msg%n
       </pattern>
     </encoder>
   </appender>
