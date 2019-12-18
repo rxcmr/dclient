@@ -34,6 +34,8 @@ package com.fortuneteller.dcl.utils;
 
 import org.slf4j.LoggerFactory;
 
+import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
+
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
@@ -42,26 +44,24 @@ public class PilotUtils {
   private PilotUtils() {
   }
 
-  private static StackWalker.Option retainReference = StackWalker.Option.RETAIN_CLASS_REFERENCE;
-
   public static void info(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).info(msg);
+    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).info(msg);
   }
 
   public static void warn(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).warn(msg);
+    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).warn(msg);
   }
 
   public static void error(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).error(msg);
+    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).error(msg);
   }
 
   public static void error(String msg, Exception e) {
-    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).error(msg, e);
+    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).error(msg, e);
   }
 
   public static void debug(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).debug(msg);
+    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).debug(msg);
   }
 
   public static void gc() {
