@@ -103,16 +103,16 @@ public class Contraption extends Thread implements DirectMessage {
     return contraption;
   }
 
+  private synchronized void setInstance(Contraption contraption) {
+    Contraption.contraption = contraption;
+  }
+
   public String getPrefix() {
     return prefix;
   }
 
   private void setPrefix(final String prefix) {
     this.prefix = prefix;
-  }
-
-  private synchronized void setInstance(Contraption contraption) {
-    Contraption.contraption = contraption;
   }
 
   public @NotNull CommandClient getCommandClient() {
