@@ -249,11 +249,8 @@ public class JagTagCommand extends Command implements SQLUtils {
       }
     } catch (SQLException s) {
       event.reply(s.getMessage());
-      switch (s.getErrorCode()) {
-        case 1 -> throw new CommandException("SQLite: column doesn't exist");
-        case 19 -> throw new CommandException("Tag exists or missing parameters.");
-        default -> throw new CommandException(s.getMessage() + s.getMessage());
-      }
+      if (s.getErrorCode() == 19) throw new CommandException("Tag exists or missing parameters.");
+      else throw new CommandException(s.getMessage() + s.getMessage());
     }
   }
 

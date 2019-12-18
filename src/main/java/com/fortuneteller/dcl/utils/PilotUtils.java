@@ -38,8 +38,8 @@ import org.slf4j.LoggerFactory;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class GLogger {
-  private GLogger() {
+public class PilotUtils {
+  private PilotUtils() {
   }
 
   private static StackWalker.Option retainReference = StackWalker.Option.RETAIN_CLASS_REFERENCE;
@@ -62,5 +62,10 @@ public class GLogger {
 
   public static void debug(String msg) {
     LoggerFactory.getLogger(StackWalker.getInstance(retainReference).getCallerClass()).debug(msg);
+  }
+
+  public static void gc() {
+    warn("Garbage collection happening soon...");
+    System.gc();
   }
 }

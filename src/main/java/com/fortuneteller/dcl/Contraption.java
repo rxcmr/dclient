@@ -65,24 +65,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-import static com.fortuneteller.dcl.utils.GLogger.error;
-import static com.fortuneteller.dcl.utils.GLogger.info;
+import static com.fortuneteller.dcl.utils.PilotUtils.error;
+import static com.fortuneteller.dcl.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class Machina extends Thread {
+public class Contraption extends Thread implements DirectMessage {
   public static final String ID = "175610330217447424";
   public static final String VERSION = "1.7.0l";
   private static String prefix;
-  private DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-    a instanceof MessageEmbed
-      ? (c == null ? d -> d.sendMessage((MessageEmbed) a).queue() : d -> d.sendMessage(a + c).queue())
-      : (c == null ? d -> d.sendMessage(a.toString()).queue() : d -> d.sendMessage(a + c).queue())
-  );
   private final @NotNull String token;
+  private static Contraption contraption;
   private ShardManager shardManager;
-  private static CommandClient commandClient;
+  private CommandClient commandClient;
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
   private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
@@ -95,7 +91,7 @@ public class Machina extends Thread {
   private final int shards;
 
   @Contract(pure = true)
-  Machina
+  Contraption
     (@NotNull final String token,
      @NotNull final String delimiter,
      final int shards,
@@ -108,7 +104,7 @@ public class Machina extends Thread {
     this.shards = shards;
     this.commands = commands;
     this.listeners = listeners;
-    info("Constructor initialized");
+    info("Constructor initialized.");
   }
 
   public static synchronized String getPrefix() {
@@ -120,16 +116,25 @@ public class Machina extends Thread {
   }
 
   @SuppressWarnings("unused")
-  public ShardManager getInstance() {
-    return shardManager;
+  public static synchronized Contraption getInstance() {
+    return contraption;
   }
 
-  public static CommandClient getCommandClient() {
+  private synchronized void setInstance(Contraption contraption) {
+    Contraption.contraption = contraption;
+  }
+
+  public synchronized CommandClient getCommandClient() {
     return commandClient;
   }
 
+  @SuppressWarnings("unused")
+  public ShardManager getShardManager() {
+    return shardManager;
+  }
+
   private void helpConsumer(@NotNull CommandEvent event) {
-    dm.send(
+    sendDirectMessage(
       buildHelpEmbed(event.getAuthor(), event.getArgs()),
       event.getAuthor(),
       null
@@ -140,7 +145,7 @@ public class Machina extends Thread {
   @NotNull
   private MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
     Field[] categories = new ClassGraph()
-      .whitelistPackages("dcl.commands.utils")
+      .whitelistPackages("com.fortuneteller.dcl.commands.utils")
       .whitelistClasses("Categories")
       .scan()
       .getAllClasses()
@@ -213,7 +218,8 @@ public class Machina extends Thread {
       buildShardManager();
       info("Running.");
       info(String.format(shards > 1
-        ? "\033[1;91m%s\033[0m shards active." : "\033[1;91m%s\033[0m shard active.", shards));
+        ? "\033[1;91m%s\033[0m shards active."
+        : "\033[1;91m%s\033[0m shard active.", shards));
       commands.forEach(command -> info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m", command)));
       if (listeners == null) return;
       listeners.forEach(eventListener -> info(
@@ -230,6 +236,21 @@ public class Machina extends Thread {
   @Override
   public void run() {
     init();
+    setInstance(this);
+  }
+
+  private synchronized void buildCommandClient() {
+    info("Building \033[1;93mCommandClient\033[0m.");
+    commandClientBuilder
+      .setOwnerId(ID)
+      .setPrefix(prefix)
+      .setActivity(Activity.listening("events."))
+      .setStatus(OnlineStatus.DO_NOT_DISTURB)
+      .setListener(new PilotCommandListener())
+      .setHelpConsumer(this::helpConsumer)
+      .setShutdownAutomatically(true);
+    commands.forEach(commandClientBuilder::addCommand);
+    commandClient = commandClientBuilder.build();
   }
 
   private synchronized void buildShardManager() throws UnknownHostException, LoginException {
@@ -249,24 +270,10 @@ public class Machina extends Thread {
       .setUseShutdownNow(true)
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
-      .setChunkingFilter(ChunkingFilter.NONE);
+      .setChunkingFilter(ChunkingFilter.ALL);
     if (listeners != null) managerBuilder.addEventListeners(listeners);
     else managerBuilder.addEventListeners(new DefaultListener());
     shardManager = managerBuilder.build();
-  }
-
-  private synchronized void buildCommandClient() {
-    info("Building \033[1;93mCommandClient\033[0m.");
-    commandClientBuilder
-      .setOwnerId(ID)
-      .setPrefix(prefix)
-      .setActivity(Activity.listening("events."))
-      .setStatus(OnlineStatus.DO_NOT_DISTURB)
-      .setListener(new PilotCommandListener())
-      .setHelpConsumer(this::helpConsumer)
-      .setShutdownAutomatically(true);
-    commands.forEach(commandClientBuilder::addCommand);
-    commandClient = commandClientBuilder.build();
   }
 
   private static class DefaultListener extends ListenerAdapter {

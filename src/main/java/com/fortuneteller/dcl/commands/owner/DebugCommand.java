@@ -33,7 +33,7 @@ package com.fortuneteller.dcl.commands.owner;
  */
 
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.utils.GLogger;
+import com.fortuneteller.dcl.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import groovy.lang.GroovyShell;
@@ -92,7 +92,7 @@ public class DebugCommand extends Command {
       shell.setProperty("guild", event.getGuild());
       shell.setProperty("member", event.getMember());
       shell.setProperty("user", event.getMember().getUser());
-      shell.setProperty("logger", GLogger.class);
+      shell.setProperty("logger", PilotUtils.class);
 
       String script = imports + event.getMessage().getContentRaw().split("\\s+", 2)[1];
       Object output = shell.evaluate(script);

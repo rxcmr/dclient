@@ -37,11 +37,12 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import javax.annotation.Nonnull;
 
-import static com.fortuneteller.dcl.utils.GLogger.info;
+import static com.fortuneteller.dcl.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@SuppressWarnings("unused")
 public class ShutdownListener extends ListenerAdapter {
   @Override
   public void onShutdown(@Nonnull ShutdownEvent event) {

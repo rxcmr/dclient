@@ -33,10 +33,9 @@ package com.fortuneteller.dcl.commands.owner;
 
 
 import com.fortuneteller.dcl.commands.utils.Categories;
+import com.fortuneteller.dcl.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-
-import static com.fortuneteller.dcl.utils.GLogger.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -53,7 +52,6 @@ public class GarbageCollectionCommand extends Command {
 
   @Override
   protected void execute(CommandEvent event) {
-    warn("Garbage collection happening soon...");
-    System.gc();
+    PilotUtils.gc();
   }
 }

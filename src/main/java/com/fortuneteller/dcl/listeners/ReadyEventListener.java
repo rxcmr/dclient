@@ -32,7 +32,8 @@ package com.fortuneteller.dcl.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.Machina;
+import com.fortuneteller.dcl.Contraption;
+import com.fortuneteller.dcl.utils.PilotUtils;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
@@ -43,8 +44,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Collectors;
 
-import static com.fortuneteller.dcl.utils.GLogger.info;
-import static com.fortuneteller.dcl.utils.GLogger.warn;
+import static com.fortuneteller.dcl.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -68,17 +68,16 @@ public class ReadyEventListener extends ListenerAdapter {
       info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
       info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
       info("|\033[1;95m       ██╗██████╗  █████╗   \033[0m| Guilds available: " + event.getGuildAvailableCount());
-      info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Machina.ID);
+      info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Contraption.ID);
       info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + guilds);
       info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
       info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
       info("|                            | Account type: " + jda.getAccountType());
       info(String.format("|\033[1;92m    [version   %s]    \033[0m| WebSocket Ping: %s",
         JDAInfo.VERSION, jda.getGatewayPing()));
-      info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: %s", Machina.VERSION, api));
+      info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: %s", Contraption.VERSION, api));
       info("|                            | Shards: " + shards);
     });
-    System.gc();
-    warn("Garbage collection happening soon...");
+    PilotUtils.gc();
   }
 }

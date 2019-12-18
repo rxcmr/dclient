@@ -33,7 +33,7 @@ package com.fortuneteller.dcl.commands.owner;
  */
 
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.utils.GLogger;
+import com.fortuneteller.dcl.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
@@ -60,7 +60,7 @@ public class PauseThreadCommand extends Command {
     try {
       Thread.sleep(Integer.parseInt(event.getArgs()) * (long) 1000);
     } catch (InterruptedException e) {
-      GLogger.error("Thread paused.", e);
+      PilotUtils.error("Thread paused.", e);
       Thread.currentThread().interrupt();
     }
     event.reply(String.format("Resumed after %s seconds.", (System.currentTimeMillis() - start) / 1000));

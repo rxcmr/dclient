@@ -37,7 +37,7 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
 
-import static com.fortuneteller.dcl.utils.GLogger.warn;
+import static com.fortuneteller.dcl.utils.PilotUtils.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>

@@ -40,7 +40,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static com.fortuneteller.dcl.utils.GLogger.info;
+import static com.fortuneteller.dcl.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>

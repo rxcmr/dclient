@@ -32,7 +32,7 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.utils.GLogger;
+import com.fortuneteller.dcl.utils.PilotUtils;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -58,7 +58,7 @@ public class TrackScheduler extends AudioEventAdapter {
 
   public void queue(AudioTrack track) {
     if (!player.startTrack(track, true) && queue.offer(track)) {
-      GLogger.info("A track has been queued.");
+      PilotUtils.info("A track has been queued.");
     }
   }
 

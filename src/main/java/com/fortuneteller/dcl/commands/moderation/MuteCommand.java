@@ -36,7 +36,6 @@ import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,7 +73,7 @@ public class MuteCommand extends Command {
         .get(0);
 
       if (event.getGuild().getRoles().contains(role)) {
-        for (Member m : event.getMessage().getMentionedMembers()) {
+        event.getMessage().getMentionedMembers().forEach(m -> {
           event.getTextChannel().putPermissionOverride(role).deny(Permission.MESSAGE_WRITE).queue();
           event.getGuild().addRoleToMember(m, role).queue();
           Executors.newSingleThreadScheduledExecutor().schedule(
@@ -85,7 +84,7 @@ public class MuteCommand extends Command {
             Long.parseLong(args[0]),
             TimeUnit.MINUTES
           );
-        }
+        });
       }
     } catch (IndexOutOfBoundsException e) {
       createMutedRole(event);

@@ -50,4 +50,6 @@ public class GuildJoinListener extends ListenerAdapter {
       event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
     }
   }
+
+
 }

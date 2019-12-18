@@ -1,5 +1,6 @@
 package com.fortuneteller.dcl.commands.utils;
 
+import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,6 +41,38 @@ import org.jetbrains.annotations.Nullable;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public interface DirectMessage {
-  void send(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage);
+  static void sendStaticDirectMessage(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage) {
+    user.openPrivateChannel().queue(channel -> {
+        if (content instanceof MessageEmbed) {
+          if (exceptionMessage == null) channel.sendMessage((MessageEmbed) content).queue();
+          else channel.sendMessage(content + exceptionMessage).queue();
+        } else if (exceptionMessage == null) channel.sendMessage(content.toString()).queue();
+        else channel.sendMessage(content + exceptionMessage).queue();
+      }
+    );
+  }
+
+  @SuppressWarnings("unused")
+  static void sendStaticDirectMessageFunctionally(@NotNull Object content,
+                                                  @NotNull User user,
+                                                  @Nullable Object... optional) {
+  }
+
+  default void sendDirectMessage(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage) {
+    user.openPrivateChannel().queue(channel -> {
+        if (content instanceof MessageEmbed) {
+          if (exceptionMessage == null) channel.sendMessage((MessageEmbed) content).queue();
+          else channel.sendMessage(content + exceptionMessage).queue();
+        } else if (exceptionMessage == null) channel.sendMessage(content.toString()).queue();
+        else channel.sendMessage(content + exceptionMessage).queue();
+      }
+    );
+  }
+
+  @SuppressWarnings("unused")
+  default void sendDirectMessageFunctionally(@NotNull Object content,
+                                             @NotNull User user,
+                                             @Nullable Object... optional) {
+  }
 }
 

@@ -33,7 +33,7 @@ package com.fortuneteller.dcl.commands.owner;
  */
 
 
-import com.fortuneteller.dcl.Machina;
+import com.fortuneteller.dcl.Contraption;
 import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
@@ -54,6 +54,6 @@ public class UnloadCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    Machina.getCommandClient().removeCommand(event.getArgs());
+    Contraption.getInstance().getCommandClient().removeCommand(event.getArgs());
   }
 }

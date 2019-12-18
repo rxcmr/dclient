@@ -62,7 +62,7 @@ public class Pilot {
       .loadClasses(ListenerAdapter.class))
       listeners.add(l.getDeclaredConstructor().newInstance());
 
-    new Machina(token, prefix, shards, commands, listeners).start();
+    new Contraption(token, prefix, shards, commands, listeners).start();
   }
 
   public static void main(String[] args) throws Exception {

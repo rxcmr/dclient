@@ -1,6 +1,6 @@
 package com.fortuneteller.dcl.commands.utils;
 
-import com.fortuneteller.dcl.Machina;
+import com.fortuneteller.dcl.Contraption;
 import com.fortuneteller.dcl.commands.gadgets.JagTagCommand;
 import com.fortuneteller.dcl.commands.owner.CustomQueryCommand;
 import com.fortuneteller.dcl.commands.owner.LatencyCommand;
@@ -14,8 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-import static com.fortuneteller.dcl.utils.GLogger.info;
-import static com.fortuneteller.dcl.utils.GLogger.warn;
+import static com.fortuneteller.dcl.utils.PilotUtils.warn;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -53,23 +52,9 @@ import static com.fortuneteller.dcl.utils.GLogger.warn;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class PilotCommandListener implements CommandListener {
-  private final DirectMessage dm = (a, b, c) -> b.openPrivateChannel().queue(
-    a instanceof String
-      ? (c == null
-      ? d -> d.sendMessage((String) a).queue(e ->
-      info(e.getContentRaw().replaceAll("(```|java)|(```java)", "")))
-      : d -> d.sendMessage(a + c).queue(e ->
-      info(e.getContentRaw().replaceAll("(```|java)|(```java)", ""))))
-      : (c == null
-      ? d -> d.sendMessage(a.toString()).queue(e ->
-      info(e.getContentRaw().replaceAll("(```|java)|(```java)", "")))
-      : d -> d.sendMessage(a + c).queue(e ->
-      info(e.getContentRaw().replaceAll("(```|java)|(```java)", ""))))
-  );
-
   @Override
   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
-    final User owner = event.getJDA().getUserById(Machina.ID);
+    final User owner = event.getJDA().getUserById(Contraption.ID);
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\uD83D\uDE41").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
@@ -86,11 +71,11 @@ public class PilotCommandListener implements CommandListener {
       event.reply(
         command.getArguments() == null
           ? "Something wrong happened..."
-          : Machina.getPrefix() + command.getName() + " " + command.getArguments()
+          : Contraption.getPrefix() + command.getName() + " " + command.getArguments()
       );
     }
     assert owner != null;
-    dm.send("```java\n", owner, String.format("%s%n```", throwable));
+    DirectMessage.sendStaticDirectMessage("```java\n", owner, String.format("%s%n```", throwable));
   }
 
   @Override
@@ -105,11 +90,11 @@ public class PilotCommandListener implements CommandListener {
 
   @Override
   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
-    final User owner = Objects.requireNonNull(event.getJDA().getUserById(Machina.ID));
+    final User owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.ID));
     event.getMessage().addReaction("\uD83E\uDD2C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");
-    dm.send(
+    DirectMessage.sendStaticDirectMessage(
       "Unexpected behavior. Triggered by: ",
       owner,
       event.getAuthor() + " in " + event.getGuild()
