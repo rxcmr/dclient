@@ -71,7 +71,7 @@ public class PilotCommandListener implements CommandListener {
       event.reply(
         command.getArguments() == null
           ? "Something wrong happened..."
-          : Contraption.getPrefix() + command.getName() + " " + command.getArguments()
+          : Contraption.getInstance().getPrefix() + command.getName() + " " + command.getArguments()
       );
     }
     assert owner != null;

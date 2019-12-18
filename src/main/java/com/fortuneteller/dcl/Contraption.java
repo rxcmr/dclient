@@ -39,7 +39,6 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import io.github.classgraph.ClassGraph;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
@@ -58,7 +57,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.security.auth.login.LoginException;
-import java.lang.reflect.Field;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -74,66 +72,66 @@ import static com.fortuneteller.dcl.utils.PilotUtils.info;
 public class Contraption extends Thread implements DirectMessage {
   public static final String ID = "175610330217447424";
   public static final String VERSION = "1.7.0l";
-  private static String prefix;
   private final @NotNull String token;
+  private final int shards;
+  private final @NotNull Collection<Command> commands;
+  private final @Nullable Collection<Object> listeners;
+  private String prefix;
   private static Contraption contraption;
   private ShardManager shardManager;
   private CommandClient commandClient;
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
-  private final DefaultShardManagerBuilder managerBuilder = new DefaultShardManagerBuilder();
-  private final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
-  private final @NotNull Collection<Command> commands;
-  private final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
-  private final List<String> commandInvocation = new LinkedList<>();
-  private final List<String> commandInformation = new LinkedList<>();
-  private ThreadFactory factory = new PilotThreadFactory("Von Bolt");
-  private final @Nullable Collection<Object> listeners;
-  private final int shards;
 
   @Contract(pure = true)
   Contraption
     (@NotNull final String token,
-     @NotNull final String delimiter,
+     @NotNull final String prefix,
      final int shards,
      @NotNull final Collection<Command> commands,
      @Nullable final Collection<Object> listeners) {
     super("Von Bolt");
     if (shards == 0) throw new IllegalArgumentException("Shards must not equal 0.");
     this.token = token;
-    setPrefix(delimiter);
+    setPrefix(prefix);
     this.shards = shards;
     this.commands = commands;
     this.listeners = listeners;
     info("Constructor initialized.");
   }
 
-  public static synchronized String getPrefix() {
+  public static synchronized @NotNull Contraption getInstance() {
+    return contraption;
+  }
+
+  public String getPrefix() {
     return prefix;
   }
 
-  private synchronized void setPrefix(String delimiter) {
-    prefix = delimiter;
-  }
-
-  @SuppressWarnings("unused")
-  public static synchronized Contraption getInstance() {
-    return contraption;
+  private void setPrefix(final String prefix) {
+    this.prefix = prefix;
   }
 
   private synchronized void setInstance(Contraption contraption) {
     Contraption.contraption = contraption;
   }
 
-  public synchronized CommandClient getCommandClient() {
+  public @NotNull CommandClient getCommandClient() {
     return commandClient;
   }
 
-  @SuppressWarnings("unused")
-  public ShardManager getShardManager() {
+  private void setCommandClient(CommandClient commandClient) {
+    this.commandClient = commandClient;
+  }
+
+  public @NotNull ShardManager getShardManager() {
     return shardManager;
   }
 
-  private void helpConsumer(@NotNull CommandEvent event) {
+  private void setShardManager(ShardManager shardManager) {
+    this.shardManager = shardManager;
+  }
+
+  private void buildHelpConsumer(@NotNull CommandEvent event) {
     sendDirectMessage(
       buildHelpEmbed(event.getAuthor(), event.getArgs()),
       event.getAuthor(),
@@ -142,46 +140,38 @@ public class Contraption extends Thread implements DirectMessage {
     embedBuilder.clear();
   }
 
-  @NotNull
-  private MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
-    Field[] categories = new ClassGraph()
-      .whitelistPackages("com.fortuneteller.dcl.commands.utils")
-      .whitelistClasses("Categories")
-      .scan()
-      .getAllClasses()
-      .loadClasses()
-      .get(0)
-      .getFields();
+  private @NotNull MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
+    EnumSet<Categories> categories = EnumSet.allOf(Categories.class);
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
     if (args.equalsIgnoreCase(Categories.GADGETS.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.GADGETS.getName()),
+        String.format("**%s**", Categories.GADGETS.getName()),
         String.format("**Description:** *%s* ", Descriptions.GADGETS.getDescription()),
         false
       );
       streamCommands(Categories.GADGETS.getCategory());
     } else if (args.equalsIgnoreCase(Categories.MUSIC.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.MUSIC.getName()),
+        String.format("**%s**", Categories.MUSIC.getName()),
         String.format("**Description:** *%s* ", Descriptions.MUSIC.getDescription()),
         false);
       streamCommands(Categories.MUSIC.getCategory());
     } else if (args.equalsIgnoreCase(Categories.MODERATION.getName())) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.MODERATION.getName()),
+        String.format("**%s**", Categories.MODERATION.getName()),
         String.format("**Description:** *%s* ", Descriptions.MODERATION.getDescription()),
         false
       );
       streamCommands(Categories.MODERATION.getCategory());
     } else if (args.equalsIgnoreCase(Categories.OWNER.getName()) && author.getId().equals(ID)) {
       embedBuilder.addField(
-        String.format("**%s: **", Categories.OWNER.getName()),
+        String.format("**%s**", Categories.OWNER.getName()),
         String.format("**Description:** *%s* ", Descriptions.OWNER.getDescription()),
         false
       );
       streamCommands(Categories.OWNER.getCategory());
     } else if (args.isEmpty()) {
-      Arrays.stream(categories).forEachOrdered(
+      categories.forEach(
         category -> embedBuilder.addField(
           "**Category: " + category.getName() + "**",
           String.format("```py%n%shelp %s%n```", prefix, category.getName().toLowerCase()),
@@ -196,69 +186,49 @@ public class Contraption extends Thread implements DirectMessage {
   }
 
   private void streamCommands(Command.Category category) {
-    commandInformation.clear();
-    commandContent.clear();
-    commands.stream().filter(c -> c.getCategory() == category && !c.isHidden()).forEachOrdered(c -> {
-      commandInvocation.add(String.format("`%s%s`", prefix, c.getName()));
-      commandInformation.add(
-        c.getArguments() == null
-          ? String.format("``` - %s```", c.getHelp())
-          : String.format("``` Arguments: %s%n - %s```", c.getArguments(), c.getHelp())
-      );
-      Iterator<String> invokeIter = commandInvocation.iterator();
-      Iterator<String> infoIter = commandInformation.iterator();
-      while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
-    });
+    final List<String> commandInvocation = new LinkedList<>();
+    final List<String> commandInformation = new LinkedList<>();
+    final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+    commands.stream()
+      .filter(c -> c.getCategory() == category && (!c.isHidden() || c.isOwnerCommand()))
+      .forEachOrdered(c -> {
+        commandInvocation.add(String.format("`%s%s`", prefix, c.getName()));
+        if (c.getArguments() == null && c.isGuildOnly())
+          commandInformation.add(String.format("```GUILD ONLY %n - %s```", c.getHelp()));
+        else if (c.isGuildOnly())
+          commandInformation.add(String.format("```GUILD ONLY %n Arguments: %s%n - %s```",
+            c.getArguments(), c.getHelp()));
+        else if (c.getArguments() != null) commandInformation.add(String.format("```- %s```", c.getHelp()));
+        else commandInformation.add(String.format("```Arguments: %s%n - %s```", c.getArguments(), c.getHelp()));
+        Iterator<String> invokeIter = commandInvocation.iterator();
+        Iterator<String> infoIter = commandInformation.iterator();
+        while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
+      });
     commandContent.forEach((k, v) -> embedBuilder.addField(k, v, false));
   }
 
-  public void init() {
-    try {
-      info("Building \033[1;93mShardManager\033[0m.");
-      buildShardManager();
-      info("Running.");
-      info(String.format(shards > 1
-        ? "\033[1;91m%s\033[0m shards active."
-        : "\033[1;91m%s\033[0m shard active.", shards));
-      commands.forEach(command -> info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m", command)));
-      if (listeners == null) return;
-      listeners.forEach(eventListener -> info(
-        String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m", eventListener)));
-    } catch (LoginException l) {
-      error("LoginException occurred: ", l);
-    } catch (IllegalArgumentException i) {
-      error("Commands / EventListeners loading failed!");
-    } catch (UnknownHostException u) {
-      error("Cannot connect to REST API, CloudFlare DNS, or invalid token.");
-    }
-  }
-
-  @Override
-  public void run() {
-    init();
-    setInstance(this);
-  }
-
-  private synchronized void buildCommandClient() {
+  private synchronized @NotNull CommandClient buildCommandClient() {
+    final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
     info("Building \033[1;93mCommandClient\033[0m.");
-    commandClientBuilder
+    commands.forEach(commandClientBuilder::addCommand);
+    setCommandClient(commandClientBuilder
       .setOwnerId(ID)
       .setPrefix(prefix)
       .setActivity(Activity.listening("events."))
       .setStatus(OnlineStatus.DO_NOT_DISTURB)
       .setListener(new PilotCommandListener())
-      .setHelpConsumer(this::helpConsumer)
-      .setShutdownAutomatically(true);
-    commands.forEach(commandClientBuilder::addCommand);
-    commandClient = commandClientBuilder.build();
+      .setHelpConsumer(this::buildHelpConsumer)
+      .setShutdownAutomatically(true)
+      .build());
+    return getCommandClient();
   }
 
-  private synchronized void buildShardManager() throws UnknownHostException, LoginException {
-    buildCommandClient();
-    managerBuilder
+  private synchronized @NotNull ShardManager buildShardManager() throws UnknownHostException, LoginException {
+    ThreadFactory factory = new PilotThreadFactory("Bolt Guard");
+    setShardManager(new DefaultShardManagerBuilder()
       .setShardsTotal(shards)
       .setToken(token)
-      .addEventListeners(commandClient)
+      .addEventListeners(buildCommandClient())
       .setCompression(Compression.ZLIB)
       .setCallbackPool(Executors.newFixedThreadPool(shards, factory), true)
       .setGatewayPool(Executors.newScheduledThreadPool(shards, factory), true)
@@ -270,10 +240,36 @@ public class Contraption extends Thread implements DirectMessage {
       .setUseShutdownNow(true)
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
-      .setChunkingFilter(ChunkingFilter.ALL);
-    if (listeners != null) managerBuilder.addEventListeners(listeners);
-    else managerBuilder.addEventListeners(new DefaultListener());
-    shardManager = managerBuilder.build();
+      .setChunkingFilter(ChunkingFilter.ALL)
+      .addEventListeners(listeners != null ? listeners : Collections.singletonList(new DefaultListener()))
+      .build());
+    return getShardManager();
+  }
+
+  @Override
+  public void run() {
+    try {
+      info("Building \033[1;93mShardManager\033[0m.");
+      shardManager = buildShardManager();
+      info("Running.");
+      info(String.format(shards > 1
+        ? "\033[1;91m%s\033[0m shards active."
+        : "\033[1;91m%s\033[0m shard active.", shards));
+      commands.forEach(command -> info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m", command)));
+      if (listeners == null) return;
+      listeners.forEach(eventListener -> info(
+        String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m", eventListener)));
+    } catch (LoginException l) {
+      error("Invalid token.");
+    } catch (IllegalArgumentException i) {
+      error("\033[1;93mCommands\033[0m/\033[1;93mEventListeners\033[0m loading failed!");
+    } catch (UnknownHostException u) {
+      error("""
+        Cannot connect to \033[1;95mDiscord API\033[0m/\033[1;95mWebSocket\033[0m, or \033[1;94mCloudFlare DNS\033[0m.
+        """);
+    } finally {
+      setInstance(this);
+    }
   }
 
   private static class DefaultListener extends ListenerAdapter {
