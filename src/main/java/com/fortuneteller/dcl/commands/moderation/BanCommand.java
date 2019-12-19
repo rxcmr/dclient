@@ -56,7 +56,7 @@ public class BanCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
+    var args = event.getArgs().split("\\s+");
     event.getChannel().sendTyping().queue();
     for (Member m : event.getMessage().getMentionedMembers()) m.ban(Integer.parseInt(args[1])).queue();
   }

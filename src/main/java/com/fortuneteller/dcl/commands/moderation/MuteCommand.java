@@ -36,7 +36,6 @@ import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Role;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executors;
@@ -64,8 +63,8 @@ public class MuteCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     try {
-      String[] args = event.getArgs().split("\\s+");
-      Role role = event.getGuild()
+      var args = event.getArgs().split("\\s+");
+      var role = event.getGuild()
         .getRoles()
         .stream()
         .filter(r -> r.getPermissionsRaw() == 0x0)

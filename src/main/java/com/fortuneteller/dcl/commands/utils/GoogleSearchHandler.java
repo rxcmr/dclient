@@ -34,10 +34,8 @@ package com.fortuneteller.dcl.commands.utils;
 
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import org.apache.http.impl.execchain.RequestAbortedException;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -83,15 +81,15 @@ public class GoogleSearchHandler {
     try {
       if (googleAPIKey == null) throw new IllegalStateException("API Key must not be null!");
       if (engineId == null || engineId.isEmpty()) throw new IllegalArgumentException("Engine ID must not be empty!");
-      LocalDateTime currentTime = LocalDateTime.now();
+      var currentTime = LocalDateTime.now();
       if (currentTime.isAfter(startingDate.plusDays(1))) {
         startingDate = currentTime;
         apiUsageCounter = 1;
       } else if (apiUsageCounter >= 80) throw new IllegalStateException("Limit reached. (80)");
       terms = terms.replace(" ", "%20");
-      String searchUrl = String.format(URL, engineId, googleAPIKey, resultCount, terms);
-      URL searchURL = new URL(searchUrl);
-      Request request = new Request.Builder().url(searchURL).build();
+      var searchUrl = String.format(URL, engineId, googleAPIKey, resultCount, terms);
+      var searchURL = new URL(searchUrl);
+      var request = new Request.Builder().url(searchURL).build();
       return performRequest(request, okHttpClient);
     } catch (IOException e) {
       return new LinkedList<>();
@@ -99,16 +97,14 @@ public class GoogleSearchHandler {
   }
 
   private static synchronized List<GoogleSearchResult> performRequest(Request request, OkHttpClient okHttpClient) {
-    try (Response response = okHttpClient.newCall(request).execute()) {
+    try (var response = okHttpClient.newCall(request).execute()) {
       if (!response.isSuccessful()) throw new RequestAbortedException("Failed to get search results.");
       apiUsageCounter++;
       String json;
-      try (BufferedReader in = new BufferedReader(
-        new InputStreamReader(Objects.requireNonNull(response.body()).byteStream())
-      )) {
+      try (var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(response.body()).byteStream()))) {
         json = in.lines().map(line -> line + "\n").collect(Collectors.joining());
       }
-      JSONArray jsonResults = new JSONObject(json).getJSONArray("items");
+      var jsonResults = new JSONObject(json).getJSONArray("items");
       return IntStream.range(0, jsonResults.length())
         .mapToObj(i -> GoogleSearchResult.fromGoogle(jsonResults.getJSONObject(i)))
         .collect(Collectors.toCollection(LinkedList::new));
@@ -119,7 +115,7 @@ public class GoogleSearchHandler {
 
   @NotNull
   public static String randomName(int randomLength) {
-    char[] characters = new char[]{
+    var characters = new char[]{
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
       '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'

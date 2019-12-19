@@ -35,7 +35,6 @@ package com.fortuneteller.dcl.commands.owner;
 import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -58,9 +57,9 @@ public class GhostMessageCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
-    TextChannel channel = Objects.requireNonNull(event.getJDA().getGuildById(args[0])).getTextChannelById(args[1]);
-    String message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+    var args = event.getArgs().split("\\s+");
+    var channel = Objects.requireNonNull(event.getJDA().getGuildById(args[0])).getTextChannelById(args[1]);
+    var message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
     assert channel != null;
     channel.sendTyping().queue();
     if (channel.canTalk()) channel.sendMessage(message).queue();

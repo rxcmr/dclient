@@ -38,7 +38,9 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -56,14 +58,14 @@ public class CustomQueryCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String sql = event.getArgs();
-    try (Connection connection = connect();
-         PreparedStatement preparedStatement = connection.prepareStatement(sql);
-         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
+    var sql = event.getArgs();
+    try (var connection = connect();
+         var preparedStatement = connection.prepareStatement(sql);
+         var resultSet = preparedStatement.executeQuery()) {
+      var resultSetMetaData = resultSet.getMetaData();
       switch (resultSetMetaData.getColumnCount()) {
         case 1 -> {
-          StringBuilder markdown = new StringBuilder(String.format("""
+          var markdown = new StringBuilder(String.format("""
               ```ini
               [ %s ]
               """,
@@ -76,7 +78,7 @@ public class CustomQueryCommand extends Command {
           event.reply(markdown.toString());
         }
         case 2 -> {
-          StringBuilder markdown = new StringBuilder(String.format("""
+          var markdown = new StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ]
               """,
@@ -91,7 +93,7 @@ public class CustomQueryCommand extends Command {
           event.reply(markdown.toString());
         }
         case 3 -> {
-          StringBuilder markdown = new StringBuilder(String.format("""
+          var markdown = new StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ]
               """,
@@ -108,7 +110,7 @@ public class CustomQueryCommand extends Command {
           event.reply(markdown.toString());
         }
         case 4 -> {
-          StringBuilder markdown = new StringBuilder(String.format("""
+          var markdown = new StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
@@ -127,7 +129,7 @@ public class CustomQueryCommand extends Command {
           event.reply(markdown.toString());
         }
         case 5 -> {
-          StringBuilder markdown = new StringBuilder(String.format("""
+          var markdown = new StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
@@ -155,7 +157,7 @@ public class CustomQueryCommand extends Command {
   }
 
   public Connection connect() throws SQLException {
-    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
+    var url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
     return DriverManager.getConnection(url);
   }
 }

@@ -36,11 +36,9 @@ import com.fortuneteller.dcl.Contraption;
 import com.fortuneteller.dcl.commands.utils.Categories;
 import com.fortuneteller.dcl.commands.utils.CommandException;
 import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import io.github.classgraph.ClassGraph;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.sharding.ShardManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
@@ -62,11 +60,11 @@ public class LoadCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     try {
-      ShardManager shardManager = Contraption.getInstance().getShardManager();
-      CommandClient commandClient = Contraption.getInstance().getCommandClient();
+      var shardManager = Contraption.getInstance().getShardManager();
+      var commandClient = Contraption.getInstance().getCommandClient();
 
       if (event.getArgs().contains("Command")) {
-        Class<?> commandClass = new ClassGraph()
+        var commandClass = new ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.commands.*")
           .scan()
           .getAllClasses()
@@ -77,7 +75,7 @@ public class LoadCommand extends Command {
         Command command = (Command) commandClass.getDeclaredConstructor().newInstance();
         commandClient.addCommand(command, Contraption.getInstance().getCommandClient().getCommands().size() - 1);
       } else if (event.getArgs().contains("Listener")) {
-        Class<?> listenerClass = new ClassGraph()
+        var listenerClass = new ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.listeners")
           .scan()
           .getAllClasses()

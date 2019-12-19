@@ -51,7 +51,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -124,7 +127,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     category = Categories.GADGETS.getCategory();
     arguments = "**<modifier>** **<name>** **<content>**";
     help = "JagTag like in Spectra";
-    File db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\PilotDB.sqlite");
+    var db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\PilotDB.sqlite");
     if (!db.exists()) {
       if (db.createNewFile()) {
         createDatabase();
@@ -138,10 +141,10 @@ public class JagTagCommand extends Command implements SQLUtils {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    String[] args = event.getArgs().split("\\s+");
-    String authorID = event.getAuthor().getId();
-    String guildID = event.getGuild().getId();
-    Parser jagtag = buildParser(event);
+    var args = event.getArgs().split("\\s+");
+    var authorID = event.getAuthor().getId();
+    var guildID = event.getGuild().getId();
+    var jagtag = buildParser(event);
     event.getChannel().sendTyping().queue();
     try {
       switch (args[0]) {
@@ -152,7 +155,7 @@ public class JagTagCommand extends Command implements SQLUtils {
                 "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
               ) throw new CommandException("Be unique, these are reserved command parameters.");
               select(SQLItemMode.ALL);
-              String tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
+              var tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
               insert(SQLItemMode.GVALUE, args[2], tagValue, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
@@ -168,7 +171,7 @@ public class JagTagCommand extends Command implements SQLUtils {
             }
             case "edit", "modify" -> {
               select(SQLItemMode.ALL);
-              String tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
+              var tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
               update(SQLItemMode.GVALUE, args[2], tagValue, authorID);
               select(SQLItemMode.ALL);
               tags.clear();
@@ -182,7 +185,7 @@ public class JagTagCommand extends Command implements SQLUtils {
             "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)")
           ) throw new CommandException("Be unique, these are reserved command parameters.");
           select(SQLItemMode.ALL);
-          String tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+          var tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
           insert(SQLItemMode.LVALUE, args[1], tagValue, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
@@ -200,7 +203,7 @@ public class JagTagCommand extends Command implements SQLUtils {
         case "edit", "modify" -> {
           if (event.isFromType(ChannelType.PRIVATE)) throw new CommandException("Use the global parameter.");
           select(SQLItemMode.ALL);
-          String tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
+          var tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
           update(SQLItemMode.LVALUE, args[1], tagValue, authorID, guildID);
           select(SQLItemMode.ALL);
           tags.clear();
@@ -222,7 +225,7 @@ public class JagTagCommand extends Command implements SQLUtils {
         });
         case "eval" -> {
           event.reply("Type `!!stop` to exit.");
-          String id = event.getChannel().getId();
+          var id = event.getChannel().getId();
           event.getJDA().addEventListener(
             new ListenerAdapter() {
               @Override
@@ -230,9 +233,9 @@ public class JagTagCommand extends Command implements SQLUtils {
                 if (event.getAuthor().isBot() || event.getAuthor().isFake() || !event.getChannel().getId().equals(id))
                   return;
                 event.getChannel().sendTyping().queue();
-                String[] message = event.getMessage().getContentRaw().split("\\s+");
-                String args = String.join(" ", message);
-                Parser parser = buildParser(event);
+                var message = event.getMessage().getContentRaw().split("\\s+");
+                var args = String.join(" ", message);
+                var parser = buildParser(event);
                 if (message[0].equalsIgnoreCase("!!stop"))
                   event.getJDA().removeEventListener(this);
                 else event.getChannel().sendMessage(parser.parse(args)).queue();
@@ -313,7 +316,7 @@ public class JagTagCommand extends Command implements SQLUtils {
 
   @Override
   public void createTable() throws SQLException {
-    String sql = """
+    var sql = """
       CREATE TABLE IF NOT EXISTS tags (
         tagKey TEXT NOT NULL,
         tagValue TEXT NOT NULL,
@@ -325,7 +328,7 @@ public class JagTagCommand extends Command implements SQLUtils {
       PRAGMA auto_vacuum = FULL;
       """;
 
-    try (Connection connection = connect()) {
+    try (var connection = connect()) {
       connection.createStatement().execute(sql);
     }
   }
@@ -333,9 +336,9 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 3) throw new SQLException("Missing parameters.");
-    String sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)";
-    try (Connection connection = connect()) {
-      try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    var sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)";
+    try (var connection = connect()) {
+      try (var preparedStatement = connection.prepareStatement(sql)) {
         switch (mode) {
           case LVALUE -> {
             preparedStatement.setString(1, args[0]);
@@ -360,10 +363,10 @@ public class JagTagCommand extends Command implements SQLUtils {
   public void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     switch (mode) {
       case ALL -> {
-        String sql = "SELECT * FROM tags";
-        try (Connection connection = connect();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+        var sql = "SELECT * FROM tags";
+        try (var connection = connect();
+             var preparedStatement = connection.prepareStatement(sql);
+             var resultSet = preparedStatement.executeQuery()) {
           tagCache.clear();
           while (resultSet.next()) tagCache.add(new Tag().set(
             resultSet.getString("tagKey"),
@@ -391,9 +394,9 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 2) return;
-    String sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
-    try (Connection connection = connect();
-         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    var sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
+    try (var connection = connect();
+         var preparedStatement = connection.prepareStatement(sql)) {
       switch (mode) {
         case LVALUE -> {
           preparedStatement.setString(1, args[0]);
@@ -414,9 +417,9 @@ public class JagTagCommand extends Command implements SQLUtils {
   @Override
   public void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
     if (args.length < 3) return;
-    String sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
-    try (Connection connection = connect();
-         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+    var sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
+    try (var connection = connect();
+         var preparedStatement = connection.prepareStatement(sql)) {
       switch (mode) {
         case LVALUE -> {
           preparedStatement.setString(1, args[1]);
@@ -438,11 +441,11 @@ public class JagTagCommand extends Command implements SQLUtils {
 
   @Override
   public boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
-    String sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)";
+    var sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)";
     switch (mode) {
       case LVALUE -> {
-        try (Connection connection = connect();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (var connection = connect();
+             var preparedStatement = connection.prepareStatement(sql)) {
           preparedStatement.setString(1, args[0]);
           preparedStatement.setString(2, args[1]);
           try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -451,11 +454,11 @@ public class JagTagCommand extends Command implements SQLUtils {
         }
       }
       case GVALUE -> {
-        try (Connection connection = connect();
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try (var connection = connect();
+             var preparedStatement = connection.prepareStatement(sql)) {
           preparedStatement.setString(1, args[0]);
           preparedStatement.setString(2, "GLOBAL");
-          try (ResultSet resultSet = preparedStatement.executeQuery()) {
+          try (var resultSet = preparedStatement.executeQuery()) {
             return resultSet.getInt(1) == 1;
           }
         }

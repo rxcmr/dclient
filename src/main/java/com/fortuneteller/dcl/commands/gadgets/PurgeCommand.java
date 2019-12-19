@@ -60,14 +60,12 @@ public class PurgeCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     int amount = Integer.parseInt(event.getArgs());
-    event.getChannel().sendTyping().queue(
-      v -> {
-        event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));
-        event.getChannel().sendMessage("Cleared " + amount + " messages.").submit()
-          .thenCompose(msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS))
-          .whenComplete((s, e) -> {
-            if (e != null) event.reply("I was not able to remove my message.");
-          });
+    event.getChannel().sendTyping().queue();
+    event.getChannel().getHistory().retrievePast(amount).queue(messages -> event.getChannel().purgeMessages(messages));
+    event.getChannel().sendMessage("Cleared " + amount + " messages.").submit()
+      .thenCompose(msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS))
+      .whenComplete((s, e) -> {
+        if (e != null) event.reply("I was not able to remove my message.");
       });
   }
 }

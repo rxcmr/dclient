@@ -38,7 +38,6 @@ import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -63,9 +62,9 @@ public class JavadocCommand extends Command {
       .stream(JavadocPackages.values())
       .map(j -> String.format(j.getUrl(), event.getArgs()))
       .forEachOrdered(formatted -> {
-        OkHttpClient okHttpClient = new OkHttpClient();
-        Request request = new Request.Builder().url(formatted).head().build();
-        try (Response response = okHttpClient.newCall(request).execute()) {
+        var okHttpClient = new OkHttpClient();
+        var request = new Request.Builder().url(formatted).head().build();
+        try (var response = okHttpClient.newCall(request).execute()) {
           if (response.code() == 200) {
             event.reply(formatted);
           }

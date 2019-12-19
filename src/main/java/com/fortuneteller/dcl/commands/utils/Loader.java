@@ -47,7 +47,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
@@ -56,6 +55,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -70,18 +70,13 @@ public class Loader {
   }
 
   private static void connectToFirstVoiceChannel(@NotNull AudioManager audioManager) {
-    if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect()) {
-      for (VoiceChannel voiceChannel : audioManager.getGuild().getVoiceChannels()) {
-        if (voiceChannel != null) {
-          audioManager.openAudioConnection(voiceChannel);
-          break;
-        }
-      }
-    }
+    if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect())
+      audioManager.getGuild()
+        .getVoiceChannels().stream().filter(Objects::nonNull).findFirst().ifPresent(audioManager::openAudioConnection);
   }
 
   public void loadAndPlay(@NotNull final TextChannel channel, final String trackUrl) {
-    MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    var musicManager = getGuildAudioPlayer(channel.getGuild());
     playerManager.loadItemOrdered(musicManager, trackUrl, new AudioLoadResultHandler() {
       @Override
       public void trackLoaded(AudioTrack track) {
@@ -91,7 +86,7 @@ public class Loader {
 
       @Override
       public void playlistLoaded(AudioPlaylist playlist) {
-        AudioTrack firstTrack = playlist.getSelectedTrack();
+        var firstTrack = playlist.getSelectedTrack();
         if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
         channel.sendMessageFormat("Adding to queue: *%s* *(first track of playlist %s)*",
           firstTrack.getInfo().title,
@@ -117,7 +112,7 @@ public class Loader {
   }
 
   public void skipTrack(@NotNull TextChannel channel) {
-    MusicManager musicManager = getGuildAudioPlayer(channel.getGuild());
+    var musicManager = getGuildAudioPlayer(channel.getGuild());
     musicManager.scheduler.nextTrack();
     channel.sendMessage("Skipped.").queue();
   }
@@ -125,7 +120,7 @@ public class Loader {
   @NotNull
   private synchronized MusicManager getGuildAudioPlayer(@NotNull Guild guild) {
     long guildId = Long.parseLong(guild.getId());
-    MusicManager musicManager = musicManagers.computeIfAbsent(guildId, g -> new MusicManager(playerManager));
+    var musicManager = musicManagers.computeIfAbsent(guildId, g -> new MusicManager(playerManager));
     guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
     return musicManager;
   }
@@ -133,7 +128,7 @@ public class Loader {
   @NotNull
   @Contract("_ -> param1")
   private AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
-    YoutubeAudioSourceManager youtubeAudioSourceManager = new YoutubeAudioSourceManager();
+    var youtubeAudioSourceManager = new YoutubeAudioSourceManager();
     youtubeAudioSourceManager.configureRequests(
       config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
     );

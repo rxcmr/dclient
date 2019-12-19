@@ -36,7 +36,6 @@ import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import org.jetbrains.annotations.NotNull;
 
@@ -60,8 +59,8 @@ public class LatencyCommand extends Command {
   }
 
   public synchronized void buildEmbed(@NotNull CommandEvent event) {
-    JDA jda = event.getJDA();
-    EmbedBuilder embedBuilder = new EmbedBuilder();
+    var jda = event.getJDA();
+    var embedBuilder = new EmbedBuilder();
     jda.getRestPing().queue(api -> embed = embedBuilder
       .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
       .addField("**API: **", "```py\n" + api + " ms\n```", true)
@@ -73,13 +72,10 @@ public class LatencyCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> {
-        buildEmbed(event);
-        Executors.newScheduledThreadPool(1).schedule(
-          () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
-        );
-      }
+    event.getChannel().sendTyping().queue();
+    buildEmbed(event);
+    Executors.newScheduledThreadPool(1).schedule(
+      () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
     );
   }
 }

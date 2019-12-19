@@ -34,13 +34,10 @@ package com.fortuneteller.dcl.commands.gadgets;
 
 import com.fortuneteller.dcl.commands.utils.Categories;
 import com.fortuneteller.dcl.commands.utils.GoogleSearchHandler;
-import com.fortuneteller.dcl.commands.utils.GoogleSearchResult;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -59,12 +56,12 @@ public class GoogleSearchCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    final String apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
-    final String engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
-    final String[] queryArray = event.getArgs().split("\\s+");
-    String query = String.join(" ", queryArray);
+    final var apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
+    final var engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
+    final var queryArray = event.getArgs().split("\\s+");
+    var query = String.join(" ", queryArray);
     GoogleSearchHandler.init(apiKey);
-    List<GoogleSearchResult> results = GoogleSearchHandler.performSearch(
+    var results = GoogleSearchHandler.performSearch(
       engineID, query, event.getJDA().getHttpClient());
     event.reply(results.get(0).getSuggestedResult());
   }

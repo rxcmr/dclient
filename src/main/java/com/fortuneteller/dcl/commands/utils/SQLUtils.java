@@ -36,7 +36,6 @@ package com.fortuneteller.dcl.commands.utils;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
@@ -47,14 +46,14 @@ import static com.fortuneteller.dcl.utils.PilotUtils.info;
  */
 public interface SQLUtils {
   default Connection connect() throws SQLException {
-    String url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
+    var url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
     return DriverManager.getConnection(url);
   }
 
   default void createDatabase() throws SQLException {
-    try (Connection connection = connect()) {
+    try (var connection = connect()) {
       if (connection != null) {
-        DatabaseMetaData metaData = connection.getMetaData();
+        var metaData = connection.getMetaData();
         info(metaData.getDriverName());
       }
     }

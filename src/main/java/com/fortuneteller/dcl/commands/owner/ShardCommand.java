@@ -53,8 +53,7 @@ public class ShardCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue(
-      v -> event.reply("Shards: " + event.getJDA().getShardInfo().getShardString())
-    );
+    event.getChannel().sendTyping().queue();
+    event.reply("Shards: " + event.getJDA().getShardInfo().getShardString());
   }
 }

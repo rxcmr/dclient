@@ -49,7 +49,7 @@ public class GoogleSearchResult {
 
   @NotNull
   public static GoogleSearchResult fromGoogle(@NotNull JSONObject googleResult) {
-    GoogleSearchResult gsr = new GoogleSearchResult();
+    var gsr = new GoogleSearchResult();
     gsr.title = cleanString(googleResult.getString("title"));
     gsr.content = cleanString(googleResult.getString("snippet"));
     gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8);

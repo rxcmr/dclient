@@ -9,7 +9,6 @@ import com.fortuneteller.dcl.commands.owner.TestCommand;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
-import net.dv8tion.jda.api.entities.User;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -54,7 +53,7 @@ import static com.fortuneteller.dcl.utils.PilotUtils.warn;
 public class PilotCommandListener implements CommandListener {
   @Override
   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
-    final User owner = event.getJDA().getUserById(Contraption.ID);
+    final var owner = event.getJDA().getUserById(Contraption.ID);
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\uD83D\uDE41").queue();
     if (command instanceof LatencyCommand) event.reply("Request did not go through.");
@@ -90,7 +89,7 @@ public class PilotCommandListener implements CommandListener {
 
   @Override
   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
-    final User owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.ID));
+    final var owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.ID));
     event.getMessage().addReaction("\uD83E\uDD2C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");

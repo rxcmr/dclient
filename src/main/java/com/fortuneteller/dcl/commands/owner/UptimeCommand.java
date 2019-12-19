@@ -38,7 +38,6 @@ import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.RuntimeMXBean;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -55,7 +54,7 @@ public class UptimeCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+    var runtimeMXBean = ManagementFactory.getRuntimeMXBean();
     long uptime = runtimeMXBean.getUptime();
     long uptimeInSeconds = uptime / 1000;
     long h = uptimeInSeconds / (60 * 60);

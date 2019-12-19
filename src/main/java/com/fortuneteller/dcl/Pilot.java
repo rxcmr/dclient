@@ -44,8 +44,8 @@ import java.util.LinkedList;
  */
 public class Pilot {
   public Pilot(final String token, final String prefix, final int shards) throws ReflectiveOperationException {
-    final LinkedList<Command> commands = new LinkedList<>();
-    final LinkedList<Object> listeners = new LinkedList<>();
+    final var commands = new LinkedList<Command>();
+    final var listeners = new LinkedList<>();
 
     for (Class<Command> c : new ClassGraph()
       .blacklistPackages("com.fortuneteller.dcl.commands.utils")
@@ -66,8 +66,8 @@ public class Pilot {
   }
 
   public static void main(String[] args) throws Exception {
-    final String mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    final String mainDelimiter = "fl!";
+    final var mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
+    final var mainDelimiter = "fl!";
     final int shards = 2;
     new Pilot(mainToken, mainDelimiter, shards);
     //final String subToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("SUBTOKEN");

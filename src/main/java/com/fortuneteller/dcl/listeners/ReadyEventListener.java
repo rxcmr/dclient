@@ -34,7 +34,6 @@ package com.fortuneteller.dcl.listeners;
 
 import com.fortuneteller.dcl.Contraption;
 import com.fortuneteller.dcl.utils.PilotUtils;
-import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDAInfo;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -51,19 +50,20 @@ import static com.fortuneteller.dcl.utils.PilotUtils.info;
  */
 @SuppressWarnings("unused")
 public class ReadyEventListener extends ListenerAdapter {
+
   @Override
   public void onReady(@NotNull ReadyEvent event) {
-    JDA jda = event.getJDA();
-    JDA.ShardInfo shardInfo = jda.getShardInfo();
-    String shards = String.format("\033[1;91m[%s/%s]\033[0m", shardInfo.getShardId() + 1, shardInfo.getShardTotal());
-    String inviteURL = jda.getInviteUrl(
+    var jda = event.getJDA();
+    var shardInfo = jda.getShardInfo();
+    var shards = String.format("\033[1;91m[%s/%s]\033[0m", shardInfo.getShardId() + 1, shardInfo.getShardTotal());
+    var inviteURL = jda.getInviteUrl(
       Permission.BAN_MEMBERS,
       Permission.KICK_MEMBERS,
       Permission.MESSAGE_MANAGE,
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     );
-    String guilds = jda.getGuilds().stream().map(Guild::getName).collect(Collectors.joining(", "));
+    var guilds = jda.getGuilds().stream().map(Guild::getName).collect(Collectors.joining(", "));
     jda.getRestPing().queue(api -> {
       info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
       info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());

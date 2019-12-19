@@ -115,8 +115,8 @@ public class DebugCommand extends Command {
   }
 
   private @NotNull MessageEmbed exceptionEmbed(@NotNull Exception e, @NotNull String args) {
-    String[] exceptionName = e.getClass().getCanonicalName().split("\\.");
-    String javadoc = String.format(
+    var exceptionName = e.getClass().getCanonicalName().split("\\.");
+    var javadoc = String.format(
       "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/%s/%s/%s.html",
       exceptionName[0], exceptionName[1], exceptionName[2]
     );

@@ -32,9 +32,13 @@ package com.fortuneteller.dcl;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.commands.utils.*;
+import com.fortuneteller.dcl.commands.utils.Categories;
+import com.fortuneteller.dcl.commands.utils.Descriptions;
+import com.fortuneteller.dcl.commands.utils.DirectMessage;
+import com.fortuneteller.dcl.commands.utils.PilotCommandListener;
 import com.fortuneteller.dcl.utils.CloudFlareDNS;
 import com.fortuneteller.dcl.utils.PilotThreadFactory;
+import com.fortuneteller.dcl.utils.UserAgentInterceptor;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
@@ -60,7 +64,6 @@ import javax.security.auth.login.LoginException;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import static com.fortuneteller.dcl.utils.PilotUtils.error;
@@ -132,9 +135,9 @@ public class Contraption extends Thread implements DirectMessage {
   }
 
   private void streamCommands(Command.Category category) {
-    final List<String> commandInvocation = new LinkedList<>();
-    final List<String> commandInformation = new LinkedList<>();
-    final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+    final var commandInvocation = new LinkedList<String>();
+    final var commandInformation = new LinkedList<String>();
+    final var commandContent = new DualLinkedHashBidiMap<String, String>();
     commands.stream()
       .filter(c -> c.getCategory() == category && (!c.isHidden() || c.isOwnerCommand()))
       .forEachOrdered(c -> {
@@ -146,15 +149,15 @@ public class Contraption extends Thread implements DirectMessage {
             c.getArguments(), c.getHelp()));
         else if (c.getArguments() != null) commandInformation.add(String.format("```- %s```", c.getHelp()));
         else commandInformation.add(String.format("```Arguments: %s%n - %s```", c.getArguments(), c.getHelp()));
-        Iterator<String> invokeIter = commandInvocation.iterator();
-        Iterator<String> infoIter = commandInformation.iterator();
+        var invokeIter = commandInvocation.iterator();
+        var infoIter = commandInformation.iterator();
         while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
       });
     commandContent.forEach((k, v) -> embedBuilder.addField(k, v, false));
   }
 
   private @NotNull MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
-    EnumSet<Categories> categories = EnumSet.allOf(Categories.class);
+    var categories = EnumSet.allOf(Categories.class);
     embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
     if (args.equalsIgnoreCase(Categories.GADGETS.getName())) {
       embedBuilder.addField(
@@ -207,8 +210,8 @@ public class Contraption extends Thread implements DirectMessage {
     embedBuilder.clear();
   }
 
-  private synchronized @NotNull CommandClient buildCommandClient() {
-    final CommandClientBuilder commandClientBuilder = new CommandClientBuilder();
+  private @NotNull CommandClient buildCommandClient() {
+    final var commandClientBuilder = new CommandClientBuilder();
     info("Building \033[1;93mCommandClient\033[0m.");
     commands.forEach(commandClientBuilder::addCommand);
     setCommandClient(commandClientBuilder
@@ -223,8 +226,8 @@ public class Contraption extends Thread implements DirectMessage {
     return getCommandClient();
   }
 
-  private synchronized @NotNull ShardManager buildShardManager() throws UnknownHostException, LoginException {
-    ThreadFactory factory = new PilotThreadFactory("Bolt Guard");
+  private @NotNull ShardManager buildShardManager() throws UnknownHostException, LoginException {
+    var factory = new PilotThreadFactory("Bolt Guard");
     setShardManager(new DefaultShardManagerBuilder()
       .setShardsTotal(shards)
       .setToken(token)
@@ -248,6 +251,7 @@ public class Contraption extends Thread implements DirectMessage {
 
   @Override
   public void run() {
+    var exceptionThrown = false;
     try {
       info("Building \033[1;93mShardManager\033[0m.");
       shardManager = buildShardManager();
@@ -261,15 +265,22 @@ public class Contraption extends Thread implements DirectMessage {
         String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m", eventListener)));
     } catch (LoginException l) {
       error("Invalid token.");
+      exceptionThrown = true;
     } catch (IllegalArgumentException i) {
       error("\033[1;93mCommands\033[0m/\033[1;93mEventListeners\033[0m loading failed!");
+      exceptionThrown = true;
     } catch (UnknownHostException u) {
       error("""
         Cannot connect to \033[1;95mDiscord API\033[0m/\033[1;95mWebSocket\033[0m, or \033[1;94mCloudFlare DNS\033[0m.
         """);
+      exceptionThrown = true;
     } finally {
-      info("\033[1;93mContraption\033[0m instance: " + this);
-      setInstance(this);
+      if (exceptionThrown) {
+        error("My disappointment is immeasurable, and my day is ruined.");
+      } else {
+        info("\033[1;93mContraption\033[0m instance: " + this);
+        setInstance(this);
+      }
     }
   }
 

@@ -62,10 +62,10 @@ public class QueryUserCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    Member member = event.getMessage().getMentionedMembers().isEmpty()
+    var member = event.getMessage().getMentionedMembers().isEmpty()
       ? (Member) event.getJDA().getUserById(event.getArgs())
       : event.getMessage().getMentionedMembers().get(0);
-    User author = event.getAuthor();
+    var author = event.getAuthor();
     assert member != null;
     event.reply(buildEmbed(member, author));
     embedBuilder.clear();
@@ -73,11 +73,11 @@ public class QueryUserCommand extends Command {
 
   @NotNull
   private MessageEmbed buildEmbed(@NotNull Member member, @NotNull User author) {
-    User user = member.getUser();
-    String permissions = member.getPermissions().stream()
+    var user = member.getUser();
+    var permissions = member.getPermissions().stream()
       .map(Permission::getName).collect(Collectors.joining(", "));
-    String roles = member.getRoles().stream().map(Role::getName).collect(Collectors.joining(", "));
-    String clientType = member.getActiveClients().stream()
+    var roles = member.getRoles().stream().map(Role::getName).collect(Collectors.joining(", "));
+    var clientType = member.getActiveClients().stream()
       .map(ClientType::getKey).collect(Collectors.joining(", "));
     embedBuilder
       .setTitle("**Queried: **" + user.getName())
