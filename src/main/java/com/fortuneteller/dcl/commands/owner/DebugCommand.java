@@ -33,7 +33,6 @@ package com.fortuneteller.dcl.commands.owner;
  */
 
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import groovy.lang.GroovyShell;
@@ -74,15 +73,19 @@ public class DebugCommand extends Command {
       import net.dv8tion.jda.core.managers.*
       import net.dv8tion.jda.core.managers.impl.*
       import net.dv8tion.jda.core.utils.*
-      import dcl.commands.*
-      import dcl.listeners.*
-      import dcl.commands.utils.*
-      import dcl.music.*
+      import com.fortuneteller.dcl.commands.gadgets.*
+      import com.fortuneteller.dcl.commands.owner.*
+      import com.fortuneteller.dcl.commands.music.*
+      import com.fortuneteller.dcl.commands.moderation.*
+      import com.fortuneteller.dcl.listeners.*
+      import com.fortuneteller.dcl.commands.utils.*
+      import com.fortuneteller.dcl.utils.*
       """;
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
+    String input = event.getArgs().replaceAll("(```[a-z]*)", "");
     try {
       shell.setProperty("args", event.getArgs());
       shell.setProperty("event", event);
@@ -92,37 +95,26 @@ public class DebugCommand extends Command {
       shell.setProperty("guild", event.getGuild());
       shell.setProperty("member", event.getMember());
       shell.setProperty("user", event.getMember().getUser());
-      shell.setProperty("logger", PilotUtils.class);
-
-      String script = imports + event.getMessage().getContentRaw().split("\\s+", 2)[1];
-      Object output = shell.evaluate(script);
-
-      event.reply(buildEmbed(output, event.getArgs()));
+      event.reply(buildEmbed(shell.evaluate(imports + input), input));
       embedBuilder.clear();
     } catch (Exception e) {
-      event.reply(exceptionEmbed(e, event.getArgs()));
+      event.reply(exceptionEmbed(e, input));
       embedBuilder.clear();
     }
   }
 
-  @NotNull
-  private MessageEmbed buildEmbed(@Nullable Object output, @NotNull String args) {
-    if (output != null) {
-      return embedBuilder
-        .setTitle("```Finished execution.```")
-        .setDescription(String.format("**Command:** ```%s```", args))
-        .addField("**Output:** ", String.format("```java%n%s%n```", output), false)
-        .build();
-    } else {
-      return embedBuilder
-        .setTitle("```Finished execution.```")
-        .setDescription(String.format("**Command:** ```%s```", args))
-        .build();
-    }
+  private @NotNull MessageEmbed buildEmbed(@Nullable Object output, @NotNull String args) {
+    return output != null ? embedBuilder
+      .setTitle("```Finished execution.```")
+      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
+      .addField("**Output:** ", String.format("```%s```", output), false)
+      .build() : embedBuilder
+      .setTitle("```Finished execution.```")
+      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
+      .build();
   }
 
-  @NotNull
-  private MessageEmbed exceptionEmbed(@NotNull Exception e, @NotNull String args) {
+  private @NotNull MessageEmbed exceptionEmbed(@NotNull Exception e, @NotNull String args) {
     String[] exceptionName = e.getClass().getCanonicalName().split("\\.");
     String javadoc = String.format(
       "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/%s/%s/%s.html",
@@ -132,8 +124,8 @@ public class DebugCommand extends Command {
       .setTitle(String.format("```%s```", e.getClass().getSimpleName()),
         exceptionName[0].equalsIgnoreCase("java") ? javadoc : null
       )
-      .setDescription(String.format("**Command:** ```%s```", args))
-      .addField("**Stack Trace:**", String.format("```java%n%s```", e), false)
+      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
+      .addField("**Stack Trace:**", String.format("```%s```", e), false)
       .setColor(Color.RED)
       .build();
   }

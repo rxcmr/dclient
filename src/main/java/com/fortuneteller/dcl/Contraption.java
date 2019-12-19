@@ -131,13 +131,26 @@ public class Contraption extends Thread implements DirectMessage {
     this.shardManager = shardManager;
   }
 
-  private void buildHelpConsumer(@NotNull CommandEvent event) {
-    sendDirectMessage(
-      buildHelpEmbed(event.getAuthor(), event.getArgs()),
-      event.getAuthor(),
-      null
-    );
-    embedBuilder.clear();
+  private void streamCommands(Command.Category category) {
+    final List<String> commandInvocation = new LinkedList<>();
+    final List<String> commandInformation = new LinkedList<>();
+    final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
+    commands.stream()
+      .filter(c -> c.getCategory() == category && (!c.isHidden() || c.isOwnerCommand()))
+      .forEachOrdered(c -> {
+        commandInvocation.add(String.format("`%s%s`", prefix, c.getName()));
+        if (c.getArguments() == null && c.isGuildOnly())
+          commandInformation.add(String.format("```GUILD ONLY %n - %s```", c.getHelp()));
+        else if (c.isGuildOnly())
+          commandInformation.add(String.format("```GUILD ONLY %n Arguments: %s%n - %s```",
+            c.getArguments(), c.getHelp()));
+        else if (c.getArguments() != null) commandInformation.add(String.format("```- %s```", c.getHelp()));
+        else commandInformation.add(String.format("```Arguments: %s%n - %s```", c.getArguments(), c.getHelp()));
+        Iterator<String> invokeIter = commandInvocation.iterator();
+        Iterator<String> infoIter = commandInformation.iterator();
+        while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
+      });
+    commandContent.forEach((k, v) -> embedBuilder.addField(k, v, false));
   }
 
   private @NotNull MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
@@ -185,26 +198,13 @@ public class Contraption extends Thread implements DirectMessage {
     return embedBuilder.build();
   }
 
-  private void streamCommands(Command.Category category) {
-    final List<String> commandInvocation = new LinkedList<>();
-    final List<String> commandInformation = new LinkedList<>();
-    final DualLinkedHashBidiMap<String, String> commandContent = new DualLinkedHashBidiMap<>();
-    commands.stream()
-      .filter(c -> c.getCategory() == category && (!c.isHidden() || c.isOwnerCommand()))
-      .forEachOrdered(c -> {
-        commandInvocation.add(String.format("`%s%s`", prefix, c.getName()));
-        if (c.getArguments() == null && c.isGuildOnly())
-          commandInformation.add(String.format("```GUILD ONLY %n - %s```", c.getHelp()));
-        else if (c.isGuildOnly())
-          commandInformation.add(String.format("```GUILD ONLY %n Arguments: %s%n - %s```",
-            c.getArguments(), c.getHelp()));
-        else if (c.getArguments() != null) commandInformation.add(String.format("```- %s```", c.getHelp()));
-        else commandInformation.add(String.format("```Arguments: %s%n - %s```", c.getArguments(), c.getHelp()));
-        Iterator<String> invokeIter = commandInvocation.iterator();
-        Iterator<String> infoIter = commandInformation.iterator();
-        while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next());
-      });
-    commandContent.forEach((k, v) -> embedBuilder.addField(k, v, false));
+  private void buildHelpConsumer(@NotNull CommandEvent event) {
+    sendDirectMessage(
+      buildHelpEmbed(event.getAuthor(), event.getArgs()),
+      event.getAuthor(),
+      null
+    );
+    embedBuilder.clear();
   }
 
   private synchronized @NotNull CommandClient buildCommandClient() {
@@ -268,6 +268,7 @@ public class Contraption extends Thread implements DirectMessage {
         Cannot connect to \033[1;95mDiscord API\033[0m/\033[1;95mWebSocket\033[0m, or \033[1;94mCloudFlare DNS\033[0m.
         """);
     } finally {
+      info("\033[1;93mContraption\033[0m instance: " + this);
       setInstance(this);
     }
   }

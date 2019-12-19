@@ -43,7 +43,7 @@ import java.util.LinkedList;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 public class Pilot {
-  public Pilot(String token, String prefix, int shards) throws ReflectiveOperationException {
+  public Pilot(final String token, final String prefix, final int shards) throws ReflectiveOperationException {
     final LinkedList<Command> commands = new LinkedList<>();
     final LinkedList<Object> listeners = new LinkedList<>();
 

@@ -36,7 +36,6 @@ import com.fortuneteller.dcl.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -64,11 +63,8 @@ public class GhostMessageCommand extends Command {
     String message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
     assert channel != null;
     channel.sendTyping().queue();
-    try {
-      channel.sendMessage(message).queue();
-    } catch (InsufficientPermissionException e) {
-      event.reply("Lacking permissions.");
-    }
+    if (channel.canTalk()) channel.sendMessage(message).queue();
+    else event.reply("Lacking `MESSAGE_WRITE` permissions.");
   }
 }
 
