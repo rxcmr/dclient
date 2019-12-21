@@ -2,8 +2,9 @@ package com.fortuneteller.dcl.commands.utils;
 
 import com.fortuneteller.dcl.Contraption;
 import com.fortuneteller.dcl.commands.gadgets.JagTagCommand;
+import com.fortuneteller.dcl.commands.music.children.LeaveCommand;
 import com.fortuneteller.dcl.commands.owner.CustomQueryCommand;
-import com.fortuneteller.dcl.commands.owner.LatencyCommand;
+import com.fortuneteller.dcl.commands.owner.PingCommand;
 import com.fortuneteller.dcl.commands.owner.ShutdownCommand;
 import com.fortuneteller.dcl.commands.owner.TestCommand;
 import com.jagrosh.jdautilities.command.Command;
@@ -56,14 +57,14 @@ public class PilotCommandListener implements CommandListener {
     final var owner = event.getJDA().getUserById(Contraption.ID);
     event.getChannel().sendTyping().queue();
     event.getMessage().addReaction("\uD83D\uDE41").queue();
-    if (command instanceof LatencyCommand) event.reply("Request did not go through.");
+    if (command instanceof PingCommand) event.reply("Request did not go through.");
     else if (command instanceof TestCommand) event.reply("""
-      ```java
-      Test complete.
-      Threw:
-      """ + throwable + """
-      ```
-      """);
+                                                           ```java
+                                                           Test complete.
+                                                           Threw:
+                                                           """ + throwable + """
+                                                           ```
+                                                           """);
     else if (command instanceof JagTagCommand) event.reply(throwable.getMessage());
     else if (command instanceof CustomQueryCommand) event.reply("Not valid SQLite query.");
     else {
@@ -89,14 +90,18 @@ public class PilotCommandListener implements CommandListener {
 
   @Override
   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
+    if (command instanceof LeaveCommand) return;
     final var owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.ID));
     event.getMessage().addReaction("\uD83E\uDD2C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");
     DirectMessage.sendStaticDirectMessage(
       "Unexpected behavior. Triggered by: ",
-      owner,
-      event.getAuthor() + " in " + event.getGuild()
+      owner, String.format(
+        "%s in %sin%s",
+        event.getAuthor().getName(),
+        event.getGuild().getName(),
+        event.getChannel().getName())
     );
   }
 }

@@ -56,7 +56,7 @@ public class CloudFlareDNS implements Dns {
   @NotNull
   @Override
   public List<InetAddress> lookup(@NotNull String s) throws UnknownHostException {
-    List<InetAddress> addressList = new LinkedList<>();
+    var addressList = new LinkedList<InetAddress>();
     Collections.addAll(addressList, InetAddress.getAllByName(s));
     return addressList;
   }

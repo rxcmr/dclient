@@ -1,5 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
-
+package com.fortuneteller.dcl.commands.moderation;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,22 +31,35 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.fortuneteller.dcl.commands.utils.Categories;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Member;
+import org.jetbrains.annotations.NotNull;
+
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public enum Descriptions {
-  GADGETS("Gadgets and fun!"),
-  MODERATION("Moderation utilities."),
-  MUSIC("Music related commands."),
-  OWNER("Owner-only utilities.");
-
-  private final String description;
-
-  Descriptions(String description) {
-    this.description = description;
+@SuppressWarnings("unused")
+public class SoftbanCommand extends Command {
+  public SoftbanCommand() {
+    name = "softban";
+    arguments = "**<reason>** **<user>**";
+    help = "Kicks a user and deletes all their messages.";
+    category = Categories.MODERATION.getCategory();
+    botPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.KICK_MEMBERS};
+    userPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.KICK_MEMBERS};
   }
 
-  public final String getDescription() {
-    return description;
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    for (Member m : event.getMessage().getMentionedMembers()) {
+      event.getChannel().getIterableHistory().limit(1000).forEach(msg -> {
+        if (msg.getAuthor().getId().equals(m.getUser().getId())) msg.delete().queue();
+      });
+      m.kick().queue();
+    }
   }
 }

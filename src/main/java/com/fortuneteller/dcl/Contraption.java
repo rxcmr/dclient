@@ -33,7 +33,6 @@ package com.fortuneteller.dcl;
  */
 
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.commands.utils.Descriptions;
 import com.fortuneteller.dcl.commands.utils.DirectMessage;
 import com.fortuneteller.dcl.commands.utils.PilotCommandListener;
 import com.fortuneteller.dcl.utils.CloudFlareDNS;
@@ -65,7 +64,9 @@ import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
+import static com.fortuneteller.dcl.commands.utils.Categories.*;
 import static com.fortuneteller.dcl.utils.PilotUtils.error;
 import static com.fortuneteller.dcl.utils.PilotUtils.info;
 
@@ -74,7 +75,7 @@ import static com.fortuneteller.dcl.utils.PilotUtils.info;
  */
 public class Contraption extends Thread implements DirectMessage {
   public static final String ID = "175610330217447424";
-  public static final String VERSION = "1.7.0l";
+  public static final String VERSION = "1.8.0l";
   private final @NotNull String token;
   private final int shards;
   private final @NotNull Collection<Command> commands;
@@ -158,34 +159,19 @@ public class Contraption extends Thread implements DirectMessage {
 
   private @NotNull MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
     var categories = EnumSet.allOf(Categories.class);
-    embedBuilder.setDescription(String.format("```Commands:%nPrefix: %s```", prefix));
-    if (args.equalsIgnoreCase(Categories.GADGETS.getName())) {
-      embedBuilder.addField(
-        String.format("**%s**", Categories.GADGETS.getName()),
-        String.format("**Description:** *%s* ", Descriptions.GADGETS.getDescription()),
-        false
-      );
-      streamCommands(Categories.GADGETS.getCategory());
-    } else if (args.equalsIgnoreCase(Categories.MUSIC.getName())) {
-      embedBuilder.addField(
-        String.format("**%s**", Categories.MUSIC.getName()),
-        String.format("**Description:** *%s* ", Descriptions.MUSIC.getDescription()),
-        false);
-      streamCommands(Categories.MUSIC.getCategory());
-    } else if (args.equalsIgnoreCase(Categories.MODERATION.getName())) {
-      embedBuilder.addField(
-        String.format("**%s**", Categories.MODERATION.getName()),
-        String.format("**Description:** *%s* ", Descriptions.MODERATION.getDescription()),
-        false
-      );
-      streamCommands(Categories.MODERATION.getCategory());
-    } else if (args.equalsIgnoreCase(Categories.OWNER.getName()) && author.getId().equals(ID)) {
-      embedBuilder.addField(
-        String.format("**%s**", Categories.OWNER.getName()),
-        String.format("**Description:** *%s* ", Descriptions.OWNER.getDescription()),
-        false
-      );
-      streamCommands(Categories.OWNER.getCategory());
+    embedBuilder.setDescription(String.format("```Prefix: %s```", prefix));
+    if (args.equalsIgnoreCase(GADGETS.getName())) {
+      addHeader(GADGETS.getName(), GADGETS.getDescription());
+      streamCommands(GADGETS.getCategory());
+    } else if (args.equalsIgnoreCase(MUSIC.getName())) {
+      addHeader(MUSIC.getName(), MUSIC.getDescription());
+      streamCommands(MUSIC.getCategory());
+    } else if (args.equalsIgnoreCase(MODERATION.getName())) {
+      addHeader(MODERATION.getName(), MODERATION.getName());
+      streamCommands(MODERATION.getCategory());
+    } else if (args.equalsIgnoreCase(OWNER.getName()) && author.getId().equals(ID)) {
+      addHeader(OWNER.getName(), OWNER.getDescription());
+      streamCommands(OWNER.getCategory());
     } else if (args.isEmpty()) {
       categories.forEach(
         category -> embedBuilder.addField(
@@ -200,6 +186,14 @@ public class Contraption extends Thread implements DirectMessage {
       .setFooter("requested by: " + author.getName(), Objects.requireNonNull(author.getAvatarUrl()));
     return embedBuilder.build();
   }
+
+  private void addHeader(String name, String description) {
+    embedBuilder.addField(
+      String.format("**%s**", name),
+      String.format("**Description:** *%s* ", description),
+      false);
+  }
+
 
   private void buildHelpConsumer(@NotNull CommandEvent event) {
     sendDirectMessage(
@@ -252,6 +246,7 @@ public class Contraption extends Thread implements DirectMessage {
   @Override
   public void run() {
     var exceptionThrown = false;
+    var pattern = Pattern.compile("([A-Z])\\w+");
     try {
       info("Building \033[1;93mShardManager\033[0m.");
       shardManager = buildShardManager();
@@ -259,10 +254,17 @@ public class Contraption extends Thread implements DirectMessage {
       info(String.format(shards > 1
         ? "\033[1;91m%s\033[0m shards active."
         : "\033[1;91m%s\033[0m shard active.", shards));
-      commands.forEach(command -> info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m", command)));
+      commands.forEach(c -> {
+        var matcher = pattern.matcher(c.toString());
+        while (matcher.find()) info(String.format("\033[1;93mCommand\033[0m loaded: \033[1;92m%s\033[0m",
+          matcher.group(0)));
+      });
       if (listeners == null) return;
-      listeners.forEach(eventListener -> info(
-        String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m", eventListener)));
+      listeners.forEach(l -> {
+        var matcher = pattern.matcher(l.toString());
+        while (matcher.find()) info(String.format("\033[1;93mEventListener\033[0m loaded: \033[1;92m%s\033[0m",
+          matcher.group(0)));
+      });
     } catch (LoginException l) {
       error("Invalid token.");
       exceptionThrown = true;
@@ -278,10 +280,15 @@ public class Contraption extends Thread implements DirectMessage {
       if (exceptionThrown) {
         error("My disappointment is immeasurable, and my day is ruined.");
       } else {
-        info("\033[1;93mContraption\033[0m instance: " + this);
+        info("\033[1;93mContraption\033[0m instance: " + toString());
         setInstance(this);
       }
     }
+  }
+
+  @Override
+  public String toString() {
+    return "type: \033[1;93m" + this.getClass().getSuperclass().getSimpleName() + "\033[0m name: " + super.getName();
   }
 
   private static class DefaultListener extends ListenerAdapter {

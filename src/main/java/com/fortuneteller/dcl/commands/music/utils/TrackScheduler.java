@@ -1,5 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
-
+package com.fortuneteller.dcl.commands.music.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,24 +31,55 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+import com.fortuneteller.dcl.utils.PilotUtils;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class MusicManager {
-  public final AudioPlayer player;
-  public final TrackScheduler scheduler;
+@SuppressWarnings("unused")
+public class TrackScheduler extends AudioEventAdapter {
+  private final AudioPlayer player;
+  private final BlockingQueue<AudioTrack> queue;
 
-  public MusicManager(@NotNull AudioPlayerManager manager) {
-    player = manager.createPlayer();
-    scheduler = new TrackScheduler(player);
-    player.addListener(scheduler);
+  @Contract(pure = true)
+  public TrackScheduler(AudioPlayer player) {
+    this.player = player;
+    this.queue = new LinkedBlockingQueue<>();
   }
 
-  public AudioHandler getSendHandler() {
-    return new AudioHandler(player);
+  public void queue(AudioTrack track) {
+    if (!player.startTrack(track, true) && queue.offer(track)) {
+      PilotUtils.info("A track has been queued.");
+    }
+  }
+
+  public List<String> getTrackList() {
+    int queueSize = queue.size();
+    var iterations = new AtomicInteger(1);
+    var trackNames = new LinkedList<String>();
+    queue.forEach(t -> trackNames.add(queueSize - (queueSize - iterations.getAndIncrement()), t.getInfo().title));
+    return trackNames;
+  }
+
+  public void nextTrack() {
+    player.startTrack(queue.poll(), false);
+  }
+
+  @Override
+  public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
+    if (reason.mayStartNext) nextTrack();
   }
 }

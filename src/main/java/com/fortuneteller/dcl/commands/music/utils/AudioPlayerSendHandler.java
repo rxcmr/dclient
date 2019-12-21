@@ -1,5 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
-
+package com.fortuneteller.dcl.commands.music.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,42 +31,43 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.utils.PilotUtils;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
+import org.jetbrains.annotations.Nullable;
+
+import java.nio.ByteBuffer;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class TrackScheduler extends AudioEventAdapter {
+public class AudioPlayerSendHandler implements AudioSendHandler {
   private final AudioPlayer player;
-  private final BlockingQueue<AudioTrack> queue;
+  private final ByteBuffer buffer;
+  private final MutableAudioFrame frame;
 
-  @Contract(pure = true)
-  public TrackScheduler(AudioPlayer player) {
+  public AudioPlayerSendHandler(AudioPlayer player) {
     this.player = player;
-    this.queue = new LinkedBlockingQueue<>();
-  }
-
-  public void queue(AudioTrack track) {
-    if (!player.startTrack(track, true) && queue.offer(track)) {
-      PilotUtils.info("A track has been queued.");
-    }
-  }
-
-  public void nextTrack() {
-    player.startTrack(queue.poll(), false);
+    this.buffer = ByteBuffer.allocate(1024);
+    this.frame = new MutableAudioFrame();
+    this.frame.setBuffer(buffer);
   }
 
   @Override
-  public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
-    if (reason.mayStartNext) nextTrack();
+  public boolean canProvide() {
+    return player.provide(frame);
+  }
+
+  @Nullable
+  @Override
+  public ByteBuffer provide20MsAudio() {
+    buffer.flip();
+    return buffer;
+  }
+
+  @Override
+  public boolean isOpus() {
+    return true;
   }
 }

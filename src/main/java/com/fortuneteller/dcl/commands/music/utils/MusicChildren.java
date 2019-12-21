@@ -1,5 +1,4 @@
-package com.fortuneteller.dcl.commands.music;
-
+package com.fortuneteller.dcl.commands.music.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,29 +31,20 @@ package com.fortuneteller.dcl.commands.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.commands.utils.Loader;
+
 import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class SkipTrackCommand extends Command {
-  private final Loader loader;
+public abstract class MusicChildren extends Command {
+  private TrackLoader loader;
 
-  public SkipTrackCommand() {
-    name = "skip";
-    help = "Skips current playing track.";
-    category = Categories.MUSIC.getCategory();
-    loader = new Loader();
+  public TrackLoader getLoader() {
+    return loader;
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    loader.skipTrack(event.getTextChannel());
+  public void setLoader(TrackLoader loader) {
+    this.loader = loader;
   }
 }

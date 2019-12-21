@@ -1,4 +1,4 @@
-package com.fortuneteller.dcl.commands.owner;
+package com.fortuneteller.dcl.commands.music.children;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,50 +32,35 @@ package com.fortuneteller.dcl.commands.owner;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import com.fortuneteller.dcl.commands.music.utils.MusicChildren;
+import com.fortuneteller.dcl.commands.music.utils.TrackLoader;
+import com.fortuneteller.dcl.commands.utils.Categories;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import net.dv8tion.jda.api.Permission;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class LatencyCommand extends Command {
-  private MessageEmbed embed;
-
-  public LatencyCommand() {
-    name = "latency";
-    aliases = new String[]{"ping"};
-    help = "REST API ping and WebSocket ping.";
-    guildOnly = false;
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
+@SuppressWarnings("unused")
+public class PlayCommand extends MusicChildren {
+  public PlayCommand() {
+    name = "playURL";
+    aliases = new String[]{"pURL"};
+    arguments = "**<URL>**";
+    help = "Plays a track from URL.";
+    category = Categories.MUSIC.getCategory();
+    botPermissions = new Permission[]{
+      Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VOICE_STREAM, Permission.PRIORITY_SPEAKER
+    };
+    setLoader(new TrackLoader());
     hidden = true;
-  }
-
-  public synchronized void buildEmbed(@NotNull CommandEvent event) {
-    var jda = event.getJDA();
-    var embedBuilder = new EmbedBuilder();
-    jda.getRestPing().queue(api -> embed = embedBuilder
-      .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
-      .addField("**API: **", "```py\n" + api + " ms\n```", true)
-      .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
-      .setColor(0xd32ce6)
-      .build()
-    );
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    buildEmbed(event);
-    Executors.newScheduledThreadPool(1).schedule(
-      () -> event.reply(embed), 500, TimeUnit.MILLISECONDS
-    );
+    if (event.getArgs().equals("q")) getLoader().displayQueue(event.getTextChannel());
+    else getLoader().loadAndPlay(event.getTextChannel(), event.getArgs());
   }
 }

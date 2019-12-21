@@ -1,4 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
+package com.fortuneteller.dcl.commands.gadgets.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *

@@ -1,5 +1,4 @@
-package com.fortuneteller.dcl.commands.music;
-
+package com.fortuneteller.dcl.commands.music.utils;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,26 +31,25 @@ package com.fortuneteller.dcl.commands.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dcl.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.Permission;
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class LeaveVoiceChannelCommand extends Command {
-  public LeaveVoiceChannelCommand() {
-    name = "leave";
-    botPermissions = new Permission[]{Permission.VOICE_CONNECT};
-    help = "Leaves the voice channel.";
-    category = Categories.MUSIC.getCategory();
+public class GuildMusicManager {
+  public final AudioPlayer player;
+  public final TrackScheduler scheduler;
+
+  public GuildMusicManager(@NotNull AudioPlayerManager manager) {
+    player = manager.createPlayer();
+    scheduler = new TrackScheduler(player);
+    player.addListener(scheduler);
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
+  public AudioPlayerSendHandler getSendHandler() {
+    return new AudioPlayerSendHandler(player);
   }
 }

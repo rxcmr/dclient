@@ -1,4 +1,4 @@
-package com.fortuneteller.dcl.commands.music;
+package com.fortuneteller.dcl.commands.music.children;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,9 +32,8 @@ package com.fortuneteller.dcl.commands.music;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.fortuneteller.dcl.commands.music.utils.MusicChildren;
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.commands.utils.Loader;
-import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
 import org.jetbrains.annotations.NotNull;
@@ -43,21 +42,17 @@ import org.jetbrains.annotations.NotNull;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class PlayTrackCommand extends Command {
-  private final Loader loader;
-
-  public PlayTrackCommand() {
-    name = "play";
-    arguments = "**<URL>**";
-    botPermissions = new Permission[]{Permission.PRIORITY_SPEAKER, Permission.VOICE_SPEAK, Permission.VOICE_CONNECT};
-    help = "Plays a track from URL.";
+public class LeaveCommand extends MusicChildren {
+  public LeaveCommand() {
+    name = "leave";
+    botPermissions = new Permission[]{Permission.VOICE_CONNECT};
+    help = "Leaves the voice channel.";
     category = Categories.MUSIC.getCategory();
-    loader = new Loader();
+    hidden = true;
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    loader.loadAndPlay(event.getTextChannel(), event.getArgs());
+    event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
   }
 }

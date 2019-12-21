@@ -47,14 +47,14 @@ import java.awt.*;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class DebugCommand extends Command {
+public class EvalCommand extends Command {
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
   private final GroovyShell shell;
   private final String imports;
 
-  public DebugCommand() {
-    name = "debug";
-    aliases = new String[]{"eval"};
+  public EvalCommand() {
+    name = "eval";
+    aliases = new String[]{"dbg"};
     ownerCommand = true;
     help = "JDA evaluator using GroovyShell";
     arguments = "**<code>**";
@@ -62,24 +62,21 @@ public class DebugCommand extends Command {
     category = Categories.OWNER.getCategory();
     shell = new GroovyShell();
     imports = """
-      import java.io.*
-      import java.lang.*
-      import java.util.*
-      import java.util.concurrent.*
-      import net.dv8tion.jda.api.*
-      import net.dv8tion.jda.core.*
-      import net.dv8tion.jda.core.entities.*
-      import net.dv8tion.jda.core.entities.impl.*
-      import net.dv8tion.jda.core.managers.*
-      import net.dv8tion.jda.core.managers.impl.*
-      import net.dv8tion.jda.core.utils.*
-      import com.fortuneteller.dcl.commands.gadgets.*
-      import com.fortuneteller.dcl.commands.owner.*
-      import com.fortuneteller.dcl.commands.music.*
-      import com.fortuneteller.dcl.commands.moderation.*
-      import com.fortuneteller.dcl.listeners.*
-      import com.fortuneteller.dcl.commands.utils.*
-      import com.fortuneteller.dcl.utils.*
+      import java.io.*;
+      import java.lang.*;
+      import java.util.*;
+      import java.util.concurrent.*;
+      import net.dv8tion.jda.api.*;
+      import net.dv8tion.jda.api.entities.*;
+      import net.dv8tion.jda.api.managers.*;
+      import net.dv8tion.jda.api.utils.*;
+      import com.fortuneteller.dcl.commands.gadgets.*;
+      import com.fortuneteller.dcl.commands.owner.*;
+      import com.fortuneteller.dcl.commands.music.*;
+      import com.fortuneteller.dcl.commands.moderation.*;
+      import com.fortuneteller.dcl.listeners.*;
+      import com.fortuneteller.dcl.commands.utils.*;
+      import com.fortuneteller.dcl.utils.*;
       """;
   }
 

@@ -1,4 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
+package com.fortuneteller.dcl.commands.music.children;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,34 +32,28 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jagrosh.jdautilities.command.Command;
+import com.fortuneteller.dcl.commands.music.utils.MusicChildren;
+import com.fortuneteller.dcl.commands.music.utils.TrackLoader;
+import com.fortuneteller.dcl.commands.utils.Categories;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public enum Categories {
-  GADGETS(new Command.Category("Gadgets"), "Gadgets and fun!"),
-  MODERATION(new Command.Category("Moderation"), "Moderation utilities."),
-  MUSIC(new Command.Category("Music"), "Music related commands."),
-  OWNER(new Command.Category("Owner"), "Owner-only utilities.");
-
-  private final Command.Category category;
-  private final String description;
-
-  Categories(Command.Category category, String description) {
-    this.category = category;
-    this.description = description;
+@SuppressWarnings("unused")
+public class SkipCommand extends MusicChildren {
+  public SkipCommand() {
+    name = "skip";
+    help = "Skips current playing track.";
+    category = Categories.MUSIC.getCategory();
+    setLoader(new TrackLoader());
+    hidden = true;
   }
 
-  public Command.Category getCategory() {
-    return category;
-  }
-
-  public String getName() {
-    return category.getName();
-  }
-
-  public String getDescription() {
-    return description;
+  @Override
+  protected void execute(@NotNull CommandEvent event) {
+    event.getChannel().sendTyping().queue();
+    getLoader().skipTrack(event.getTextChannel());
   }
 }

@@ -87,7 +87,6 @@ public class MuteCommand extends Command {
       }
     } catch (IndexOutOfBoundsException e) {
       createMutedRole(event);
-      execute(event);
     }
   }
 
@@ -97,7 +96,8 @@ public class MuteCommand extends Command {
       .setName("Muted")
       .setColor(0x00000)
       .setMentionable(false)
-      .setPermissions((long) 0x0)
+      .setPermissions(0x0L)
       .queue();
+    execute(event);
   }
 }

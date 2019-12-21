@@ -32,8 +32,8 @@ package com.fortuneteller.dcl.commands.gadgets;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import com.fortuneteller.dcl.commands.gadgets.utils.JavadocPackages;
 import com.fortuneteller.dcl.commands.utils.Categories;
-import com.fortuneteller.dcl.commands.utils.JavadocPackages;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import okhttp3.OkHttpClient;

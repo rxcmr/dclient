@@ -48,7 +48,12 @@ public class Pilot {
     final var listeners = new LinkedList<>();
 
     for (Class<Command> c : new ClassGraph()
-      .blacklistPackages("com.fortuneteller.dcl.commands.utils")
+      .blacklistPackages(
+        "com.fortuneteller.dcl.commands.utils",
+        "com.fortuneteller.dcl.commands.gadgets.utils",
+        "com.fortuneteller.dcl.commands.music.utils",
+        "com.fortuneteller.dcl.commands.music.children"
+      )
       .whitelistPackages("com.fortuneteller.dcl.commands.*")
       .scan()
       .getAllClasses()
@@ -67,11 +72,11 @@ public class Pilot {
 
   public static void main(String[] args) throws Exception {
     final var mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    final var mainDelimiter = "fl!";
+    final var mainDelimiter = "pl.";
     final int shards = 2;
     new Pilot(mainToken, mainDelimiter, shards);
     //final String subToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("SUBTOKEN");
-    //final String subDelimiter = "rg!";
+    //final String subDelimiter = "rg.";
     //new Pilot(subToken, subDelimiter, shards);
   }
 }

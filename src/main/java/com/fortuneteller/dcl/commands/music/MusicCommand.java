@@ -1,4 +1,4 @@
-package com.fortuneteller.dcl.commands.utils;
+package com.fortuneteller.dcl.commands.music;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,42 +32,42 @@ package com.fortuneteller.dcl.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import net.dv8tion.jda.api.audio.AudioSendHandler;
+import com.fortuneteller.dcl.commands.music.children.LeaveCommand;
+import com.fortuneteller.dcl.commands.music.children.PlayCommand;
+import com.fortuneteller.dcl.commands.music.children.SearchCommand;
+import com.fortuneteller.dcl.commands.music.children.SkipCommand;
+import com.fortuneteller.dcl.commands.utils.Categories;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
+import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class AudioHandler implements AudioSendHandler {
-  private final AudioPlayer player;
-  private final ByteBuffer buffer;
-  private final MutableAudioFrame frame;
-
-  public AudioHandler(AudioPlayer player) {
-    this.player = player;
-    this.buffer = ByteBuffer.allocate(1024);
-    this.frame = new MutableAudioFrame();
-    this.frame.setBuffer(buffer);
+@SuppressWarnings("unused")
+public class MusicCommand extends Command {
+  public MusicCommand() {
+    name = "music";
+    aliases = new String[]{"m"};
+    children = new Command[]{
+      new PlayCommand(), new SkipCommand(), new LeaveCommand(), new SearchCommand()
+    };
+    help = Arrays.stream(children).map(
+      c -> "\n   - " + (c.getArguments() != null ? c.getArguments() + " " : "") + c.getHelp())
+      .collect(Collectors.joining("", "General music commands.", ""));
+    arguments = "**<command>**";
+    category = Categories.MUSIC.getCategory();
   }
 
   @Override
-  public boolean canProvide() {
-    return player.provide(frame);
-  }
-
-  @Nullable
-  @Override
-  public ByteBuffer provide20MsAudio() {
-    buffer.flip();
-    return buffer;
-  }
-
-  @Override
-  public boolean isOpus() {
-    return true;
+  protected void execute(@NotNull CommandEvent event) {
+    event.reply("""
+      play - plays URL
+      skip - skips track
+      leave - leave VC
+      search - search YouTube and play""");
   }
 }
