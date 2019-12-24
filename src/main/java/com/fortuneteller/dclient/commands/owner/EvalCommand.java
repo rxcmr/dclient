@@ -33,7 +33,6 @@ package com.fortuneteller.dclient.commands.owner;
  */
 
 import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import groovy.lang.GroovyShell;
@@ -71,13 +70,13 @@ public class EvalCommand extends Command {
       import net.dv8tion.jda.api.entities.*;
       import net.dv8tion.jda.api.managers.*;
       import net.dv8tion.jda.api.utils.*;
-      import com.fortuneteller.dcl.commands.gadgets.*;
-      import com.fortuneteller.dcl.commands.owner.*;
-      import com.fortuneteller.dcl.commands.music.*;
-      import com.fortuneteller.dcl.commands.moderation.*;
-      import com.fortuneteller.dcl.listeners.*;
-      import com.fortuneteller.dcl.commands.utils.*;
-      import com.fortuneteller.dcl.utils.*;
+      import com.fortuneteller.dclient.commands.gadgets.*;
+      import com.fortuneteller.dclient.commands.owner.*;
+      import com.fortuneteller.dclient.commands.music.*;
+      import com.fortuneteller.dclient.commands.moderation.*;
+      import com.fortuneteller.dclient.listeners.*;
+      import com.fortuneteller.dclient.commands.utils.*;
+      import com.fortuneteller.dclient.utils.*;
       """;
   }
 
@@ -85,9 +84,6 @@ public class EvalCommand extends Command {
   protected void execute(@NotNull CommandEvent event) {
     String input = event.getArgs().replaceAll("(```[a-z]*)", "");
     try {
-      event.getMessage().addReaction("").submit().whenComplete((s, e) -> {
-        throw new CommandException(e.getMessage());
-      });
       shell.setProperty("args", event.getArgs());
       shell.setProperty("event", event);
       shell.setProperty("message", event.getMessage());
@@ -108,7 +104,7 @@ public class EvalCommand extends Command {
     return output != null ? embedBuilder
       .setTitle("```Finished execution.```")
       .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
-      .addField("**Output:** ", String.format("```%s```", output), false)
+      .addField("**Output:** ", String.format("```%s```", output.toString()), false)
       .build() : embedBuilder
       .setTitle("```Finished execution.```")
       .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))

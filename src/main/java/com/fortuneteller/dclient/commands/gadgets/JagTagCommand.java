@@ -60,6 +60,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.fortuneteller.dclient.commands.utils.SQLItemMode.*;
@@ -138,7 +139,11 @@ public class JagTagCommand extends Command implements SQLUtils {
               ) throw new CommandException("Be unique, these are reserved command parameters.");
               select(ALL);
               var tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "));
-              insert(GVALUE, args[2], tagValue, authorID);
+              if (!event.getMessage().getAttachments().isEmpty()) {
+                insert(LVALUE,
+                  String.join(" ", event.getMessage().getAttachments().get(0).getProxyUrl(), tagValue),
+                  authorID);
+              } else insert(GVALUE, args[2], tagValue, authorID);
               select(ALL);
               tags.clear();
               tags.addAll(tagCache);
@@ -168,7 +173,12 @@ public class JagTagCommand extends Command implements SQLUtils {
           ) throw new CommandException("Be unique, these are reserved command parameters.");
           select(ALL);
           var tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
-          insert(LVALUE, args[1], tagValue, authorID, guildID);
+          if (!event.getMessage().getAttachments().isEmpty()) {
+            insert(LVALUE,
+              String.join(" ", event.getMessage().getAttachments().get(0).getProxyUrl(), tagValue),
+              authorID,
+              guildID);
+          } else insert(LVALUE, args[1], tagValue, authorID, guildID);
           select(ALL);
           tags.clear();
           tags.addAll(tagCache);
@@ -235,53 +245,51 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   private Parser buildParser(@NotNull Object event) {
-    var cvt = (CommandEvent) null;
-    var gvt = (GuildMessageReceivedEvent) null;
+    var cvt = new AtomicReference<CommandEvent>();
+    var gvt = new AtomicReference<GuildMessageReceivedEvent>();
 
-    if (event instanceof CommandEvent) cvt = (CommandEvent) event;
+    if (event instanceof CommandEvent) cvt.set((CommandEvent) event);
     else {
       assert event instanceof GuildMessageReceivedEvent;
-      gvt = (GuildMessageReceivedEvent) event;
+      gvt.set((GuildMessageReceivedEvent) event);
     }
 
-    if (cvt != null) {
-      final var finalCvt = cvt;
+    if (cvt.get() != null) {
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
-        new Method("author", e -> finalCvt.getAuthor().getName()),
-        new Method("mAuthor", e -> finalCvt.getAuthor().getAsMention()),
-        new Method("guild", e -> finalCvt.getGuild().getName()),
-        new Method("guildID", e -> finalCvt.getGuild().getId()),
-        new Method("memberCount", e -> String.valueOf(finalCvt.getGuild().getMemberCount())),
-        new Method("boostCount", e -> String.valueOf(finalCvt.getGuild().getBoostCount())),
-        new Method("owner", e -> Objects.requireNonNull(finalCvt.getGuild().getOwner()).getEffectiveName()),
-        new Method("ownerID", e -> Objects.requireNonNull(finalCvt.getGuild().getOwner()).getId()),
-        new Method("roles", e -> finalCvt.getGuild()
+        new Method("author", e -> cvt.get().getAuthor().getName()),
+        new Method("mAuthor", e -> cvt.get().getAuthor().getAsMention()),
+        new Method("guild", e -> cvt.get().getGuild().getName()),
+        new Method("guildID", e -> cvt.get().getGuild().getId()),
+        new Method("memberCount", e -> String.valueOf(cvt.get().getGuild().getMemberCount())),
+        new Method("boostCount", e -> String.valueOf(cvt.get().getGuild().getBoostCount())),
+        new Method("owner", e -> Objects.requireNonNull(cvt.get().getGuild().getOwner()).getEffectiveName()),
+        new Method("ownerID", e -> Objects.requireNonNull(cvt.get().getGuild().getOwner()).getId()),
+        new Method("roles", e -> cvt.get().getGuild()
           .getRoles().stream().map(Role::getName).collect(Collectors.joining(", "))),
-        new Method("randMember", e -> finalCvt.getGuild().getMembers()
-          .get(new SecureRandom().nextInt(finalCvt.getGuild().getMembers().size())).getEffectiveName()),
-        new Method("randChannel", e -> finalCvt.getGuild().getChannels()
-          .get(new SecureRandom().nextInt(finalCvt.getGuild().getChannels().size())).getName()),
-        new Method("strlen", e -> String.valueOf(finalCvt.getArgs().split("\\s+").length - 1)),
+        new Method("randMember", e -> cvt.get().getGuild().getMembers()
+          .get(new SecureRandom().nextInt(cvt.get().getGuild().getMembers().size())).getEffectiveName()),
+        new Method("randChannel", e -> cvt.get().getGuild().getChannels()
+          .get(new SecureRandom().nextInt(cvt.get().getGuild().getChannels().size())).getName()),
+        new Method("strlen", e -> String.valueOf(cvt.get().getArgs().split("\\s+").length - 1)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date())))
       ).build();
     } else {
-      final var finalGvt = gvt;
       return JagTag.newDefaultBuilder().addMethods(Arrays.asList(
-        new Method("author", e -> finalGvt.getAuthor().getName()),
-        new Method("mAuthor", e -> finalGvt.getAuthor().getAsMention()),
-        new Method("guild", e -> finalGvt.getGuild().getName()),
-        new Method("guildID", e -> finalGvt.getGuild().getId()),
-        new Method("memberCount", e -> String.valueOf(finalGvt.getGuild().getMemberCount())),
-        new Method("boostCount", e -> String.valueOf(finalGvt.getGuild().getBoostCount())),
-        new Method("owner", e -> Objects.requireNonNull(finalGvt.getGuild().getOwner()).getEffectiveName()),
-        new Method("ownerID", e -> Objects.requireNonNull(finalGvt.getGuild().getOwner()).getId()),
-        new Method("roles", e -> finalGvt.getGuild().getRoles().stream()
+        new Method("author", e -> gvt.get().getAuthor().getName()),
+        new Method("mAuthor", e -> gvt.get().getAuthor().getAsMention()),
+        new Method("guild", e -> gvt.get().getGuild().getName()),
+        new Method("guildID", e -> gvt.get().getGuild().getId()),
+        new Method("memberCount", e -> String.valueOf(gvt.get().getGuild().getMemberCount())),
+        new Method("boostCount", e -> String.valueOf(gvt.get().getGuild().getBoostCount())),
+        new Method("owner", e -> Objects.requireNonNull(gvt.get().getGuild().getOwner()).getEffectiveName()),
+        new Method("ownerID", e -> Objects.requireNonNull(gvt.get().getGuild().getOwner()).getId()),
+        new Method("roles", e -> gvt.get().getGuild().getRoles().stream()
           .map(Role::getName).collect(Collectors.joining(", "))),
-        new Method("randMember", e -> finalGvt.getGuild().getMembers()
-          .get(new SecureRandom().nextInt(finalGvt.getGuild().getMembers().size())).getEffectiveName()),
-        new Method("randChannel", e -> finalGvt.getGuild().getChannels()
-          .get(new SecureRandom().nextInt(finalGvt.getGuild().getChannels().size())).getName()),
-        new Method("strlen", e -> String.valueOf(finalGvt.getMessage()
+        new Method("randMember", e -> gvt.get().getGuild().getMembers()
+          .get(new SecureRandom().nextInt(gvt.get().getGuild().getMembers().size())).getEffectiveName()),
+        new Method("randChannel", e -> gvt.get().getGuild().getChannels()
+          .get(new SecureRandom().nextInt(gvt.get().getGuild().getChannels().size())).getName()),
+        new Method("strlen", e -> String.valueOf(gvt.get().getMessage()
           .getContentRaw().split("\\s+").length)),
         new Method("date", e -> new SimpleDateFormat("MM-dd-yyyy").format(new Date()))
         )

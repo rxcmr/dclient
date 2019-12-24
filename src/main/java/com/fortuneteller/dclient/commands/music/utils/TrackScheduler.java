@@ -32,7 +32,6 @@ package com.fortuneteller.dclient.commands.music.utils;
  */
 
 
-import com.fortuneteller.dclient.utils.PilotUtils;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
@@ -45,6 +44,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.LinkedTransferQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
@@ -61,19 +61,18 @@ public class TrackScheduler extends AudioEventAdapter {
     this.queue = new LinkedTransferQueue<>();
   }
 
-  public void queue(AudioTrack track) {
-    if (!player.startTrack(track, true) && queue.offer(track)) {
-      PilotUtils.info("A track has been queued.");
-    }
+  public boolean queue(AudioTrack track) {
+    return !player.startTrack(track, true) && queue.offer(track);
   }
 
   public List<String> getTrackList() {
+    var queueSize = new AtomicInteger(queue.size());
     return queue.stream()
-      .map(t -> "`" + t.getPosition() + " - " + t.getInfo().title + "`")
+      .map(t -> "`" + queueSize.getAndDecrement() + " - " + t.getInfo().title + "`")
       .collect(Collectors.toCollection(LinkedList::new)).isEmpty()
       ? Collections.singletonList("No tracks left in the queue.")
       : queue.stream()
-      .map(t -> "`" + t.getPosition() + " - " + t.getInfo().title + "`")
+      .map(t -> "`" + queueSize.getAndDecrement() + " - " + t.getInfo().title + "`")
       .collect(Collectors.toCollection(LinkedList::new));
   }
 

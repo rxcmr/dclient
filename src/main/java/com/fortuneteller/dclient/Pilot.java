@@ -73,7 +73,7 @@ public class Pilot {
   public static void main(String[] args) throws Exception {
     final var mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
     final var mainDelimiter = "pl.";
-    final int shards = 2;
+    final int shards = 1;
     new Pilot(mainToken, mainDelimiter, shards);
     //final String subToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("SUBTOKEN");
     //final String subDelimiter = "rg.";

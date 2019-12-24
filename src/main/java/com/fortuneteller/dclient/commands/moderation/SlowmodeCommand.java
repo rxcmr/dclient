@@ -1,6 +1,4 @@
-package com.fortuneteller.dclient.commands.music.children;
-
-/*
+package com.fortuneteller.dclient.commands.moderation;/*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -33,34 +31,38 @@ package com.fortuneteller.dclient.commands.music.children;
  */
 
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
 import com.fortuneteller.dclient.commands.utils.CommandException;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.TextChannel;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class PlayCommand extends Command {
-  public PlayCommand() {
-    name = "play";
-    aliases = new String[]{"p"};
-    arguments = "**<URL>**";
-    help = "Plays a track from URL.";
-    category = Categories.MUSIC.getCategory();
-    botPermissions = new Permission[]{
-      Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VOICE_STREAM, Permission.PRIORITY_SPEAKER
-    };
-    hidden = true;
+
+public class SlowmodeCommand extends Command {
+  public SlowmodeCommand() {
+    name = "slowmode";
+    aliases = new String[]{"slow"};
+    help = "Toggles slow mode for the current channel.";
+    arguments = "**<seconds>**";
+    botPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
+    userPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
   }
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    if (event.getArgs().isEmpty()) throw new CommandException("URL cannot be empty!");
-    TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), event.getArgs());
+    try {
+      if (Integer.parseInt(event.getArgs()) >= 0 && Integer.parseInt(event.getArgs()) <= TextChannel.MAX_SLOWMODE) {
+        event.getTextChannel().getManager().setSlowmode(Integer.parseInt(event.getArgs())).queue();
+      } else {
+        throw new CommandException("Slow mode must not be negative or greater than " + TextChannel.MAX_SLOWMODE + ".");
+      }
+    } catch (NumberFormatException e) {
+      throw new CommandException("Not a valid integer.");
+    }
   }
 }

@@ -68,8 +68,9 @@ public class SearchCommand extends Command {
 
   @Override
   public void execute(@NotNull CommandEvent event) {
+    if (event.getArgs().isEmpty()) throw new CommandException("Search term cannot be empty!");
     var client = event.getJDA().getHttpClient();
-    if (useCount >= 80) {
+    if (useCount <= 80) {
       var apiKey = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("YT_API_KEY");
       var request = new Request.Builder()
         .url(String.format(
@@ -113,9 +114,8 @@ public class SearchCommand extends Command {
           json = in.lines().map(line -> line + "\n").collect(Collectors.joining());
         }
         var itemsArray = new JSONObject(json).getJSONArray("results");
-        var videoID = itemsArray.getJSONObject(0).getString("id");
-        TrackLoader.getInstance().loadAndPlay(event.getTextChannel(),
-          "https://www.youtube.com/watch?v=" + videoID);
+        var videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url");
+        TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), videoURL);
       } catch (IOException e) {
         throw new CommandException(e.getMessage());
       }

@@ -37,6 +37,7 @@ import com.fortuneteller.dclient.commands.utils.DirectMessage;
 import com.fortuneteller.dclient.commands.utils.PilotCommandListener;
 import com.fortuneteller.dclient.utils.CloudFlareDNS;
 import com.fortuneteller.dclient.utils.PilotThreadFactory;
+import com.fortuneteller.dclient.utils.PilotUtils;
 import com.fortuneteller.dclient.utils.UserAgentInterceptor;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandClient;
@@ -53,6 +54,7 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.Compression;
+import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import okhttp3.OkHttpClient;
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap;
 import org.jetbrains.annotations.Contract;
@@ -75,7 +77,7 @@ import static com.fortuneteller.dclient.utils.PilotUtils.info;
  */
 public class Contraption extends Thread implements DirectMessage {
   public static final String ID = "175610330217447424";
-  public static final String VERSION = "1.8.0l";
+  public static final String VERSION = "1.8.1l";
   private final @NotNull String token;
   private final int shards;
   private final @NotNull Collection<Command> commands;
@@ -87,12 +89,11 @@ public class Contraption extends Thread implements DirectMessage {
   private final EmbedBuilder embedBuilder = new EmbedBuilder();
 
   @Contract(pure = true)
-  Contraption
-    (@NotNull final String token,
-     @NotNull final String prefix,
-     final int shards,
-     @NotNull final Collection<Command> commands,
-     @Nullable final Collection<Object> listeners) {
+  Contraption(@NotNull final String token,
+              @NotNull final String prefix,
+              final int shards,
+              @NotNull final Collection<Command> commands,
+              @Nullable final Collection<Object> listeners) {
     super("Von Bolt");
     if (shards == 0) throw new IllegalArgumentException("Shards must not equal 0.");
     this.token = token;
@@ -128,6 +129,13 @@ public class Contraption extends Thread implements DirectMessage {
   }
 
   public @NotNull ShardManager getShardManager() {
+    shardManager.getShards().forEach(jda -> {
+      try {
+        jda.awaitReady();
+      } catch (InterruptedException e) {
+        PilotUtils.error(e.getMessage(), e);
+      }
+    });
     return shardManager;
   }
 
@@ -159,7 +167,7 @@ public class Contraption extends Thread implements DirectMessage {
 
   private @NotNull MessageEmbed buildHelpEmbed(@NotNull User author, @NotNull String args) {
     var categories = EnumSet.allOf(Categories.class);
-    embedBuilder.setDescription(String.format("```Prefix: %s```", prefix));
+    embedBuilder.setDescription(String.format("```Prefix: %s```", getPrefix()));
     if (args.equalsIgnoreCase(GADGETS.getName())) {
       addHeader(GADGETS.getName(), GADGETS.getDescription());
       streamCommands(GADGETS.getCategory());
@@ -176,7 +184,7 @@ public class Contraption extends Thread implements DirectMessage {
       categories.forEach(
         category -> embedBuilder.addField(
           "**Category: " + category.getName() + "**",
-          String.format("```py%n%shelp %s%n```", prefix, category.getName().toLowerCase()),
+          String.format("```py%n%shelp %s%n```", getPrefix(), category.getName().toLowerCase()),
           false
         )
       );
@@ -237,7 +245,8 @@ public class Contraption extends Thread implements DirectMessage {
       .setUseShutdownNow(true)
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
-      .setChunkingFilter(ChunkingFilter.ALL)
+      .setDisabledCacheFlags(EnumSet.of(CacheFlag.VOICE_STATE))
+      .setChunkingFilter(ChunkingFilter.NONE)
       .addEventListeners(listeners != null ? listeners : Collections.singletonList(new DefaultListener()))
       .build());
     return getShardManager();
@@ -277,18 +286,18 @@ public class Contraption extends Thread implements DirectMessage {
         """);
       exceptionThrown = true;
     } finally {
-      if (exceptionThrown) {
-        error("My disappointment is immeasurable, and my day is ruined.");
-      } else {
+      if (!exceptionThrown) {
         info("\033[1;93mContraption\033[0m instance: " + toString());
         setInstance(this);
+      } else {
+        error("My disappointment is immeasurable, and my day is ruined.");
       }
     }
   }
 
   @Override
   public String toString() {
-    return "type: \033[1;93m" + this.getClass().getSuperclass().getSimpleName() + "\033[0m name: " + super.getName();
+    return "type: \033[1;93m" + super.getClass().getSimpleName() + "\033[0m name: " + getName();
   }
 
   private static class DefaultListener extends ListenerAdapter {

@@ -35,7 +35,6 @@ import com.fortuneteller.dclient.commands.utils.Categories;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -55,11 +54,11 @@ public class SoftbanCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    for (Member m : event.getMessage().getMentionedMembers()) {
+    event.getMessage().getMentionedMembers().forEach(m -> {
       event.getChannel().getIterableHistory().limit(1000).forEach(msg -> {
         if (msg.getAuthor().getId().equals(m.getUser().getId())) msg.delete().queue();
       });
       m.kick().queue();
-    }
+    });
   }
 }

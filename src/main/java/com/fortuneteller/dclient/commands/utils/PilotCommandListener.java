@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.commands.utils;
 import com.fortuneteller.dclient.Contraption;
 import com.fortuneteller.dclient.commands.gadgets.JagTagCommand;
 import com.fortuneteller.dclient.commands.gadgets.PingCommand;
+import com.fortuneteller.dclient.commands.moderation.SlowmodeCommand;
 import com.fortuneteller.dclient.commands.music.children.LeaveCommand;
 import com.fortuneteller.dclient.commands.music.children.PlayCommand;
 import com.fortuneteller.dclient.commands.music.children.SearchCommand;
@@ -53,6 +54,7 @@ import static com.fortuneteller.dclient.utils.PilotUtils.warn;
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@SuppressWarnings("unused")
 public class PilotCommandListener implements CommandListener {
   @Override
   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
@@ -65,7 +67,8 @@ public class PilotCommandListener implements CommandListener {
       Threw:
       %s
       ```""", throwable));
-    else if (command instanceof JagTagCommand) event.reply(throwable.getMessage());
+    else if (command instanceof JagTagCommand || command instanceof SlowmodeCommand)
+      event.reply(throwable.getMessage());
     else if (command instanceof CustomQueryCommand) event.reply("Not valid SQLite query.");
     else if (command instanceof PlayCommand) new SearchCommand().execute(event);
     else {

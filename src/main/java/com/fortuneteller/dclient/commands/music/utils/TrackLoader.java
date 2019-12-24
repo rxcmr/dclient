@@ -125,6 +125,7 @@ public class TrackLoader {
     return String.join("\n", musicManager.scheduler.getTrackList());
   }
 
+  @SuppressWarnings("unused")
   public TrackScheduler getScheduler(@NotNull TextChannel channel) {
     return getGuildAudioPlayer(channel.getGuild()).scheduler;
   }
