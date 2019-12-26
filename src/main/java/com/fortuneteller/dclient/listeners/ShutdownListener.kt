@@ -1,4 +1,11 @@
-package com.fortuneteller.dclient.commands.moderation;/*
+package com.fortuneteller.dclient.listeners
+
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
+import net.dv8tion.jda.api.events.ShutdownEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import kotlin.system.exitProcess
+
+/*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,40 +38,14 @@ package com.fortuneteller.dclient.commands.moderation;/*
  */
 
 
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.TextChannel;
-import org.jetbrains.annotations.NotNull;
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-
-public class SlowmodeCommand extends Command {
-  public SlowmodeCommand() {
-    name = "slowmode";
-    aliases = new String[]{"slow"};
-    help = "Toggles slow mode for the current channel.";
-    arguments = "**<seconds>**";
-    botPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
-    userPermissions = new Permission[]{Permission.MESSAGE_MANAGE, Permission.MANAGE_SERVER, Permission.MANAGE_CHANNEL};
-    category = Categories.MODERATION.getCategory();
-  }
-
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    try {
-      if (Integer.parseInt(event.getArgs()) >= 0 && Integer.parseInt(event.getArgs()) <= TextChannel.MAX_SLOWMODE) {
-        event.getTextChannel().getManager().setSlowmode(Integer.parseInt(event.getArgs())).queue();
-      } else {
-        throw new CommandException("Slow mode must not be negative or greater than " + TextChannel.MAX_SLOWMODE + ".");
-      }
-    } catch (NumberFormatException e) {
-      throw new CommandException("Not a valid integer.");
-    }
+class ShutdownListener : ListenerAdapter() {
+  override fun onShutdown(event: ShutdownEvent) {
+    info("Try again in my next life.")
+    info("Shutdown with code: " + event.code)
+    exitProcess(0xadde4)
   }
 }

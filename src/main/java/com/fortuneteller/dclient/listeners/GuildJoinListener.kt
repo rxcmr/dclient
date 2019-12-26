@@ -1,4 +1,8 @@
-package com.fortuneteller.dclient.listeners;
+package com.fortuneteller.dclient.listeners
+
+import net.dv8tion.jda.api.events.guild.GuildJoinEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,24 +36,16 @@ package com.fortuneteller.dclient.listeners;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.dv8tion.jda.api.events.guild.GuildJoinEvent;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Objects;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class GuildJoinListener extends ListenerAdapter {
-  @Override
-  public void onGuildJoin(@NotNull GuildJoinEvent event) {
-    if (Objects.requireNonNull(event.getGuild().getDefaultChannel()).canTalk()) {
-      event.getGuild().getDefaultChannel().sendTyping().queue();
-      event.getGuild().getDefaultChannel().sendMessage("```hello, type fl!help```").queue();
+class GuildJoinListener : ListenerAdapter() {
+  override fun onGuildJoin(event: GuildJoinEvent) {
+    if (Objects.requireNonNull(event.guild.defaultChannel)!!.canTalk()) {
+      event.guild.defaultChannel!!.sendTyping().queue()
+      event.guild.defaultChannel!!.sendMessage("```hello, type fl!help```").queue()
     }
   }
-
-
 }

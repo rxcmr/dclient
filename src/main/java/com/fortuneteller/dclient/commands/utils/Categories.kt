@@ -1,4 +1,6 @@
-package com.fortuneteller.dclient.commands.utils;
+package com.fortuneteller.dclient.commands.utils
+
+import com.jagrosh.jdautilities.command.Command
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,34 +34,14 @@ package com.fortuneteller.dclient.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jagrosh.jdautilities.command.Command;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public enum Categories {
-  GADGETS(new Command.Category("Gadgets"), "Gadgets and fun!"),
-  MODERATION(new Command.Category("Moderation"), "Moderation utilities."),
-  MUSIC(new Command.Category("Music"), "Music related commands."),
-  OWNER(new Command.Category("Owner"), "Owner-only utilities.");
 
-  private final Command.Category category;
-  private final String description;
-
-  Categories(Command.Category category, String description) {
-    this.category = category;
-    this.description = description;
-  }
-
-  public Command.Category getCategory() {
-    return category;
-  }
-
-  public String getName() {
-    return category.getName();
-  }
-
-  public String getDescription() {
-    return description;
-  }
+enum class Categories(val category: Command.Category, val description: String) {
+  GADGETS(Command.Category("Gadgets"), "Gadgets and fun!"),
+  MODERATION(Command.Category("Moderation"), "Moderation utilities."),
+  MUSIC(Command.Category("Music"), "Music related commands."),
+  OWNER(Command.Category("Owner"), "Owner-only utilities.");
 }

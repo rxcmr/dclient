@@ -24,7 +24,6 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.Compression
-import net.dv8tion.jda.api.utils.cache.CacheFlag
 import okhttp3.OkHttpClient
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap
 import java.net.UnknownHostException
@@ -198,7 +197,6 @@ class Contraption(private val token: String,
       .setUseShutdownNow(true)
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
-      .setDisabledCacheFlags(EnumSet.of(CacheFlag.VOICE_STATE))
       .setChunkingFilter(ChunkingFilter.NONE)
       .addEventListeners(listeners ?: listOf<Any>(DefaultListener()))
       .build()
