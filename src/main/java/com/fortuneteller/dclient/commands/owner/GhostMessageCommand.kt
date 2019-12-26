@@ -1,4 +1,11 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.util.*
+import java.util.stream.Collectors
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,41 +36,25 @@ package com.fortuneteller.dclient.commands.owner;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class GhostMessageCommand extends Command {
-  public GhostMessageCommand() {
-    name = "ghost";
-    help = "Sends a message to a server remotely.";
-    arguments = "**<guildID>** **<channelID>** **<message>**";
-    hidden = true;
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
+class GhostMessageCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    val args = event.args.split("\\s+".toRegex()).toTypedArray()
+    val channel = Objects.requireNonNull(event.jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
+    val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
+    assert(channel != null)
+    channel!!.sendTyping().queue()
+    if (channel.canTalk()) channel.sendMessage(message).queue() else event.reply("Lacking `MESSAGE_WRITE` permissions.")
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    var args = event.getArgs().split("\\s+");
-    var channel = Objects.requireNonNull(event.getJDA().getGuildById(args[0])).getTextChannelById(args[1]);
-    var message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "));
-    assert channel != null;
-    channel.sendTyping().queue();
-    if (channel.canTalk()) channel.sendMessage(message).queue();
-    else event.reply("Lacking `MESSAGE_WRITE` permissions.");
+  init {
+    name = "ghost"
+    help = "Sends a message to a server remotely."
+    arguments = "**<guildID>** **<channelID>** **<message>**"
+    hidden = true
+    ownerCommand = true
+    category = Categories.OWNER.category
   }
 }
-

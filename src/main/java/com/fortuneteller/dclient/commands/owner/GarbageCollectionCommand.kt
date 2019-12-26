@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.gc
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,29 +35,17 @@ package com.fortuneteller.dclient.commands.owner;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
+class GarbageCollectionCommand : Command() {
+  override fun execute(event: CommandEvent) = gc()
 
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.utils.PilotUtils;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class GarbageCollectionCommand extends Command {
-  public GarbageCollectionCommand() {
-    name = "gc";
-    help = "Perform garbage collection.";
-    ownerCommand = true;
-    hidden = true;
-    category = Categories.OWNER.getCategory();
-  }
-
-  @Override
-  protected void execute(CommandEvent event) {
-    PilotUtils.Companion.gc();
+  init {
+    name = "gc"
+    help = "Perform garbage collection."
+    ownerCommand = true
+    hidden = true
+    category = Categories.OWNER.category
   }
 }

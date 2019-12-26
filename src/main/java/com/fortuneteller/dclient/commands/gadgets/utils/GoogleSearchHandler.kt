@@ -1,4 +1,20 @@
-package com.fortuneteller.dclient.commands.gadgets.utils;
+package com.fortuneteller.dclient.commands.gadgets.utils
+
+import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchResult.Companion.fromGoogle
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.apache.http.impl.execchain.RequestAbortedException
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.net.URL
+import java.security.SecureRandom
+import java.time.LocalDateTime
+import java.util.*
+import java.util.stream.Collectors
+import java.util.stream.IntStream
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,101 +45,82 @@ package com.fortuneteller.dclient.commands.gadgets.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.apache.http.impl.execchain.RequestAbortedException;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class GoogleSearchHandler {
-  public static final String URL = "https://www.googleapis.com/customsearch/v1?safe=medium&cx=%s&key=%s&num=%s&q=%s";
-  private static int apiUsageCounter = 0;
-  private static String googleAPIKey = null;
-  private static LocalDateTime startingDate = null;
-  private static SecureRandom rng = new SecureRandom();
-
-  private GoogleSearchHandler() {
+object GoogleSearchHandler {
+  private const val URL = "https://www.googleapis.com/customsearch/v1?safe=medium&cx=%s&key=%s&num=%s&q=%s"
+  private var apiUsageCounter = 0
+  private var googleAPIKey: String? = null
+  private var startingDate: LocalDateTime? = null
+  private val rng = SecureRandom()
+  @JvmStatic
+  fun init(googleAPIKey: String?) {
+    GoogleSearchHandler.googleAPIKey = googleAPIKey
+    startingDate = LocalDateTime.now()
   }
 
-  public static void init(String googleAPIKey) {
-    GoogleSearchHandler.googleAPIKey = googleAPIKey;
-    startingDate = LocalDateTime.now();
+  fun performSearch(engineId: String?, terms: String, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
+    return performSearch(engineId, terms, 1, okHttpClient)
   }
 
-  @NotNull
-  public static List<GoogleSearchResult> performSearch(String engineId, String terms, OkHttpClient okHttpClient) {
-    return performSearch(engineId, terms, 1, okHttpClient);
-  }
-
-  @NotNull
-  public static List<GoogleSearchResult> performSearch(String engineId,
-                                                       String terms,
-                                                       int resultCount,
-                                                       OkHttpClient okHttpClient) {
-    try {
-      if (googleAPIKey == null) throw new IllegalStateException("API Key must not be null!");
-      if (engineId == null || engineId.isEmpty()) throw new IllegalArgumentException("Engine ID must not be empty!");
-      var currentTime = LocalDateTime.now();
-      if (currentTime.isAfter(startingDate.plusDays(1))) {
-        startingDate = currentTime;
-        apiUsageCounter = 1;
-      } else if (apiUsageCounter >= 80) throw new IllegalStateException("Limit reached. (80)");
-      terms = terms.replace(" ", "%20");
-      var searchUrl = String.format(URL, engineId, googleAPIKey, resultCount, terms);
-      var searchURL = new URL(searchUrl);
-      var request = new Request.Builder().url(searchURL).build();
-      return performRequest(request, okHttpClient);
-    } catch (IOException e) {
-      return new LinkedList<>();
+  private fun performSearch(engineId: String?,
+                            terms: String,
+                            resultCount: Int,
+                            okHttpClient: OkHttpClient): List<GoogleSearchResult> {
+    var searchTerms = terms
+    return try {
+      checkNotNull(googleAPIKey) { "API Key must not be null!" }
+      require(!(engineId == null || engineId.isEmpty())) { "Engine ID must not be empty!" }
+      val currentTime = LocalDateTime.now()
+      if (currentTime.isAfter(startingDate!!.plusDays(1))) {
+        startingDate = currentTime
+        apiUsageCounter = 1
+      } else check(apiUsageCounter < 80) { "Limit reached. (80)" }
+      searchTerms = searchTerms.replace(" ", "%20")
+      val searchUrl = String.format(URL, engineId, googleAPIKey, resultCount, searchTerms)
+      val searchURL = URL(searchUrl)
+      val request = Request.Builder().url(searchURL).build()
+      performRequest(request, okHttpClient)
+    } catch (e: IOException) {
+      LinkedList()
     }
   }
 
-  private static synchronized List<GoogleSearchResult> performRequest(Request request, OkHttpClient okHttpClient) {
-    try (var response = okHttpClient.newCall(request).execute()) {
-      if (!response.isSuccessful()) throw new RequestAbortedException("Failed to get search results.");
-      apiUsageCounter++;
-      String json;
-      try (var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(response.body()).byteStream()))) {
-        json = in.lines().map(line -> line + "\n").collect(Collectors.joining());
+  @Synchronized
+  private fun performRequest(request: Request, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
+    return try {
+      val response = okHttpClient.newCall(request).execute()
+      try {
+        if (!response.isSuccessful) throw RequestAbortedException("Failed to get search results.")
+        apiUsageCounter++
+        val json: String
+        val reader = BufferedReader(InputStreamReader(Objects.requireNonNull(response.body())!!.byteStream()))
+        json = reader.use { input ->
+          input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining())
+        }
+        val jsonResults = JSONObject(json).getJSONArray("items")
+        IntStream.range(0, jsonResults.length())
+          .mapToObj { i: Int -> fromGoogle(jsonResults.getJSONObject(i)) }
+          .collect(Collectors.toCollection { LinkedList<GoogleSearchResult>() })
+      } finally {
+        response.close()
       }
-      var jsonResults = new JSONObject(json).getJSONArray("items");
-      return IntStream.range(0, jsonResults.length())
-        .mapToObj(i -> GoogleSearchResult.fromGoogle(jsonResults.getJSONObject(i)))
-        .collect(Collectors.toCollection(LinkedList::new));
-    } catch (IOException e) {
-      return new LinkedList<>();
+    } catch (e: IOException) {
+      LinkedList()
     }
   }
 
-  @NotNull
-  public static String randomName(int randomLength) {
-    var characters = new char[]{
+  fun randomName(randomLength: Int): String {
+    val characters = charArrayOf(
       'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
       'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
       'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
       'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
       '1', '2', '3', '4', '5', '6', '7', '8', '9', '0'
-    };
-
+    )
     return IntStream.range(0, randomLength)
-      .mapToObj(i -> String.valueOf(characters[rng.nextInt(characters.length)]))
-      .collect(Collectors.joining("", "Pilot/", ""));
+      .mapToObj { i: Int -> characters[rng.nextInt(characters.size)].toString() }
+      .collect(Collectors.joining("", "Pilot/", ""))
   }
 }

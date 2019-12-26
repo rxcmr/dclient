@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.gadgets;
+package com.fortuneteller.dclient.commands.gadgets
+
+import com.fortuneteller.dclient.Contraption
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,33 +35,23 @@ package com.fortuneteller.dclient.commands.gadgets;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.Contraption;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class ShardCommand extends Command {
-  public ShardCommand() {
-    name = "shardinfo";
-    aliases = new String[]{"shards"};
-    help = "Sharding info.";
-    category = Categories.GADGETS.getCategory();
+class ShardCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    event.channel.sendTyping().queue()
+    val shardManager = Contraption.instance.shardManager
+    event.reply("Shards active: " + shardManager.shardsRunning)
+    event.reply("Shards total: " + shardManager.shardsTotal)
+    event.reply("Reconnecting: " + shardManager.shardsQueued)
+    event.reply("We are on Shard " + event.jda.shardInfo.shardId)
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    var shardManager = Contraption.instance.shardManager;
-    event.reply("Shards active: " + shardManager.getShardsRunning());
-    event.reply("Shards total: " + shardManager.getShardsTotal());
-    event.reply("Reconnecting: " + shardManager.getShardsQueued());
-    event.reply("We are on Shard " + event.getJDA().getShardInfo().getShardId());
+  init {
+    name = "shardinfo"
+    aliases = arrayOf("shards")
+    help = "Sharding info."
+    category = Categories.GADGETS.category
   }
 }

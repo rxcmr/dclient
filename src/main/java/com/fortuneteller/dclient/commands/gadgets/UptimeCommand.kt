@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.gadgets;
+package com.fortuneteller.dclient.commands.gadgets
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.lang.management.ManagementFactory
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,35 +35,23 @@ package com.fortuneteller.dclient.commands.gadgets;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.lang.management.ManagementFactory;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class UptimeCommand extends Command {
-  public UptimeCommand() {
-    name = "uptime";
-    help = "Bot uptime.";
-    category = Categories.GADGETS.getCategory();
+class UptimeCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
+    val uptime = runtimeMXBean.uptime
+    val uptimeInSeconds = uptime / 1000
+    val h = uptimeInSeconds / (60 * 60)
+    val m = uptimeInSeconds / 60 - h * 60
+    val s = uptimeInSeconds % 60
+    event.channel.sendMessageFormat("`%s:%s:%s`", h, m, s).queue()
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    var runtimeMXBean = ManagementFactory.getRuntimeMXBean();
-    long uptime = runtimeMXBean.getUptime();
-    long uptimeInSeconds = uptime / 1000;
-    long h = uptimeInSeconds / (60 * 60);
-    long m = (uptimeInSeconds / 60) - (h * 60);
-    long s = uptimeInSeconds % 60;
-
-    event.getChannel().sendMessageFormat("`%s:%s:%s`", h, m, s).queue();
+  init {
+    name = "uptime"
+    help = "Bot uptime."
+    category = Categories.GADGETS.category
   }
 }

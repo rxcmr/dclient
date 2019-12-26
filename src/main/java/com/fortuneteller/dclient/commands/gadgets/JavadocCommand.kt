@@ -1,4 +1,13 @@
-package com.fortuneteller.dclient.commands.gadgets;
+package com.fortuneteller.dclient.commands.gadgets
+
+import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.io.IOException
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,47 +39,34 @@ package com.fortuneteller.dclient.commands.gadgets;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class JavadocCommand extends Command {
-  public JavadocCommand() {
-    name = "javadoc";
-    aliases = new String[]{"docs"};
-    arguments = "**<package>** **<class>**";
-    help = "Gets the URL of Javadocs for JDK 13";
-    category = Categories.GADGETS.getCategory();
-  }
-
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
+class JavadocCommand : Command() {
+  override fun execute(event: CommandEvent) {
     Arrays
       .stream(JavadocPackages.values())
-      .map(j -> String.format(j.getUrl(), event.getArgs()))
-      .forEachOrdered(formatted -> {
-        var okHttpClient = new OkHttpClient();
-        var request = new Request.Builder().url(formatted).head().build();
-        try (var response = okHttpClient.newCall(request).execute()) {
-          if (response.code() == 200) {
-            event.reply(formatted);
+      .map { j: JavadocPackages -> String.format(j.url, event.args) }
+      .forEachOrdered { formatted: String? ->
+        val okHttpClient = OkHttpClient()
+        val request = Request.Builder().url(formatted!!).head().build()
+        try {
+          okHttpClient.newCall(request).execute().use { response ->
+            if (response.code() == 200) {
+              event.reply(formatted)
+            }
           }
-        } catch (IOException e) {
-          event.reply("Something went wrong...");
+        } catch (e: IOException) {
+          event.reply("Something went wrong...")
         }
-      });
+      }
+  }
+
+  init {
+    name = "javadoc"
+    aliases = arrayOf("docs")
+    arguments = "**<package>** **<class>**"
+    help = "Gets the URL of Javadocs for JDK 13"
+    category = Categories.GADGETS.category
   }
 }

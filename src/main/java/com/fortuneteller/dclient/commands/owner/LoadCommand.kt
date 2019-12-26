@@ -1,4 +1,15 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.Contraption
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import io.github.classgraph.ClassGraph
+import io.github.classgraph.ClassInfo
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.lang.reflect.InvocationTargetException
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,70 +40,53 @@ package com.fortuneteller.dclient.commands.owner;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.Contraption;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import io.github.classgraph.ClassGraph;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
-
-import java.lang.reflect.InvocationTargetException;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class LoadCommand extends Command {
-  public LoadCommand() {
-    name = "load";
-    arguments = "**<class>**";
-    help = "Loads a Class<Command>, or a Class<ListenerAdapter>";
-    hidden = true;
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
-  }
-
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
+class LoadCommand : Command() {
+  override fun execute(event: CommandEvent) {
     try {
-      var shardManager = Contraption.instance.shardManager;
-      var commandClient = Contraption.instance.commandClient;
-
-      if (event.getArgs().contains("Command")) {
-        var commandClass = new ClassGraph()
+      val shardManager = Contraption.instance.shardManager
+      val commandClient = Contraption.instance.commandClient
+      if (event.args.contains("Command")) {
+        val commandClass = ClassGraph()
           .whitelistPackages("com.fortuneteller.dclient.commands.*")
           .blacklistPackages("com.fortuneteller.dclient.commands.utils")
           .scan()
-          .getAllClasses()
-          .filter(c -> c.getSimpleName().equals(event.getArgs()))
-          .loadClasses()
-          .get(0);
-
-        Command command = (Command) commandClass.getDeclaredConstructor().newInstance();
-        commandClient.addCommand(command, commandClient.getCommands().size() - 1);
-      } else if (event.getArgs().contains("Listener")) {
-        var listenerClass = new ClassGraph()
+          .allClasses
+          .filter { c: ClassInfo -> c.simpleName == event.args }
+          .loadClasses()[0]
+        val command = commandClass.getDeclaredConstructor().newInstance() as Command
+        commandClient.addCommand(command, commandClient.commands.size - 1)
+      } else if (event.args.contains("Listener")) {
+        val listenerClass = ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.listeners")
           .scan()
-          .getAllClasses()
-          .filter(c -> c.getSimpleName().equals(event.getArgs()))
-          .loadClasses()
-          .get(0);
-
-        ListenerAdapter listener = (ListenerAdapter) listenerClass.getDeclaredConstructor().newInstance();
-        shardManager.addEventListener(listener);
+          .allClasses
+          .filter { c: ClassInfo -> c.simpleName == event.args }
+          .loadClasses()[0]
+        val listener = listenerClass.getDeclaredConstructor().newInstance() as ListenerAdapter
+        shardManager.addEventListener(listener)
       }
-    } catch (IndexOutOfBoundsException
-      | NoSuchMethodException
-      | IllegalAccessException
-      | InstantiationException
-      | InvocationTargetException e) {
-      throw new CommandException(e.getMessage());
+    } catch (e: IndexOutOfBoundsException) {
+      throw CommandException(e.message)
+    } catch (e: NoSuchMethodException) {
+      throw CommandException(e.message)
+    } catch (e: IllegalAccessException) {
+      throw CommandException(e.message)
+    } catch (e: InstantiationException) {
+      throw CommandException(e.message)
+    } catch (e: InvocationTargetException) {
+      throw CommandException(e.message)
     }
+  }
+
+  init {
+    name = "load"
+    arguments = "**<class>**"
+    help = "Loads a Class<Command>, or a Class<ListenerAdapter>"
+    hidden = true
+    ownerCommand = true
+    category = Categories.OWNER.category
   }
 }

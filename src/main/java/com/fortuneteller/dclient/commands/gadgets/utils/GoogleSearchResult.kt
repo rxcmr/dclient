@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient.commands.gadgets.utils;
+package com.fortuneteller.dclient.commands.gadgets.utils
+
+import org.apache.commons.text.StringEscapeUtils
+import org.json.JSONObject
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,56 +35,38 @@ package com.fortuneteller.dclient.commands.gadgets.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
+class GoogleSearchResult {
+  var title: String? = null
+    private set
+  var content: String? = null
+    private set
+  var url: String? = null
+    private set
 
-import org.apache.commons.text.StringEscapeUtils;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
+  val suggestedResult: String
+    get() = "$url - *$title*: \"$content\""
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
+  companion object {
+    fun fromGoogle(googleResult: JSONObject): GoogleSearchResult {
+      val gsr = GoogleSearchResult()
+      gsr.title = cleanString(googleResult.getString("title"))
+      gsr.content = cleanString(googleResult.getString("snippet"))
+      gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8)
+      return gsr
+    }
 
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class GoogleSearchResult {
-  private String title;
-  private String content;
-  private String url;
-
-  @NotNull
-  public static GoogleSearchResult fromGoogle(@NotNull JSONObject googleResult) {
-    var gsr = new GoogleSearchResult();
-    gsr.title = cleanString(googleResult.getString("title"));
-    gsr.content = cleanString(googleResult.getString("snippet"));
-    gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8);
-    return gsr;
-  }
-
-  private static String cleanString(@NotNull String dirtyString) {
-    return StringEscapeUtils.unescapeJava(
-      StringEscapeUtils.unescapeHtml4(
-        dirtyString
-          .replaceAll("\\s+", " ")
-          .replaceAll("<.*?>", "")
-          .replaceAll("\"", "")
+    private fun cleanString(dirtyString: String): String {
+      return StringEscapeUtils.unescapeJava(
+        StringEscapeUtils.unescapeHtml4(
+          dirtyString
+            .replace("\\s+".toRegex(), " ")
+            .replace("<.*?>".toRegex(), "")
+            .replace("\"".toRegex(), "")
+        )
       )
-    );
-  }
-
-  public String getTitle() {
-    return title;
-  }
-
-  public String getContent() {
-    return content;
-  }
-
-  public String getUrl() {
-    return url;
-  }
-
-  public String getSuggestedResult() {
-    return getUrl() + " - *" + getTitle() + "*: \"" + getContent() + "\"";
+    }
   }
 }

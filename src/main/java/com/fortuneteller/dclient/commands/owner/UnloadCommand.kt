@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.Contraption
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,40 +36,25 @@ package com.fortuneteller.dclient.commands.owner;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.Contraption;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class UnloadCommand extends Command {
-  public UnloadCommand() {
-    name = "unload";
-    arguments = "**<class>**";
-    ownerCommand = true;
-    category = Categories.OWNER.getCategory();
-    hidden = true;
+class UnloadCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    try {
+      if (event.args.contains("Listener")) Contraption.instance.shardManager.removeEventListener(
+        Class.forName("com.fortuneteller.dcl.listeners." + event.args)
+      ) else Contraption.instance.commandClient.removeCommand(event.args)
+    } catch (e: ClassNotFoundException) {
+      throw CommandException(e.message)
+    }
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    try {
-      if (event.getArgs().contains("Listener"))
-        Contraption.instance.shardManager.removeEventListener(
-          Class.forName("com.fortuneteller.dcl.listeners." + event.getArgs())
-        );
-      else Contraption.instance.commandClient.removeCommand(event.getArgs());
-
-    } catch (ClassNotFoundException e) {
-      throw new CommandException(e.getMessage());
-    }
+  init {
+    name = "unload"
+    arguments = "**<class>**"
+    ownerCommand = true
+    category = Categories.OWNER.category
+    hidden = true
   }
 }

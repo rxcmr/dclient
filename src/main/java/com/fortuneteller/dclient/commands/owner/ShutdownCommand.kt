@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.warn
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,30 +35,21 @@ package com.fortuneteller.dclient.commands.owner;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.utils.PilotUtils;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class ShutdownCommand extends Command {
-  public ShutdownCommand() {
-    name = "shutdown";
-    help = "Shutdown JDA, and process running it.";
-    ownerCommand = true;
-    guildOnly = false;
-    category = Categories.OWNER.getCategory();
-    hidden = true;
+class ShutdownCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    warn("Shutting down.")
+    event.jda.shutdownNow()
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    PilotUtils.Companion.warn("Shutting down.");
-    event.getJDA().shutdownNow();
+  init {
+    name = "shutdown"
+    help = "Shutdown JDA, and process running it."
+    ownerCommand = true
+    guildOnly = false
+    category = Categories.OWNER.category
+    hidden = true
   }
 }

@@ -1,4 +1,11 @@
-package com.fortuneteller.dclient.commands.gadgets;
+package com.fortuneteller.dclient.commands.gadgets
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.EmbedBuilder
+import net.dv8tion.jda.api.entities.MessageEmbed
+import java.util.concurrent.TimeUnit
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,46 +37,35 @@ package com.fortuneteller.dclient.commands.gadgets;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.EmbedBuilder;
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.TimeUnit;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class PingCommand extends Command {
-  private MessageEmbed embed;
-
-  public PingCommand() {
-    name = "latency";
-    aliases = new String[]{"ping"};
-    help = "REST API ping and WebSocket ping.";
-    category = Categories.GADGETS.getCategory();
+class PingCommand : Command() {
+  private var embed: MessageEmbed? = null
+  @Synchronized
+  fun buildEmbed(event: CommandEvent) {
+    val jda = event.jda
+    val embedBuilder = EmbedBuilder()
+    jda.restPing.queue { api: Long ->
+      embed = embedBuilder
+        .setThumbnail(event.author.effectiveAvatarUrl)
+        .addField("**API: **", "```py\n$api ms\n```", true)
+        .addField("**WebSocket: **", "```py\n" + jda.gatewayPing + " ms\n```", true)
+        .setColor(0xd32ce6)
+        .build()
+    }
   }
 
-  public synchronized void buildEmbed(@NotNull CommandEvent event) {
-    var jda = event.getJDA();
-    var embedBuilder = new EmbedBuilder();
-    jda.getRestPing().queue(api -> embed = embedBuilder
-      .setThumbnail(event.getAuthor().getEffectiveAvatarUrl())
-      .addField("**API: **", "```py\n" + api + " ms\n```", true)
-      .addField("**WebSocket: **", "```py\n" + jda.getGatewayPing() + " ms\n```", true)
-      .setColor(0xd32ce6)
-      .build()
-    );
+  override fun execute(event: CommandEvent) {
+    event.channel.sendTyping().queue()
+    buildEmbed(event)
+    event.jda.gatewayPool.schedule({ event.reply(embed) }, 1, TimeUnit.SECONDS)
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    buildEmbed(event);
-    event.getJDA().getGatewayPool().schedule(() -> event.reply(embed), 1, TimeUnit.SECONDS);
+  init {
+    name = "latency"
+    aliases = arrayOf("ping")
+    help = "REST API ping and WebSocket ping."
+    category = Categories.GADGETS.category
   }
 }

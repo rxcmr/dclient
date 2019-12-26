@@ -1,4 +1,11 @@
-package com.fortuneteller.dclient.commands.gadgets;
+package com.fortuneteller.dclient.commands.gadgets
+
+import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.init
+import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.performSearch
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import io.github.cdimascio.dotenv.Dotenv
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,39 +37,28 @@ package com.fortuneteller.dclient.commands.gadgets;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import io.github.cdimascio.dotenv.Dotenv;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class GoogleSearchCommand extends Command {
-  public GoogleSearchCommand() {
-    name = "google";
-    aliases = new String[]{"search"};
-    category = Categories.GADGETS.getCategory();
-    cooldown = 10;
-    arguments = "**<query>**";
-    help = "The Google Search API";
+class GoogleSearchCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    event.channel.sendTyping().queue()
+    val apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load()["API_KEY"]
+    val engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load()["ENGINE_ID"]
+    val queryArray = event.args.split("\\s+".toRegex()).toTypedArray()
+    val query = queryArray.joinToString(" ")
+    init(apiKey)
+    val results = performSearch(
+      engineID, query, event.jda.httpClient)
+    event.reply(results[0].suggestedResult)
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    final var apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("API_KEY");
-    final var engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load().get("ENGINE_ID");
-    final var queryArray = event.getArgs().split("\\s+");
-    var query = String.join(" ", queryArray);
-    GoogleSearchHandler.init(apiKey);
-    var results = GoogleSearchHandler.performSearch(
-      engineID, query, event.getJDA().getHttpClient());
-    event.reply(results.get(0).getSuggestedResult());
+  init {
+    name = "google"
+    aliases = arrayOf("search")
+    category = Categories.GADGETS.category
+    cooldown = 10
+    arguments = "**<query>**"
+    help = "The Google Search API"
   }
 }
