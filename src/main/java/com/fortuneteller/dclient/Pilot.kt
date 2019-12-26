@@ -1,5 +1,6 @@
 package com.fortuneteller.dclient
 
+import com.fortuneteller.dclient.commands.gadgets.JagTagCommand
 import com.jagrosh.jdautilities.command.Command
 import io.github.cdimascio.dotenv.Dotenv
 import io.github.classgraph.ClassGraph
@@ -57,6 +58,7 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
   init {
     val commands = LinkedList<Command>()
     val listeners = LinkedList<Any>()
+
     for (c in ClassGraph()
       .blacklistPackages(
         "com.fortuneteller.dclient.commands.utils",
@@ -65,14 +67,18 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
         "com.fortuneteller.dclient.commands.music.children"
       )
       .whitelistPackages("com.fortuneteller.dclient.commands.*")
+      .verbose()
       .scan()
       .allClasses
       .loadClasses(Command::class.java)) commands.add(c.getDeclaredConstructor().newInstance())
+
     for (l in ClassGraph()
       .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
       .scan()
       .allClasses
       .loadClasses(ListenerAdapter::class.java)) listeners.add(l.getDeclaredConstructor().newInstance())
+
+    commands.add(JagTagCommand())
     Contraption(token!!, prefix!!, shards, commands, listeners).start()
   }
 }

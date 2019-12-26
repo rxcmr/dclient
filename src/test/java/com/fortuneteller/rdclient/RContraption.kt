@@ -1,4 +1,14 @@
-package com.fortuneteller.rdclient;
+package com.fortuneteller.rdclient
+
+import club.minnced.jda.reactor.ReactiveEventManager
+import club.minnced.jda.reactor.on
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
+import io.github.cdimascio.dotenv.Dotenv
+import net.dv8tion.jda.api.JDABuilder
+import net.dv8tion.jda.api.events.ReadyEvent
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
+import javax.security.auth.login.LoginException
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,39 +39,26 @@ package com.fortuneteller.rdclient;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import club.minnced.jda.reactor.ReactiveEventManager;
-import com.fortuneteller.dclient.utils.PilotUtils;
-import io.github.cdimascio.dotenv.Dotenv;
-import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.events.ReadyEvent;
-import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
-
-import javax.security.auth.login.LoginException;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-
-public class RContraption {
-  public static void main(String[] args) throws LoginException {
-    final var manager = new ReactiveEventManager();
-
-    manager.on(ReadyEvent.class)
+object RContraption {
+  @Throws(LoginException::class)
+  @JvmStatic
+  fun main(args: Array<String>) {
+    val manager = ReactiveEventManager()
+    manager.on<ReadyEvent>()
       .next()
-      .subscribe(event -> PilotUtils.Companion.info("Hello!"));
+      .subscribe { info("Hello!") }
 
-    manager.on(GuildMessageReceivedEvent.class)
+    manager.on<GuildMessageReceivedEvent>()
       .next()
-      .subscribe(event -> {
+      .subscribe { event ->
+        if (event.message.contentRaw != "rg!hello") return@subscribe
+        event.channel.sendTyping().queue()
+        event.channel.sendMessage("Hello Reactor!").queue()
+      }
 
-        if (!event.getMessage().getContentRaw().equals("rg!hello")) return;
-        event.getChannel().sendTyping().queue();
-        event.getChannel().sendMessage("Hello Reactor!").queue();
-      });
-
-    new JDABuilder(Dotenv.configure().load().get("SUBTOKEN")).setEventManager(manager).build();
+    JDABuilder(Dotenv.configure().load()["SUBTOKEN"]).setEventManager(manager).build()
   }
 }

@@ -1,4 +1,13 @@
-package com.fortuneteller.dclient.commands.owner;
+package com.fortuneteller.dclient.commands.owner
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.SQLException
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,104 +41,86 @@ package com.fortuneteller.dclient.commands.owner;
  */
 
 
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class CustomQueryCommand extends Command {
-  public CustomQueryCommand() {
-    name = "sql";
-    aliases = new String[]{"query"};
-    ownerCommand = true;
-    arguments = "**<SQLite query>**";
-    help = "Executes a SQLite query.";
-    category = Categories.OWNER.getCategory();
-    hidden = true;
-  }
+@SuppressWarnings("unused")
+class CustomQueryCommand : Command() {
+  override fun execute(event: CommandEvent?) {
+    val sql = event?.args
+    try {
+      val connection = connect()
+      val preparedStatement = connection.prepareStatement(sql)
+      val resultSet = preparedStatement.executeQuery()
+      val resultSetMetaData = resultSet.metaData
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    var sql = event.getArgs();
-    try (var connection = connect();
-         var preparedStatement = connection.prepareStatement(sql);
-         var resultSet = preparedStatement.executeQuery()) {
-      var resultSetMetaData = resultSet.getMetaData();
-      switch (resultSetMetaData.getColumnCount()) {
-        case 1 -> {
-          var markdown = new StringBuilder(String.format("""
+      when (resultSetMetaData.columnCount) {
+        1 -> {
+          val markdown = StringBuilder(String.format("""
               ```ini
               [ %s ]
               """,
-            resultSetMetaData.getColumnName(1)));
+            resultSetMetaData.getColumnName(1)))
           while (resultSet.next()) markdown.append(String.format("""
               [ %s ]
               """,
-            resultSet.getString(1)));
-          markdown.append("\n```");
-          event.reply(markdown.toString());
+            resultSet.getString(1)))
+          markdown.append("\n```")
+          event?.reply(markdown.toString())
         }
-        case 2 -> {
-          var markdown = new StringBuilder(String.format("""
+        2 -> {
+          val markdown = StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ]
               """,
             resultSetMetaData.getColumnName(1),
-            resultSetMetaData.getColumnName(2)));
+            resultSetMetaData.getColumnName(2)))
           while (resultSet.next()) markdown.append(String.format("""
               [ %s ] | [ %s ]
               """,
             resultSet.getString(1),
-            resultSet.getString(2)));
-          markdown.append("\n```");
-          event.reply(markdown.toString());
+            resultSet.getString(2)))
+          markdown.append("\n```")
+          event?.reply(markdown.toString())
         }
-        case 3 -> {
-          var markdown = new StringBuilder(String.format("""
+        3 -> {
+          val markdown = StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ]
               """,
             resultSetMetaData.getColumnName(1),
             resultSetMetaData.getColumnName(2),
-            resultSetMetaData.getColumnName(3)));
+            resultSetMetaData.getColumnName(3)))
           while (resultSet.next()) markdown.append(String.format("""
               [ %s ] | [ %s ] | [ %s ]
               """,
             resultSet.getString(1),
             resultSet.getString(2),
-            resultSet.getString(3)));
-          markdown.append("\n```");
-          event.reply(markdown.toString());
+            resultSet.getString(3)))
+          markdown.append("\n```")
+          event?.reply(markdown.toString())
         }
-        case 4 -> {
-          var markdown = new StringBuilder(String.format("""
+        4 -> {
+          val markdown = StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
             resultSetMetaData.getColumnName(1),
             resultSetMetaData.getColumnName(2),
             resultSetMetaData.getColumnName(3),
-            resultSetMetaData.getColumnName(4)));
+            resultSetMetaData.getColumnName(4)))
           while (resultSet.next()) markdown.append(String.format("""
               [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
             resultSet.getString(1),
             resultSet.getString(2),
             resultSet.getString(3),
-            resultSet.getString(4)));
-          markdown.append("\n```");
-          event.reply(markdown.toString());
+            resultSet.getString(4)))
+          markdown.append("\n```")
+          event?.reply(markdown.toString())
         }
-        case 5 -> {
-          var markdown = new StringBuilder(String.format("""
+        5 -> {
+          val markdown = StringBuilder(String.format("""
               ```ini
               [ %s ] | [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
@@ -137,7 +128,7 @@ public class CustomQueryCommand extends Command {
             resultSetMetaData.getColumnName(2),
             resultSetMetaData.getColumnName(3),
             resultSetMetaData.getColumnName(4),
-            resultSetMetaData.getColumnName(5)));
+            resultSetMetaData.getColumnName(5)))
           while (resultSet.next()) markdown.append(String.format("""
               [ %s ] | [ %s ] | [ %s ] | [ %s ] | [ %s ]
               """,
@@ -145,19 +136,30 @@ public class CustomQueryCommand extends Command {
             resultSet.getString(2),
             resultSet.getString(3),
             resultSet.getString(4),
-            resultSet.getString(5)));
-          markdown.append("\n```");
-          event.reply(markdown.toString());
+            resultSet.getString(5)))
+          markdown.append("\n```")
+          event?.reply(markdown.toString())
         }
-        default -> event.reply("Query finished without error.");
+        else -> event?.reply("Query finished without error.")
       }
-    } catch (SQLException e) {
-      throw new CommandException(e.getMessage(), e.getCause());
+
+    } catch (e: SQLException) {
+      throw CommandException(e.message)
     }
   }
 
-  public Connection connect() throws SQLException {
-    var url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
-    return DriverManager.getConnection(url);
+  private fun connect(): Connection {
+    val url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite"
+    return DriverManager.getConnection(url)
+  }
+
+  init {
+    name = "sql"
+    aliases = arrayOf("query")
+    ownerCommand = true
+    arguments = "**<SQLite query>**"
+    help = "Executes a SQLite query."
+    category = Categories.OWNER.category
+    hidden = true
   }
 }

@@ -224,8 +224,9 @@ class Contraption(private val token: String,
       listeners.forEach { l ->
         run {
           val matcher = pattern.matcher(l.toString())
-          while (matcher.find()) info(String.format("\u001b[1;93mEventListener\u001b[0m loaded: \u001b[1;92m%s\u001b[0m",
-            matcher.group(0)))
+          while (matcher.find())
+            info(String.format("\u001b[1;93mEventListener\u001b[0m loaded: \u001b[1;92m%s\u001b[0m",
+              matcher.group(0)))
         }
       }
     } catch (l: LoginException) {
