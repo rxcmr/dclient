@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.moderation;
+package com.fortuneteller.dclient.commands.moderation
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,34 +35,23 @@ package com.fortuneteller.dclient.commands.moderation;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Member;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class BanCommand extends Command {
-  public BanCommand() {
-    name = "ban";
-    aliases = new String[]{"hackban"};
-    arguments = "**<user>** **<amount>** (in days) **<reason>**";
-    help = "Bans a user";
-    botPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    userPermissions = new Permission[]{Permission.BAN_MEMBERS};
-    category = Categories.MODERATION.getCategory();
+class BanCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    val args = event.args.split("\\s+".toRegex()).toTypedArray()
+    event.channel.sendTyping().queue()
+    for (m in event.message.mentionedMembers) m.ban(args[1].toInt()).queue()
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    var args = event.getArgs().split("\\s+");
-    event.getChannel().sendTyping().queue();
-    for (Member m : event.getMessage().getMentionedMembers()) m.ban(Integer.parseInt(args[1])).queue();
+  init {
+    name = "ban"
+    aliases = arrayOf("hackban")
+    arguments = "**<user>** **<amount>** (in days) **<reason>**"
+    help = "Bans a user"
+    botPermissions = arrayOf(Permission.BAN_MEMBERS)
+    userPermissions = arrayOf(Permission.BAN_MEMBERS)
+    category = Categories.MODERATION.category
   }
 }
