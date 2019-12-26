@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.utils;
+package com.fortuneteller.dclient.commands.utils
+
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.SQLException
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,42 +37,36 @@ package com.fortuneteller.dclient.commands.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-import com.fortuneteller.dclient.utils.PilotUtils;
-import org.jetbrains.annotations.NotNull;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-
-
 /**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-public interface SQLUtils {
-  default Connection connect() throws SQLException {
-    var url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite";
-    return DriverManager.getConnection(url);
-  }
-
-  default void createDatabase() throws SQLException {
-    try (var connection = connect()) {
-      if (connection != null) {
-        var metaData = connection.getMetaData();
-        PilotUtils.Companion.info(metaData.getDriverName());
-      }
+interface SQLUtils {
+  companion object {
+    @Throws(SQLException::class)
+    fun connect(): Connection {
+      val url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite"
+      return DriverManager.getConnection(url)
     }
+
+    @Throws(SQLException::class)
+    fun createDatabase() = info(connect().metaData.driverName)
   }
 
-  void createTable() throws SQLException;
+  @Throws(SQLException::class)
+  fun createTable()
 
-  void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+  @Throws(SQLException::class)
+  fun insert(mode: SQLItemMode, vararg args: String?)
 
-  void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+  @Throws(SQLException::class)
+  fun select(mode: SQLItemMode, vararg args: String?)
 
-  void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+  @Throws(SQLException::class)
+  fun delete(mode: SQLItemMode, vararg args: String?)
 
-  void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+  @Throws(SQLException::class)
+  fun update(mode: SQLItemMode, vararg args: String?)
 
-  boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException;
+  @Throws(SQLException::class)
+  fun exists(mode: SQLItemMode, vararg args: String?): Boolean
 }

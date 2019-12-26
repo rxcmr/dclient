@@ -79,7 +79,7 @@ public class PilotCommandListener implements CommandListener {
     }
     if (!(command instanceof PlayCommand)) {
       event.getMessage().addReaction("\uD83D\uDE41").queue();
-      DirectMessage.sendStaticDirectMessage(
+      DirectMessage.Companion.sendDirectMessage(
         "```java\n", Objects.requireNonNull(owner), String.format("%s%n```", throwable));
     }
   }
@@ -101,7 +101,7 @@ public class PilotCommandListener implements CommandListener {
     event.getMessage().addReaction("\uD83E\uDD2C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");
-    DirectMessage.sendStaticDirectMessage(
+    DirectMessage.Companion.sendDirectMessage(
       "Unexpected behavior. Triggered by: ",
       owner, String.format(
         "%s in %sin%s",

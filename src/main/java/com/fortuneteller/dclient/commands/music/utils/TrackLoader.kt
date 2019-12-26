@@ -1,4 +1,28 @@
-package com.fortuneteller.dclient.commands.music.utils;
+package com.fortuneteller.dclient.commands.music.utils
+
+import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
+import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.local.LocalAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
+import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.TextChannel
+import net.dv8tion.jda.api.entities.VoiceChannel
+import net.dv8tion.jda.api.managers.AudioManager
+import org.apache.http.client.config.CookieSpecs
+import org.apache.http.client.config.RequestConfig
+import org.jetbrains.annotations.Contract
+import java.util.*
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,133 +53,94 @@ package com.fortuneteller.dclient.commands.music.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
+class TrackLoader {
+  private val playerManager: AudioPlayerManager
+  private val musicManagers: MutableMap<Long, GuildMusicManager>
 
-
-import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
-import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.local.LocalAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
-import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.managers.AudioManager;
-import org.apache.http.client.config.CookieSpecs;
-import org.apache.http.client.config.RequestConfig;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class TrackLoader {
-  private final AudioPlayerManager playerManager;
-  private final Map<Long, GuildMusicManager> musicManagers;
-  private static final TrackLoader loader = new TrackLoader();
-
-  public TrackLoader() {
-    playerManager = registerSourceManagers(new DefaultAudioPlayerManager());
-    musicManagers = new HashMap<>();
-  }
-
-  public static TrackLoader getInstance() {
-    return loader;
-  }
-
-  private static void connectToFirstVoiceChannel(@NotNull AudioManager audioManager) {
-    if (!audioManager.isConnected() && !audioManager.isAttemptingToConnect())
-      audioManager.getGuild()
-        .getVoiceChannels().stream().filter(Objects::nonNull).findFirst().ifPresent(audioManager::openAudioConnection);
-  }
-
-  public void loadAndPlay(@NotNull final TextChannel channel, final String trackURL) {
-    var musicManager = getGuildAudioPlayer(channel.getGuild());
-    playerManager.loadItemOrdered(musicManager, trackURL, new AudioLoadResultHandler() {
-      @Override
-      public void trackLoaded(AudioTrack track) {
-        channel.sendMessageFormat("Adding to queue: **%s**", track.getInfo().title).queue();
-        play(channel.getGuild(), musicManager, track);
+  fun loadAndPlay(channel: TextChannel, trackURL: String) {
+    val musicManager = getGuildAudioPlayer(channel.guild)
+    playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
+      override fun trackLoaded(track: AudioTrack) {
+        channel.sendMessageFormat("Adding to queue: **%s**", track.info.title).queue()
+        play(channel.guild, musicManager, track)
       }
 
-      @Override
-      public void playlistLoaded(AudioPlaylist playlist) {
-        var firstTrack = playlist.getSelectedTrack();
-        if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
+      override fun playlistLoaded(playlist: AudioPlaylist) {
+        var firstTrack = playlist.selectedTrack
+        if (firstTrack == null) firstTrack = playlist.tracks[0]
         channel.sendMessageFormat("Adding to queue: **%s** *(first track of playlist %s)*",
-          firstTrack.getInfo().title,
-          playlist.getName()).queue();
-        play(channel.getGuild(), musicManager, firstTrack);
+          firstTrack?.info?.title,
+          playlist.name).queue()
+        play(channel.guild, musicManager, firstTrack)
       }
 
-      @Override
-      public void noMatches() {
-        channel.sendMessage("Nothing found by: " + trackURL + ".").queue();
+      override fun noMatches() {
+        channel.sendMessage("Nothing found by: $trackURL.").queue()
       }
 
-      @Override
-      public void loadFailed(FriendlyException exception) {
-        channel.sendMessage("Could not play: " + exception.getMessage()).queue();
+      override fun loadFailed(exception: FriendlyException) {
+        channel.sendMessage("Could not play: " + exception.message).queue()
       }
-    });
+    })
   }
 
-  public String displayQueue(@NotNull TextChannel channel) {
-    var musicManager = getGuildAudioPlayer(channel.getGuild());
-    return String.join("\n", musicManager.scheduler.getTrackList());
+  fun displayQueue(channel: TextChannel): String {
+    val musicManager = getGuildAudioPlayer(channel.guild)
+    return java.lang.String.join("\n", musicManager.scheduler.trackList)
   }
 
-  @SuppressWarnings("unused")
-  public TrackScheduler getScheduler(@NotNull TextChannel channel) {
-    return getGuildAudioPlayer(channel.getGuild()).scheduler;
+  fun getScheduler(channel: TextChannel): TrackScheduler {
+    return getGuildAudioPlayer(channel.guild).scheduler
   }
 
-  private void play(@NotNull Guild guild, @NotNull GuildMusicManager musicManager, AudioTrack track) {
-    connectToFirstVoiceChannel(guild.getAudioManager());
-    musicManager.scheduler.queue(track);
+  private fun play(guild: Guild, musicManager: GuildMusicManager, track: AudioTrack?) {
+    connectToFirstVoiceChannel(guild.audioManager)
+    musicManager.scheduler.queue(track!!)
   }
 
-  public void skipTrack(@NotNull TextChannel channel) {
-    var musicManager = getGuildAudioPlayer(channel.getGuild());
-    musicManager.scheduler.nextTrack();
-    channel.sendMessage("Skipped.").queue();
+  fun skipTrack(channel: TextChannel) {
+    val musicManager = getGuildAudioPlayer(channel.guild)
+    musicManager.scheduler.nextTrack()
+    channel.sendMessage("Skipped.").queue()
   }
 
-  @NotNull
-  private synchronized GuildMusicManager getGuildAudioPlayer(@NotNull Guild guild) {
-    long guildId = Long.parseLong(guild.getId());
-    var musicManager = musicManagers.computeIfAbsent(guildId, g -> new GuildMusicManager(playerManager));
-    guild.getAudioManager().setSendingHandler(musicManager.getSendHandler());
-    return musicManager;
+  @Synchronized
+  private fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
+    val guildId = guild.id.toLong()
+    val musicManager = musicManagers.computeIfAbsent(guildId) { g: Long? -> GuildMusicManager(playerManager) }
+    guild.audioManager.sendingHandler = musicManager.sendHandler
+    return musicManager
   }
 
-  @NotNull
   @Contract("_ -> param1")
-  private AudioPlayerManager registerSourceManagers(@NotNull AudioPlayerManager manager) {
-    var youtubeAudioSourceManager = new YoutubeAudioSourceManager();
-    youtubeAudioSourceManager.configureRequests(
-      config -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
-    );
-    manager.registerSourceManager(youtubeAudioSourceManager);
-    manager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
-    manager.registerSourceManager(new TwitchStreamAudioSourceManager());
-    manager.registerSourceManager(new BandcampAudioSourceManager());
-    manager.registerSourceManager(new VimeoAudioSourceManager());
-    manager.registerSourceManager(new BeamAudioSourceManager());
-    manager.registerSourceManager(new LocalAudioSourceManager());
-    manager.registerSourceManager(new HttpAudioSourceManager());
-    return manager;
+  private fun registerSourceManagers(manager: AudioPlayerManager): AudioPlayerManager {
+    val youtubeAudioSourceManager = YoutubeAudioSourceManager()
+    youtubeAudioSourceManager.configureRequests { config: RequestConfig? -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
+    manager.registerSourceManager(youtubeAudioSourceManager)
+    manager.registerSourceManager(SoundCloudAudioSourceManager.createDefault())
+    manager.registerSourceManager(TwitchStreamAudioSourceManager())
+    manager.registerSourceManager(BandcampAudioSourceManager())
+    manager.registerSourceManager(VimeoAudioSourceManager())
+    manager.registerSourceManager(BeamAudioSourceManager())
+    manager.registerSourceManager(LocalAudioSourceManager())
+    manager.registerSourceManager(HttpAudioSourceManager())
+    return manager
+  }
+
+  companion object {
+    val instance = TrackLoader()
+
+    private fun connectToFirstVoiceChannel(audioManager: AudioManager) {
+      if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) audioManager.guild
+        .voiceChannels.stream().filter { obj: VoiceChannel? -> Objects.nonNull(obj) }.findFirst().ifPresent { channel: VoiceChannel? -> audioManager.openAudioConnection(channel) }
+    }
+  }
+
+  init {
+    playerManager = registerSourceManagers(DefaultAudioPlayerManager())
+    musicManagers = HashMap()
   }
 }

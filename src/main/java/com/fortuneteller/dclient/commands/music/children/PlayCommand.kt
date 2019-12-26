@@ -1,4 +1,12 @@
-package com.fortuneteller.dclient.commands.music.children;
+package com.fortuneteller.dclient.commands.music.children
+
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.net.MalformedURLException
+import java.net.URL
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,41 +38,26 @@ package com.fortuneteller.dclient.commands.music.children;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class PlayCommand extends Command {
-  public PlayCommand() {
-    name = "play";
-    aliases = new String[]{"p"};
-    arguments = "**<URL>**";
-    help = "Plays a track from URL.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
+class PlayCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    if (event.args.isEmpty()) throw CommandException("URL cannot be empty!")
+    try {
+      URL(event.args)
+    } catch (e: MalformedURLException) {
+      throw CommandException()
+    }
+    instance.loadAndPlay(event.textChannel, event.args)
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    if (event.getArgs().isEmpty()) throw new CommandException("URL cannot be empty!");
-    try {
-      new URL(event.getArgs());
-    } catch (MalformedURLException e) {
-      throw new CommandException();
-    }
-    TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), event.getArgs());
+  init {
+    name = "play"
+    aliases = arrayOf("p")
+    arguments = "**<URL>**"
+    help = "Plays a track from URL."
+    category = Categories.MUSIC.category
+    hidden = true
   }
 }

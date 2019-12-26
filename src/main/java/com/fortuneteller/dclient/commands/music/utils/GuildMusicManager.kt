@@ -1,4 +1,8 @@
-package com.fortuneteller.dclient.commands.music.utils;
+package com.fortuneteller.dclient.commands.music.utils
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,31 +33,20 @@ package com.fortuneteller.dclient.commands.music.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
+class GuildMusicManager(manager: AudioPlayerManager) {
+  private val player: AudioPlayer = manager.createPlayer()
 
+  @JvmField
+  val scheduler: TrackScheduler
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
-import org.jetbrains.annotations.NotNull;
+  val sendHandler: AudioPlayerSendHandler
+    get() = AudioPlayerSendHandler(player)
 
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class GuildMusicManager {
-  public final AudioPlayer player;
-  public final TrackScheduler scheduler;
-
-  public GuildMusicManager(@NotNull AudioPlayerManager manager) {
-    player = manager.createPlayer();
-    scheduler = new TrackScheduler(player);
-    player.addListener(scheduler);
-  }
-
-  public AudioPlayer getPlayer() {
-    return player;
-  }
-
-  public AudioPlayerSendHandler getSendHandler() {
-    return new AudioPlayerSendHandler(player);
+  init {
+    scheduler = TrackScheduler(player)
+    player.addListener(scheduler)
   }
 }

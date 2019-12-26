@@ -1,4 +1,14 @@
-package com.fortuneteller.dclient.commands.music.utils;
+package com.fortuneteller.dclient.commands.music.utils
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
+import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
+import com.sedmelluq.discord.lavaplayer.track.AudioTrack
+import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
+import java.util.*
+import java.util.concurrent.LinkedTransferQueue
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.stream.Collectors
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -29,59 +39,36 @@ package com.fortuneteller.dclient.commands.music.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.LinkedTransferQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class TrackScheduler extends AudioEventAdapter {
-  private final AudioPlayer player;
-  private final Queue<AudioTrack> queue;
-
-  @Contract(pure = true)
-  public TrackScheduler(AudioPlayer player) {
-    this.player = player;
-    this.queue = new LinkedTransferQueue<>();
+class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
+  private val queue: Queue<AudioTrack>
+  fun queue(track: AudioTrack): Boolean {
+    return !player.startTrack(track, true) && queue.offer(track)
   }
 
-  public boolean queue(AudioTrack track) {
-    return !player.startTrack(track, true) && queue.offer(track);
+  val trackList: List<String>
+    get() {
+      val queueSize = AtomicInteger(queue.size)
+      return if (queue.stream()
+          .map { t: AudioTrack -> "`" + queueSize.getAndDecrement() + " - " + t.info.title + "`" }
+          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty())
+        listOf("No tracks left in the queue.")
+      else queue.stream()
+        .map { t: AudioTrack -> "`" + queueSize.getAndDecrement() + " - " + t.info.title + "`" }
+        .collect(Collectors.toCollection { LinkedList<String>() })
+    }
+
+  fun nextTrack() {
+    player.startTrack(queue.poll(), false)
   }
 
-  public List<String> getTrackList() {
-    var queueSize = new AtomicInteger(queue.size());
-    return queue.stream()
-      .map(t -> "`" + queueSize.getAndDecrement() + " - " + t.getInfo().title + "`")
-      .collect(Collectors.toCollection(LinkedList::new)).isEmpty()
-      ? Collections.singletonList("No tracks left in the queue.")
-      : queue.stream()
-      .map(t -> "`" + queueSize.getAndDecrement() + " - " + t.getInfo().title + "`")
-      .collect(Collectors.toCollection(LinkedList::new));
+  override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) {
+    if (reason.mayStartNext) nextTrack()
   }
 
-  public void nextTrack() {
-    player.startTrack(queue.poll(), false);
-  }
-
-  @Override
-  public void onTrackEnd(AudioPlayer player, AudioTrack track, @NotNull AudioTrackEndReason reason) {
-    if (reason.mayStartNext) nextTrack();
+  init {
+    queue = LinkedTransferQueue()
   }
 }

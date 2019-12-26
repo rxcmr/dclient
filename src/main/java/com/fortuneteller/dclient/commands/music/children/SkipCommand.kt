@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.music.children;
+package com.fortuneteller.dclient.commands.music.children
+
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,29 +35,19 @@ package com.fortuneteller.dclient.commands.music.children;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class SkipCommand extends Command {
-  public SkipCommand() {
-    name = "skip";
-    help = "Skips current playing track.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
+class SkipCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    event.channel.sendTyping().queue()
+    instance.skipTrack(event.textChannel)
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getChannel().sendTyping().queue();
-    TrackLoader.getInstance().skipTrack(event.getTextChannel());
+  init {
+    name = "skip"
+    help = "Skips current playing track."
+    category = Categories.MUSIC.category
+    hidden = true
   }
 }

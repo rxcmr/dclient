@@ -1,9 +1,8 @@
-package com.fortuneteller.dclient.commands.utils;
+package com.fortuneteller.dclient.commands.utils
 
-import net.dv8tion.jda.api.entities.MessageEmbed;
-import net.dv8tion.jda.api.entities.User;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.PrivateChannel
+import net.dv8tion.jda.api.entities.User
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -36,43 +35,33 @@ import org.jetbrains.annotations.Nullable;
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 /**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-public interface DirectMessage {
-  static void sendStaticDirectMessage(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage) {
-    user.openPrivateChannel().queue(channel -> {
-        if (content instanceof MessageEmbed) {
-          if (exceptionMessage == null) channel.sendMessage((MessageEmbed) content).queue();
-          else channel.sendMessage(content + exceptionMessage).queue();
-        } else if (exceptionMessage == null) channel.sendMessage(content.toString()).queue();
-        else channel.sendMessage(content + exceptionMessage).queue();
+interface DirectMessage {
+  fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
+    user.openPrivateChannel().queue { channel: PrivateChannel ->
+      if (content is MessageEmbed) {
+        if (exceptionMessage == null)
+          channel.sendMessage(content).queue()
+        else channel.sendMessage(content.toString() + exceptionMessage).queue()
+      } else if (exceptionMessage == null)
+        channel.sendMessage(content.toString()).queue()
+      else channel.sendMessage(content.toString() + exceptionMessage).queue()
+    }
+  }
+
+  companion object {
+    fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
+      user.openPrivateChannel().queue { channel: PrivateChannel ->
+        if (content is MessageEmbed) {
+          if (exceptionMessage == null)
+            channel.sendMessage(content).queue()
+          else channel.sendMessage(content.toString() + exceptionMessage).queue()
+        } else if (exceptionMessage == null)
+          channel.sendMessage(content.toString()).queue()
+        else channel.sendMessage(content.toString() + exceptionMessage).queue()
       }
-    );
-  }
-
-  @SuppressWarnings("unused")
-  static void sendStaticDirectMessageFunctionally(@NotNull Object content,
-                                                  @NotNull User user,
-                                                  @Nullable Object... optional) {
-  }
-
-  default void sendDirectMessage(@NotNull Object content, @NotNull User user, @Nullable String exceptionMessage) {
-    user.openPrivateChannel().queue(channel -> {
-        if (content instanceof MessageEmbed) {
-          if (exceptionMessage == null) channel.sendMessage((MessageEmbed) content).queue();
-          else channel.sendMessage(content + exceptionMessage).queue();
-        } else if (exceptionMessage == null) channel.sendMessage(content.toString()).queue();
-        else channel.sendMessage(content + exceptionMessage).queue();
-      }
-    );
-  }
-
-  @SuppressWarnings("unused")
-  default void sendDirectMessageFunctionally(@NotNull Object content,
-                                             @NotNull User user,
-                                             @Nullable Object... optional) {
+    }
   }
 }
-

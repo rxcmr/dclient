@@ -1,4 +1,4 @@
-package com.fortuneteller.dclient.commands.utils;
+package com.fortuneteller.dclient.commands.utils
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,23 +30,9 @@ package com.fortuneteller.dclient.commands.utils;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public enum SQLItemMode {
-  ALL,
-  KEY,
-  LVALUE,
-  GVALUE,
-  ID,
-  GID,
-  KNI,
-  NULL,
-  WILDCARD_ALPHA,
-  WILDCARD_BETA
+enum class SQLItemMode {
+  ALL, KEY, LVALUE, GVALUE, ID, GID, KNI, NULL, WILDCARD_ALPHA, WILDCARD_BETA
 }
-

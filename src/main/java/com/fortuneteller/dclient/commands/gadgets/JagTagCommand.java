@@ -113,7 +113,7 @@ public class JagTagCommand extends Command implements SQLUtils {
     var db = new File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\PilotDB.sqlite");
     if (!db.exists()) {
       if (db.createNewFile()) {
-        createDatabase();
+        SQLUtils.Companion.createDatabase();
         createTable();
       }
     } else {
@@ -230,11 +230,9 @@ public class JagTagCommand extends Command implements SQLUtils {
             });
         }
         default -> tags.stream().filter(t -> t.getTagKey().equals(args[0])).forEachOrdered(t -> {
-          if (t.getGuildID().equals(guildID)) {
+          if (t.getGuildID().equals(guildID) || t.getGuildID().equals("GLOBAL"))
             event.reply(jagtag.parse(t.getTagValue()));
-          } else if (t.getGuildID().equals("GLOBAL")) {
-            event.reply(jagtag.parse(t.getTagValue()));
-          } else throw new CommandException("Tag not found.");
+          else throw new CommandException("Tag not found.");
         });
       }
     } catch (SQLException s) {
@@ -311,16 +309,16 @@ public class JagTagCommand extends Command implements SQLUtils {
       PRAGMA auto_vacuum = FULL;
       """;
 
-    try (var connection = connect()) {
+    try (var connection = SQLUtils.Companion.connect()) {
       connection.createStatement().execute(sql);
     }
   }
 
   @Override
-  public void insert(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void insert(@NotNull SQLItemMode mode, String... args) throws SQLException {
     if (args.length < 3) throw new SQLException("Missing parameters.");
     var sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)";
-    try (var connection = connect()) {
+    try (var connection = SQLUtils.Companion.connect()) {
       try (var preparedStatement = connection.prepareStatement(sql)) {
         switch (mode) {
           case LVALUE -> {
@@ -343,11 +341,11 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public void select(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void select(@NotNull SQLItemMode mode, String... args) throws SQLException {
     switch (mode) {
       case ALL -> {
         var sql = "SELECT * FROM tags";
-        try (var connection = connect();
+        try (var connection = SQLUtils.Companion.connect();
              var preparedStatement = connection.prepareStatement(sql);
              var resultSet = preparedStatement.executeQuery()) {
           tagCache.clear();
@@ -362,7 +360,7 @@ public class JagTagCommand extends Command implements SQLUtils {
       }
       case LVALUE, GVALUE -> {
         String sql = "SELECT tagValue FROM tags";
-        try (Connection connection = connect();
+        try (Connection connection = SQLUtils.Companion.connect();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(sql)) {
           tagCache.clear();
@@ -375,10 +373,10 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public void delete(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void delete(@NotNull SQLItemMode mode, String... args) throws SQLException {
     if (args.length < 2) return;
     var sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
-    try (var connection = connect();
+    try (var connection = SQLUtils.Companion.connect();
          var preparedStatement = connection.prepareStatement(sql)) {
       switch (mode) {
         case LVALUE -> {
@@ -398,10 +396,10 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public void update(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public void update(@NotNull SQLItemMode mode, String... args) throws SQLException {
     if (args.length < 3) return;
     var sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?";
-    try (var connection = connect();
+    try (var connection = SQLUtils.Companion.connect();
          var preparedStatement = connection.prepareStatement(sql)) {
       switch (mode) {
         case LVALUE -> {
@@ -423,11 +421,11 @@ public class JagTagCommand extends Command implements SQLUtils {
   }
 
   @Override
-  public boolean exists(@NotNull SQLItemMode mode, @NotNull String... args) throws SQLException {
+  public boolean exists(@NotNull SQLItemMode mode, String... args) throws SQLException {
     var sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)";
     switch (mode) {
       case LVALUE -> {
-        try (var connection = connect();
+        try (var connection = SQLUtils.Companion.connect();
              var preparedStatement = connection.prepareStatement(sql)) {
           preparedStatement.setString(1, args[0]);
           preparedStatement.setString(2, args[1]);
@@ -437,7 +435,7 @@ public class JagTagCommand extends Command implements SQLUtils {
         }
       }
       case GVALUE -> {
-        try (var connection = connect();
+        try (var connection = SQLUtils.Companion.connect();
              var preparedStatement = connection.prepareStatement(sql)) {
           preparedStatement.setString(1, args[0]);
           preparedStatement.setString(2, "GLOBAL");

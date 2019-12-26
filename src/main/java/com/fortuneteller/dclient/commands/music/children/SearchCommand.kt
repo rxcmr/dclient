@@ -1,4 +1,19 @@
-package com.fortuneteller.dclient.commands.music.children;
+package com.fortuneteller.dclient.commands.music.children
+
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.PilotUtils.Companion.warn
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import io.github.cdimascio.dotenv.Dotenv
+import okhttp3.Request
+import org.json.JSONObject
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.util.*
+import java.util.stream.Collectors
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,95 +45,70 @@ package com.fortuneteller.dclient.commands.music.children;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.fortuneteller.dclient.utils.PilotUtils;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import io.github.cdimascio.dotenv.Dotenv;
-import okhttp3.Request;
-import okhttp3.Request.Builder;
-import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-public class SearchCommand extends Command {
-  private int useCount = 0;
-
-  public SearchCommand() {
-    name = "search";
-    aliases = new String[]{"s"};
-    arguments = "**<query>**";
-    help = "Search videos using YouTube API v3, or the scraper.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
-  }
-
-  @Override
-  public void execute(@NotNull CommandEvent event) {
-    if (event.getArgs().isEmpty()) throw new CommandException("Search term cannot be empty!");
-    var client = event.getJDA().getHttpClient();
+class SearchCommand : Command() {
+  private var useCount = 0
+  public override fun execute(event: CommandEvent) {
+    if (event.args.isEmpty()) throw CommandException("Search term cannot be empty!")
+    val client = event.jda.httpClient
     if (useCount <= 80) {
-      var apiKey = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("YT_API_KEY");
-      var request = new Request.Builder()
+      val apiKey = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["YT_API_KEY"]
+      val request = Request.Builder()
         .url(String.format(
           "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=%s&key=%s",
-          event.getArgs(),
+          event.args,
           apiKey
-        )).build();
-      try (var response = client.newCall(request).execute()) {
-        useCount++;
-        if (!response.isSuccessful()) {
-          throw new CommandException("Request failed.");
-        } else {
-          var json = "";
-          try (
-            var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(response.body()).byteStream()))
-          ) {
-            json = in.lines().map(line -> line + "\n").collect(Collectors.joining());
+        )).build()
+      try {
+        client.newCall(request).execute().use { response ->
+          useCount++
+          if (!response.isSuccessful) {
+            throw CommandException("Request failed.")
+          } else {
+            var json = ""
+            BufferedReader(InputStreamReader(Objects.requireNonNull(response.body())!!.byteStream())).use { input -> json = input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining()) }
+            val itemsArray = JSONObject(json).getJSONArray("items")
+            val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
+            instance.loadAndPlay(event.textChannel,
+              "https://www.youtube.com/watch?v=$videoID")
           }
-          var itemsArray = new JSONObject(json).getJSONArray("items");
-          var videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId");
-          TrackLoader.getInstance().loadAndPlay(event.getTextChannel(),
-            "https://www.youtube.com/watch?v=" + videoID);
         }
-      } catch (IOException e) {
-        throw new CommandException(e.getMessage());
+      } catch (e: IOException) {
+        throw CommandException(e.message)
       }
     } else {
-      PilotUtils.Companion.warn("API limit reached, using scraper...");
-      var request = new Builder().url(String.format(
+      warn("API limit reached, using scraper...")
+      val request = Request.Builder().url(String.format(
         "http://youtube-scrape.herokuapp.com/api/search?q=%s&page=1",
-        event.getArgs()
-      )).build();
-      try (var response = client.newCall(request).execute()) {
-        if (!response.isSuccessful()) {
-          throw new CommandException("Request failed.");
+        event.args
+      )).build()
+      try {
+        client.newCall(request).execute().use { response ->
+          if (!response.isSuccessful) {
+            throw CommandException("Request failed.")
+          }
+          var json = ""
+          BufferedReader(InputStreamReader(Objects.requireNonNull(
+            response.body(),
+            "Response body is null")!!.byteStream())).use { input -> json = input.lines().map { l: String -> l + "\n" }.collect(Collectors.joining()) }
+          val itemsArray = JSONObject(json).getJSONArray("results")
+          val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
+          instance.loadAndPlay(event.textChannel, videoURL)
         }
-        var json = "";
-        try (var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
-          response.body(),
-          "Response body is null").byteStream()))) {
-          json = in.lines().map(l -> l + "\n").collect(Collectors.joining());
-        }
-        var itemsArray = new JSONObject(json).getJSONArray("results");
-        var videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url");
-        TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), videoURL);
-      } catch (IOException e) {
-        throw new CommandException(e.getMessage());
+      } catch (e: IOException) {
+        throw CommandException(e.message)
       }
     }
+  }
+
+  init {
+    name = "search"
+    aliases = arrayOf("s")
+    arguments = "**<query>**"
+    help = "Search videos using YouTube API v3, or the scraper."
+    category = Categories.MUSIC.category
+    hidden = true
   }
 }

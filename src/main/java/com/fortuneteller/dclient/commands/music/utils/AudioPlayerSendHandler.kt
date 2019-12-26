@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient.commands.music.utils;
+package com.fortuneteller.dclient.commands.music.utils
+
+import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
+import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame
+import net.dv8tion.jda.api.audio.AudioSendHandler
+import java.nio.ByteBuffer
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -31,43 +37,23 @@ package com.fortuneteller.dclient.commands.music.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
-import com.sedmelluq.discord.lavaplayer.track.playback.MutableAudioFrame;
-import net.dv8tion.jda.api.audio.AudioSendHandler;
-import org.jetbrains.annotations.Nullable;
-
-import java.nio.ByteBuffer;
-
 /**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-public class AudioPlayerSendHandler implements AudioSendHandler {
-  private final AudioPlayer player;
-  private final ByteBuffer buffer;
-  private final MutableAudioFrame frame;
+class AudioPlayerSendHandler(private val player: AudioPlayer) : AudioSendHandler {
+  private val buffer: ByteBuffer = ByteBuffer.allocate(1024)
+  private val frame: MutableAudioFrame = MutableAudioFrame()
 
-  public AudioPlayerSendHandler(AudioPlayer player) {
-    this.player = player;
-    this.buffer = ByteBuffer.allocate(1024);
-    this.frame = new MutableAudioFrame();
-    this.frame.setBuffer(buffer);
+  override fun canProvide() = player.provide(frame)
+
+  override fun provide20MsAudio(): ByteBuffer? {
+    buffer.flip()
+    return buffer
   }
 
-  @Override
-  public boolean canProvide() {
-    return player.provide(frame);
-  }
+  override fun isOpus() = true
 
-  @Nullable
-  @Override
-  public ByteBuffer provide20MsAudio() {
-    buffer.flip();
-    return buffer;
-  }
-
-  @Override
-  public boolean isOpus() {
-    return true;
+  init {
+    frame.setBuffer(buffer)
   }
 }

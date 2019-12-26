@@ -1,4 +1,11 @@
-package com.fortuneteller.dclient.commands.utils;
+package com.fortuneteller.dclient.commands.music
+
+import com.fortuneteller.dclient.commands.music.children.*
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.util.*
+import java.util.stream.Collectors
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -37,16 +44,26 @@ package com.fortuneteller.dclient.commands.utils;
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-public class CommandException extends RuntimeException {
-  public CommandException() {
-    super();
+class MusicCommand : Command() {
+  init {
+    name = "music"
+    aliases = arrayOf("m")
+    children = arrayOf(
+      PlayCommand(), SkipCommand(), LeaveCommand(), SearchCommand(), QueueCommand(), PauseCommand()
+    )
+    help = Arrays.stream(children).map { c ->
+      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
+    }.collect(Collectors.joining("", "General music commands.", ""))
+    arguments = "**<command>**"
+    category = Categories.MUSIC.category
   }
 
-  public CommandException(String message) {
-    super(message);
-  }
-
-  public CommandException(String message, Throwable cause) {
-    super(message, cause);
+  override fun execute(event: CommandEvent?) {
+    event?.reply("""
+      play - plays URL
+      skip - skips track
+      leave - leave VC
+      search - search YouTube and play
+    """.trimIndent())
   }
 }

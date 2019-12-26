@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.commands.music.children;
+package com.fortuneteller.dclient.commands.music.children
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.Permission
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -30,29 +35,19 @@ package com.fortuneteller.dclient.commands.music.children;
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import net.dv8tion.jda.api.Permission;
-import org.jetbrains.annotations.NotNull;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-@SuppressWarnings("unused")
-public class LeaveCommand extends Command {
-  public LeaveCommand() {
-    name = "leave";
-    botPermissions = new Permission[]{Permission.VOICE_CONNECT};
-    help = "Leaves the voice channel.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
+class LeaveCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    event.guild.kickVoiceMember(event.selfMember).queue()
   }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    event.getGuild().kickVoiceMember(event.getSelfMember()).queue();
+  init {
+    name = "leave"
+    botPermissions = arrayOf(Permission.VOICE_CONNECT)
+    help = "Leaves the voice channel."
+    category = Categories.MUSIC.category
+    hidden = true
   }
 }

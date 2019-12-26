@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient.commands.music.children;/*
+package com.fortuneteller.dclient.commands.music.children
+
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+
+/*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,27 +34,18 @@ package com.fortuneteller.dclient.commands.music.children;/*
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */ /**
+ * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
-
-
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-
-/**
- * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
- */
-
-public class PauseCommand extends Command {
-  public PauseCommand() {
-    name = "pause";
-    help = "Pauses an ongoing track.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
+class PauseCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    event.reply("")
   }
 
-  @Override
-  protected void execute(CommandEvent event) {
-
+  init {
+    name = "pause"
+    help = "Pauses an ongoing track."
+    category = Categories.MUSIC.category
+    hidden = true
   }
 }
