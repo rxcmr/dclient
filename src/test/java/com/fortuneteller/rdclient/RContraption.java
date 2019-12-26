@@ -1,5 +1,4 @@
-package com.fortuneteller.dclient.commands.music.children;
-
+package com.fortuneteller.rdclient;
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -33,38 +32,36 @@ package com.fortuneteller.dclient.commands.music.children;
  */
 
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
+import club.minnced.jda.reactor.ReactiveEventManager;
+import com.fortuneteller.dclient.utils.PilotUtils;
+import io.github.cdimascio.dotenv.Dotenv;
+import net.dv8tion.jda.api.JDABuilder;
+import net.dv8tion.jda.api.events.ReadyEvent;
+import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.security.auth.login.LoginException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class PlayCommand extends Command {
-  public PlayCommand() {
-    name = "play";
-    aliases = new String[]{"p"};
-    arguments = "**<URL>**";
-    help = "Plays a track from URL.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
-  }
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    if (event.getArgs().isEmpty()) throw new CommandException("URL cannot be empty!");
-    try {
-      new URL(event.getArgs());
-    } catch (MalformedURLException e) {
-      throw new CommandException();
-    }
-    TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), event.getArgs());
+public class RContraption {
+  public static void main(String[] args) throws LoginException {
+    final var manager = new ReactiveEventManager();
+
+    manager.on(ReadyEvent.class)
+      .next()
+      .subscribe(event -> PilotUtils.Companion.info("Hello!"));
+
+    manager.on(GuildMessageReceivedEvent.class)
+      .next()
+      .subscribe(event -> {
+
+        if (!event.getMessage().getContentRaw().equals("rg!hello")) return;
+        event.getChannel().sendTyping().queue();
+        event.getChannel().sendMessage("Hello Reactor!").queue();
+      });
+
+    new JDABuilder(Dotenv.configure().load().get("SUBTOKEN")).setEventManager(manager).build();
   }
 }

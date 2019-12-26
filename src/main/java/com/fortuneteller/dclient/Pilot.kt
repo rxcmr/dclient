@@ -1,4 +1,10 @@
-package com.fortuneteller.dclient;
+package com.fortuneteller.dclient
+
+import com.jagrosh.jdautilities.command.Command
+import io.github.cdimascio.dotenv.Dotenv
+import io.github.classgraph.ClassGraph
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,22 +38,26 @@ package com.fortuneteller.dclient;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.jagrosh.jdautilities.command.Command;
-import io.github.cdimascio.dotenv.Dotenv;
-import io.github.classgraph.ClassGraph;
-import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import java.util.LinkedList;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class Pilot {
-  public Pilot(final String token, final String prefix, final int shards) throws ReflectiveOperationException {
-    final var commands = new LinkedList<Command>();
-    final var listeners = new LinkedList<>();
 
-    for (Class<Command> c : new ClassGraph()
+class Pilot(token: String?, prefix: String?, shards: Int) {
+  companion object {
+    @JvmStatic
+    fun main(args: Array<String>) {
+      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
+      val mainPrefix = "pl."
+      val shards = 1
+      Pilot(mainToken, mainPrefix, shards)
+    }
+  }
+
+  init {
+    val commands = LinkedList<Command>()
+    val listeners = LinkedList<Any>()
+    for (c in ClassGraph()
       .blacklistPackages(
         "com.fortuneteller.dclient.commands.utils",
         "com.fortuneteller.dclient.commands.gadgets.utils",
@@ -56,27 +66,13 @@ public class Pilot {
       )
       .whitelistPackages("com.fortuneteller.dclient.commands.*")
       .scan()
-      .getAllClasses()
-      .loadClasses(Command.class))
-      commands.add(c.getDeclaredConstructor().newInstance());
-
-    for (Class<ListenerAdapter> l : new ClassGraph()
+      .allClasses
+      .loadClasses(Command::class.java)) commands.add(c.getDeclaredConstructor().newInstance())
+    for (l in ClassGraph()
       .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
       .scan()
-      .getAllClasses()
-      .loadClasses(ListenerAdapter.class))
-      listeners.add(l.getDeclaredConstructor().newInstance());
-
-    new Contraption(token, prefix, shards, commands, listeners).start();
-  }
-
-  public static void main(String[] args) throws Exception {
-    final var mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("TOKEN");
-    final var mainDelimiter = "pl.";
-    final int shards = 1;
-    new Pilot(mainToken, mainDelimiter, shards);
-    //final String subToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load().get("SUBTOKEN");
-    //final String subDelimiter = "rg.";
-    //new Pilot(subToken, subDelimiter, shards);
+      .allClasses
+      .loadClasses(ListenerAdapter::class.java)) listeners.add(l.getDeclaredConstructor().newInstance())
+    Contraption(token!!, prefix!!, shards, commands, listeners).start()
   }
 }

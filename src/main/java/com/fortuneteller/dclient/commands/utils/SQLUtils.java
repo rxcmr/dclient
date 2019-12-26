@@ -33,13 +33,13 @@ package com.fortuneteller.dclient.commands.utils;
  */
 
 
+import com.fortuneteller.dclient.utils.PilotUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import static com.fortuneteller.dclient.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -54,7 +54,7 @@ public interface SQLUtils {
     try (var connection = connect()) {
       if (connection != null) {
         var metaData = connection.getMetaData();
-        info(metaData.getDriverName());
+        PilotUtils.Companion.info(metaData.getDriverName());
       }
     }
   }

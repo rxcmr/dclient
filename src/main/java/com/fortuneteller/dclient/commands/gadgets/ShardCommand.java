@@ -53,7 +53,7 @@ public class ShardCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     event.getChannel().sendTyping().queue();
-    var shardManager = Contraption.getInstance().getShardManager();
+    var shardManager = Contraption.instance.shardManager;
     event.reply("Shards active: " + shardManager.getShardsRunning());
     event.reply("Shards total: " + shardManager.getShardsTotal());
     event.reply("Reconnecting: " + shardManager.getShardsQueued());

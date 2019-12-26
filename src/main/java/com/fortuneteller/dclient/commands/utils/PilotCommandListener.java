@@ -10,14 +10,13 @@ import com.fortuneteller.dclient.commands.music.children.SearchCommand;
 import com.fortuneteller.dclient.commands.owner.CustomQueryCommand;
 import com.fortuneteller.dclient.commands.owner.ShutdownCommand;
 import com.fortuneteller.dclient.commands.owner.TestCommand;
+import com.fortuneteller.dclient.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import com.jagrosh.jdautilities.command.CommandListener;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-
-import static com.fortuneteller.dclient.utils.PilotUtils.warn;
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -58,7 +57,7 @@ import static com.fortuneteller.dclient.utils.PilotUtils.warn;
 public class PilotCommandListener implements CommandListener {
   @Override
   public void onCommandException(@NotNull CommandEvent event, @NotNull Command command, @NotNull Throwable throwable) {
-    final var owner = event.getJDA().getUserById(Contraption.ID);
+    final var owner = event.getJDA().getUserById(Contraption.id);
     event.getChannel().sendTyping().queue();
     if (command instanceof PingCommand) event.reply("Request did not go through.");
     else if (command instanceof TestCommand) event.reply(String.format("""
@@ -75,7 +74,7 @@ public class PilotCommandListener implements CommandListener {
       event.reply(
         command.getArguments() == null
           ? "Something wrong happened..."
-          : Contraption.getInstance().getPrefix() + command.getName() + " " + command.getArguments()
+          : Contraption.instance.getPrefix() + command.getName() + " " + command.getArguments()
       );
     }
     if (!(command instanceof PlayCommand)) {
@@ -91,14 +90,14 @@ public class PilotCommandListener implements CommandListener {
       if (command instanceof ShutdownCommand) return;
       event.getMessage().addReaction("\uD83D\uDE42").queue();
     } catch (Exception e) {
-      warn(e.getCause().toString());
+      PilotUtils.Companion.warn(e.getCause().toString());
     }
   }
 
   @Override
   public void onTerminatedCommand(@NotNull CommandEvent event, Command command) {
     if (command instanceof LeaveCommand) return;
-    final var owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.ID));
+    final var owner = Objects.requireNonNull(event.getJDA().getUserById(Contraption.id));
     event.getMessage().addReaction("\uD83E\uDD2C").queue();
     event.getChannel().sendTyping().queue();
     event.reply("Unexpected behavior. Try again.");

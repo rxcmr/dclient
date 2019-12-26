@@ -1,4 +1,8 @@
-package com.fortuneteller.dclient.commands.music.children;
+package com.fortuneteller.dclient.utils
+
+import org.slf4j.LoggerFactory.getLogger
+import java.lang.StackWalker.Option
+import java.lang.StackWalker.getInstance
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -33,38 +37,24 @@ package com.fortuneteller.dclient.commands.music.children;
  */
 
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader;
-import com.fortuneteller.dclient.commands.utils.Categories;
-import com.fortuneteller.dclient.commands.utils.CommandException;
-import com.jagrosh.jdautilities.command.Command;
-import com.jagrosh.jdautilities.command.CommandEvent;
-import org.jetbrains.annotations.NotNull;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class PlayCommand extends Command {
-  public PlayCommand() {
-    name = "play";
-    aliases = new String[]{"p"};
-    arguments = "**<URL>**";
-    help = "Plays a track from URL.";
-    category = Categories.MUSIC.getCategory();
-    hidden = true;
-  }
+class PilotUtils private constructor() {
+  companion object {
+    fun info(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).info(m)
 
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    if (event.getArgs().isEmpty()) throw new CommandException("URL cannot be empty!");
-    try {
-      new URL(event.getArgs());
-    } catch (MalformedURLException e) {
-      throw new CommandException();
+    fun warn(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).warn(m)
+
+    fun error(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m)
+
+    fun error(m: String?, e: Exception?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
+
+    fun debug(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).debug(m)
+
+    fun gc() {
+      warn("Garbage collection happening soon...")
+      System.gc()
     }
-    TrackLoader.getInstance().loadAndPlay(event.getTextChannel(), event.getArgs());
   }
 }

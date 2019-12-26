@@ -33,11 +33,10 @@ package com.fortuneteller.dclient.commands.owner;
  */
 
 import com.fortuneteller.dclient.commands.utils.Categories;
+import com.fortuneteller.dclient.utils.PilotUtils;
 import com.jagrosh.jdautilities.command.Command;
 import com.jagrosh.jdautilities.command.CommandEvent;
 import org.jetbrains.annotations.NotNull;
-
-import static com.fortuneteller.dclient.utils.PilotUtils.warn;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -54,7 +53,7 @@ public class ShutdownCommand extends Command {
 
   @Override
   protected void execute(@NotNull CommandEvent event) {
-    warn("Shutting down.");
+    PilotUtils.Companion.warn("Shutting down.");
     event.getJDA().shutdownNow();
   }
 }

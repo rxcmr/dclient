@@ -52,6 +52,6 @@ public class GarbageCollectionCommand extends Command {
 
   @Override
   protected void execute(CommandEvent event) {
-    PilotUtils.gc();
+    PilotUtils.Companion.gc();
   }
 }

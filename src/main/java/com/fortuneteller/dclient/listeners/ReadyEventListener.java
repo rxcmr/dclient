@@ -43,7 +43,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Collectors;
 
-import static com.fortuneteller.dclient.utils.PilotUtils.info;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -65,19 +64,19 @@ public class ReadyEventListener extends ListenerAdapter {
     );
     var guilds = jda.getGuilds().stream().map(Guild::getName).collect(Collectors.joining(", "));
     jda.getRestPing().queue(api -> {
-      info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
-      info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
-      info("|\033[1;95m       ██╗██████╗  █████╗   \033[0m| Guilds available: " + event.getGuildAvailableCount());
-      info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Contraption.ID);
-      info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + guilds);
-      info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
-      info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
-      info("|                            | Account type: " + jda.getAccountType());
-      info(String.format("|\033[1;92m    [version   %s]    \033[0m| WebSocket Ping: %s",
+      PilotUtils.Companion.info("|\033[1;92m       R U N N I N G        \033[0m| Status: \033[1;92m" + jda.getStatus() + "\033[0m");
+      PilotUtils.Companion.info("|                            | Logged in as: " + jda.getSelfUser().getAsTag());
+      PilotUtils.Companion.info("|\033[1;95m       ██╗██████╗  █████╗   \033[0m| Guilds available: " + event.getGuildAvailableCount());
+      PilotUtils.Companion.info("|\033[1;95m       ██║██╔══██╗██╔══██╗  \033[0m| Owner ID: " + Contraption.id);
+      PilotUtils.Companion.info("|\033[1;95m  ██   ██║██║  ██║██╔══██║  \033[0m| Guilds: " + guilds);
+      PilotUtils.Companion.info("|\033[1;95m  ╚█████╔╝██████╔╝██║  ██║  \033[0m| Shard ID: " + shardInfo.getShardId());
+      PilotUtils.Companion.info("|\033[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  \033[0m| Invite URL: " + inviteURL);
+      PilotUtils.Companion.info("|                            | Account type: " + jda.getAccountType());
+      PilotUtils.Companion.info(String.format("|\033[1;92m    [version   %s]    \033[0m| WebSocket Ping: %s",
         JDAInfo.VERSION, jda.getGatewayPing()));
-      info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: %s", Contraption.VERSION, api));
-      info("|                            | Shards: " + shards);
+      PilotUtils.Companion.info(String.format("|\033[1;92m    [dcl version %s]    \033[0m| API Ping: %s", Contraption.version, api));
+      PilotUtils.Companion.info("|                            | Shards: " + shards);
     });
-    PilotUtils.gc();
+    PilotUtils.Companion.gc();
   }
 }

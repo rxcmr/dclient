@@ -1,5 +1,4 @@
-package com.fortuneteller.dclient.utils;
-/*
+package com.fortuneteller.dclient.commands.music.children;/*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -32,40 +31,24 @@ package com.fortuneteller.dclient.utils;
  */
 
 
-import org.slf4j.LoggerFactory;
-
-import static java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE;
+import com.fortuneteller.dclient.commands.utils.Categories;
+import com.jagrosh.jdautilities.command.Command;
+import com.jagrosh.jdautilities.command.CommandEvent;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
-public class PilotUtils {
-  private PilotUtils() {
+
+public class PauseCommand extends Command {
+  public PauseCommand() {
+    name = "pause";
+    help = "Pauses an ongoing track.";
+    category = Categories.MUSIC.getCategory();
+    hidden = true;
   }
 
-  public static void info(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).info(msg);
-  }
+  @Override
+  protected void execute(CommandEvent event) {
 
-  public static void warn(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).warn(msg);
-  }
-
-  public static void error(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).error(msg);
-  }
-
-  public static void error(String msg, Exception e) {
-    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).error(msg, e);
-  }
-
-  public static void debug(String msg) {
-    LoggerFactory.getLogger(StackWalker.getInstance(RETAIN_CLASS_REFERENCE).getCallerClass()).debug(msg);
-  }
-
-  public static void gc() {
-    warn("Garbage collection happening soon...");
-    System.gc();
   }
 }

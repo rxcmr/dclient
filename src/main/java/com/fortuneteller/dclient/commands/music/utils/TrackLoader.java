@@ -32,7 +32,6 @@ package com.fortuneteller.dclient.commands.music.utils;
  */
 
 
-import com.fortuneteller.dclient.commands.utils.CommandException;
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
@@ -55,8 +54,6 @@ import org.apache.http.client.config.RequestConfig;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -85,39 +82,34 @@ public class TrackLoader {
   }
 
   public void loadAndPlay(@NotNull final TextChannel channel, final String trackURL) {
-    try {
-      new URL(trackURL);
-      var musicManager = getGuildAudioPlayer(channel.getGuild());
-      playerManager.loadItemOrdered(musicManager, trackURL, new AudioLoadResultHandler() {
-        @Override
-        public void trackLoaded(AudioTrack track) {
-          channel.sendMessageFormat("Adding to queue: **%s**", track.getInfo().title).queue();
-          play(channel.getGuild(), musicManager, track);
-        }
+    var musicManager = getGuildAudioPlayer(channel.getGuild());
+    playerManager.loadItemOrdered(musicManager, trackURL, new AudioLoadResultHandler() {
+      @Override
+      public void trackLoaded(AudioTrack track) {
+        channel.sendMessageFormat("Adding to queue: **%s**", track.getInfo().title).queue();
+        play(channel.getGuild(), musicManager, track);
+      }
 
-        @Override
-        public void playlistLoaded(AudioPlaylist playlist) {
-          var firstTrack = playlist.getSelectedTrack();
-          if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
-          channel.sendMessageFormat("Adding to queue: **%s** *(first track of playlist %s)*",
-            firstTrack.getInfo().title,
-            playlist.getName()).queue();
-          play(channel.getGuild(), musicManager, firstTrack);
-        }
+      @Override
+      public void playlistLoaded(AudioPlaylist playlist) {
+        var firstTrack = playlist.getSelectedTrack();
+        if (firstTrack == null) firstTrack = playlist.getTracks().get(0);
+        channel.sendMessageFormat("Adding to queue: **%s** *(first track of playlist %s)*",
+          firstTrack.getInfo().title,
+          playlist.getName()).queue();
+        play(channel.getGuild(), musicManager, firstTrack);
+      }
 
-        @Override
-        public void noMatches() {
-          channel.sendMessage("Nothing found by: " + trackURL + ".").queue();
-        }
+      @Override
+      public void noMatches() {
+        channel.sendMessage("Nothing found by: " + trackURL + ".").queue();
+      }
 
-        @Override
-        public void loadFailed(FriendlyException exception) {
-          channel.sendMessage("Could not play: " + exception.getMessage()).queue();
-        }
-      });
-    } catch (MalformedURLException e) {
-      throw new CommandException("Not a valid URL.");
-    }
+      @Override
+      public void loadFailed(FriendlyException exception) {
+        channel.sendMessage("Could not play: " + exception.getMessage()).queue();
+      }
+    });
   }
 
   public String displayQueue(@NotNull TextChannel channel) {

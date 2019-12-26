@@ -61,7 +61,7 @@ public class SearchCommand extends Command {
     name = "search";
     aliases = new String[]{"s"};
     arguments = "**<query>**";
-    help = "Search videos using YouTube API v3.";
+    help = "Search videos using YouTube API v3, or the scraper.";
     category = Categories.MUSIC.getCategory();
     hidden = true;
   }
@@ -98,7 +98,7 @@ public class SearchCommand extends Command {
         throw new CommandException(e.getMessage());
       }
     } else {
-      PilotUtils.warn("YouTube Search API limit reached, using scraper...");
+      PilotUtils.Companion.warn("API limit reached, using scraper...");
       var request = new Builder().url(String.format(
         "http://youtube-scrape.herokuapp.com/api/search?q=%s&page=1",
         event.getArgs()
@@ -108,10 +108,10 @@ public class SearchCommand extends Command {
           throw new CommandException("Request failed.");
         }
         var json = "";
-        try (
-          var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(response.body()).byteStream()))
-        ) {
-          json = in.lines().map(line -> line + "\n").collect(Collectors.joining());
+        try (var in = new BufferedReader(new InputStreamReader(Objects.requireNonNull(
+          response.body(),
+          "Response body is null").byteStream()))) {
+          json = in.lines().map(l -> l + "\n").collect(Collectors.joining());
         }
         var itemsArray = new JSONObject(json).getJSONArray("results");
         var videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url");

@@ -60,7 +60,7 @@ public class PauseThreadCommand extends Command {
     try {
       Thread.sleep(Integer.parseInt(event.getArgs()) * (long) 1000);
     } catch (InterruptedException e) {
-      PilotUtils.error("Thread paused.", e);
+      PilotUtils.Companion.error("Thread paused.", e);
       Thread.currentThread().interrupt();
     }
     event.reply(String.format("Resumed after %s seconds.", (System.currentTimeMillis() - start) / 1000));

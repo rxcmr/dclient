@@ -60,8 +60,8 @@ public class LoadCommand extends Command {
   @Override
   protected void execute(@NotNull CommandEvent event) {
     try {
-      var shardManager = Contraption.getInstance().getShardManager();
-      var commandClient = Contraption.getInstance().getCommandClient();
+      var shardManager = Contraption.instance.shardManager;
+      var commandClient = Contraption.instance.commandClient;
 
       if (event.getArgs().contains("Command")) {
         var commandClass = new ClassGraph()
@@ -74,7 +74,7 @@ public class LoadCommand extends Command {
           .get(0);
 
         Command command = (Command) commandClass.getDeclaredConstructor().newInstance();
-        commandClient.addCommand(command, Contraption.getInstance().getCommandClient().getCommands().size() - 1);
+        commandClient.addCommand(command, commandClient.getCommands().size() - 1);
       } else if (event.getArgs().contains("Listener")) {
         var listenerClass = new ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.listeners")

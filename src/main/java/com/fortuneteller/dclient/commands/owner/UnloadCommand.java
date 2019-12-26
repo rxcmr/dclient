@@ -57,10 +57,10 @@ public class UnloadCommand extends Command {
   protected void execute(@NotNull CommandEvent event) {
     try {
       if (event.getArgs().contains("Listener"))
-        Contraption.getInstance().getShardManager().removeEventListener(
+        Contraption.instance.shardManager.removeEventListener(
           Class.forName("com.fortuneteller.dcl.listeners." + event.getArgs())
         );
-      else Contraption.getInstance().getCommandClient().removeCommand(event.getArgs());
+      else Contraption.instance.commandClient.removeCommand(event.getArgs());
 
     } catch (ClassNotFoundException e) {
       throw new CommandException(e.getMessage());
