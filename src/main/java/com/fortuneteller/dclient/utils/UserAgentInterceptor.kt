@@ -1,4 +1,8 @@
-package com.fortuneteller.dclient.utils;
+package com.fortuneteller.dclient.utils
+
+import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler
+import okhttp3.Interceptor
+import okhttp3.Response
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,36 +36,21 @@ package com.fortuneteller.dclient.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler;
-import okhttp3.Interceptor;
-import okhttp3.Response;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.IOException;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class UserAgentInterceptor implements Interceptor {
-  public final String userAgent;
 
-  public UserAgentInterceptor() {
-    this(String.format(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
-      + "AppleWebKit/537.36 (KHTML, like Gecko)"
-      + "Chrome/78.0.3904.108 Safari/537.36 %s",
-      GoogleSearchHandler.randomName(10)));
-  }
+class UserAgentInterceptor(val userAgent: String = String.format(
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+    + "AppleWebKit/537.36 (KHTML, like Gecko)"
+    + "Chrome/78.0.3904.108 Safari/537.36 %s",
+  GoogleSearchHandler.randomName(10))) : Interceptor {
 
-  public UserAgentInterceptor(String userAgent) {
-    this.userAgent = userAgent;
-  }
-
-  @Override
-  public @NotNull Response intercept(@NotNull Chain chain) throws IOException {
+  override fun intercept(chain: Interceptor.Chain): Response {
     return chain.proceed(chain.request()
       .newBuilder()
       .header("User-Agent", userAgent)
-      .build());
+      .build())
   }
 }

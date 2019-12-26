@@ -1,4 +1,7 @@
-package com.fortuneteller.dclient.utils;
+package com.fortuneteller.dclient.utils
+
+import java.util.concurrent.ThreadFactory
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -32,23 +35,14 @@ package com.fortuneteller.dclient.utils;
  */
 
 
-import org.jetbrains.annotations.NotNull;
-
-import java.util.concurrent.ThreadFactory;
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class PilotThreadFactory implements ThreadFactory {
-  private String name;
-  private int threadCount = 0;
 
-  public PilotThreadFactory(String name) {
-    this.name = name;
-  }
-
-  @Override
-  public Thread newThread(@NotNull Runnable r) {
-    return new Thread(r, name + " - " + threadCount++);
+class PilotThreadFactory(private val name: String) : ThreadFactory {
+  private var threadCount = 0
+  
+  override fun newThread(r: Runnable): Thread {
+    return Thread(r, name + " - " + threadCount++)
   }
 }

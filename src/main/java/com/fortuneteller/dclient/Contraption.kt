@@ -111,7 +111,7 @@ class Contraption(private val token: String,
             commandInformation.add(String.format("```Arguments: %s%n - %s```", c.arguments, c.help))
           val invokeIter = commandInvocation.iterator()
           val infoIter = commandInformation.iterator()
-          while (invokeIter.hasNext() && infoIter.hasNext()) commandContent.put(invokeIter.next(), infoIter.next())
+          while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
         }
       }
     commandContent.forEach { (k, v) -> embedBuilder.addField(k, v, false) }
@@ -128,24 +128,30 @@ class Contraption(private val token: String,
   private fun buildHelpEmbed(author: User, args: String): MessageEmbed {
     val categories = EnumSet.allOf(Categories::class.java)
     embedBuilder.setDescription(String.format("```Prefix: %s```", prefix))
-    if (args.equals(GADGETS.name, ignoreCase = true)) {
-      addHeader(GADGETS.name, GADGETS.description)
-      streamCommands(GADGETS.category)
-    } else if (args.equals(MUSIC.name, ignoreCase = true)) {
-      addHeader(MUSIC.name, MUSIC.description)
-      streamCommands(MUSIC.category)
-    } else if (args.equals(MODERATION.name, ignoreCase = true)) {
-      addHeader(MODERATION.name, MODERATION.description)
-      streamCommands(MODERATION.category)
-    } else if (args.equals(OWNER.name, ignoreCase = true)) {
-      addHeader(OWNER.name, OWNER.description)
-      streamCommands(OWNER.category)
-    } else if (args.isEmpty()) {
-      categories.forEach { c ->
-        embedBuilder.addField(
-          "**Category: " + c.name + "**",
-          String.format("```py%n%shelp %s%n```", prefix, c.name.toLowerCase()),
-          false)
+    when {
+      args.equals(GADGETS.name, ignoreCase = true) -> {
+        addHeader(GADGETS.name, GADGETS.description)
+        streamCommands(GADGETS.category)
+      }
+      args.equals(MUSIC.name, ignoreCase = true) -> {
+        addHeader(MUSIC.name, MUSIC.description)
+        streamCommands(MUSIC.category)
+      }
+      args.equals(MODERATION.name, ignoreCase = true) -> {
+        addHeader(MODERATION.name, MODERATION.description)
+        streamCommands(MODERATION.category)
+      }
+      args.equals(OWNER.name, ignoreCase = true) -> {
+        addHeader(OWNER.name, OWNER.description)
+        streamCommands(OWNER.category)
+      }
+      args.isEmpty() -> {
+        categories.forEach { c ->
+          embedBuilder.addField(
+            "**Category: " + c.name + "**",
+            String.format("```py%n%shelp %s%n```", prefix, c.name.toLowerCase()),
+            false)
+        }
       }
     }
     embedBuilder

@@ -1,4 +1,9 @@
-package com.fortuneteller.dclient.utils;
+package com.fortuneteller.dclient.utils
+
+import okhttp3.Dns
+import java.net.InetAddress
+import java.net.UnknownHostException
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -32,32 +37,22 @@ package com.fortuneteller.dclient.utils;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import okhttp3.Dns;
-import org.jetbrains.annotations.NotNull;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-public class CloudFlareDNS implements Dns {
-  public CloudFlareDNS() throws UnknownHostException {
-    try {
-      lookup("1.1.1.1");
-    } catch (UnknownHostException e) {
-      lookup("1.0.0.1");
-    }
+class CloudFlareDNS : Dns {
+  override fun lookup(s: String): List<InetAddress> {
+    val addressList = LinkedList<InetAddress>()
+    Collections.addAll(addressList, *InetAddress.getAllByName(s))
+    return addressList
   }
 
-  @NotNull
-  @Override
-  public List<InetAddress> lookup(@NotNull String s) throws UnknownHostException {
-    var addressList = new LinkedList<InetAddress>();
-    Collections.addAll(addressList, InetAddress.getAllByName(s));
-    return addressList;
+  init {
+    try {
+      lookup("1.1.1.1")
+    } catch (e: UnknownHostException) {
+      lookup("1.0.0.1")
+    }
   }
 }
