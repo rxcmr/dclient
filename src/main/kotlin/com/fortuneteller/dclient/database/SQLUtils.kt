@@ -1,7 +1,7 @@
 package com.fortuneteller.dclient.database
 
 import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
-import java.sql.Connection
+import org.sqlite.jdbc4.JDBC4Connection
 import java.sql.DriverManager
 
 /*
@@ -41,9 +41,9 @@ import java.sql.DriverManager
  */
 interface SQLUtils {
   companion object {
-    fun connect(): Connection {
+    fun connect(): JDBC4Connection {
       val url = "jdbc:sqlite:C:/Users/Marvin/IdeaProjects/dclient/src/main/resources/PilotDB.sqlite"
-      return DriverManager.getConnection(url)
+      return DriverManager.getConnection(url) as JDBC4Connection
     }
 
     fun createDatabase() = info(connect().metaData.driverName)

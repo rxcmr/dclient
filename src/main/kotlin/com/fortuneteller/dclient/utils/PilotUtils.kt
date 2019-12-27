@@ -42,15 +42,15 @@ import java.lang.StackWalker.getInstance
  */
 class PilotUtils private constructor() {
   companion object {
-    fun info(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).info(m)
+    fun info(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).info(m)
 
-    fun warn(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).warn(m)
+    fun warn(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).warn(m)
 
-    fun error(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m)
+    fun error(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m)
 
-    fun error(m: String?, e: Exception?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
+    fun error(m: String, e: Exception) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
 
-    fun debug(m: String?) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).debug(m)
+    fun debug(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).debug(m)
 
     fun gc() {
       warn("Garbage collection happening soon...")

@@ -7,7 +7,7 @@ jobs:
   build:
     docker:
       # specify the version you desire here
-      - image: circleci/openjdk:14-ea-jdk-buster
+      - image: circleci/openjdk:jdk
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -39,4 +39,4 @@ jobs:
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
       # run tests!
-      - run: gradle build
+      - run: gradle compileKotlin

@@ -44,10 +44,19 @@ import java.util.*
  */
 
 class Pilot(token: String?, prefix: String?, shards: Int) {
+  companion object {
+    @JvmStatic
+    fun main(args: Array<String>) {
+      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
+      val mainPrefix = "pl."
+      val shards = 1
+      Pilot(mainToken, mainPrefix, shards)
+    }
+  }
+
   init {
     val commands = LinkedList<Command>()
     val listeners = LinkedList<Any>()
-
 
     for (c in ClassGraph()
       .blacklistPackages(
@@ -60,7 +69,6 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
       .getSubclasses(Command::class.java.name)
       .loadClasses(Command::class.java)) commands.add(c.getDeclaredConstructor().newInstance())
 
-
     for (l in ClassGraph()
       .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
       .scan()
@@ -69,11 +77,4 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
 
     Contraption(token!!, prefix!!, shards, commands, listeners).start()
   }
-}
-
-fun main() {
-  val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
-  val mainPrefix = "pl."
-  val shards = 1
-  Pilot(mainToken, mainPrefix, shards)
 }

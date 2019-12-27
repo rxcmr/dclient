@@ -16,7 +16,6 @@ import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
 import net.dv8tion.jda.api.entities.TextChannel
-import net.dv8tion.jda.api.entities.VoiceChannel
 import net.dv8tion.jda.api.managers.AudioManager
 import org.apache.http.client.config.CookieSpecs
 import org.apache.http.client.config.RequestConfig
@@ -101,6 +100,10 @@ class TrackLoader {
     musicManager.scheduler.queue(track!!)
   }
 
+  fun pause(guild: Guild, paused: Boolean) {
+    getGuildAudioPlayer(guild).player.isPaused = paused
+  }
+
   fun skipTrack(channel: TextChannel) {
     val musicManager = getGuildAudioPlayer(channel.guild)
     musicManager.scheduler.nextTrack()
@@ -108,7 +111,7 @@ class TrackLoader {
   }
 
   @Synchronized
-  private fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
+  fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
     val guildId = guild.id.toLong()
     val musicManager = musicManagers.computeIfAbsent(guildId) { GuildMusicManager(playerManager) }
     guild.audioManager.sendingHandler = musicManager.sendHandler
@@ -118,7 +121,9 @@ class TrackLoader {
   @Contract("_ -> param1")
   private fun registerSourceManagers(manager: AudioPlayerManager): AudioPlayerManager {
     val youtubeAudioSourceManager = YoutubeAudioSourceManager()
-    youtubeAudioSourceManager.configureRequests { config: RequestConfig? -> RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
+    youtubeAudioSourceManager.configureRequests { config ->
+      RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
+    }
     manager.registerSourceManager(youtubeAudioSourceManager)
     manager.registerSourceManager(SoundCloudAudioSourceManager.createDefault())
     manager.registerSourceManager(TwitchStreamAudioSourceManager())
@@ -135,7 +140,8 @@ class TrackLoader {
 
     private fun connectToFirstVoiceChannel(audioManager: AudioManager) {
       if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) audioManager.guild
-        .voiceChannels.stream().filter { obj: VoiceChannel? -> Objects.nonNull(obj) }.findFirst().ifPresent { channel: VoiceChannel? -> audioManager.openAudioConnection(channel) }
+        .voiceChannels.stream().filter { obj -> Objects.nonNull(obj) }.findFirst()
+        .ifPresent { channel -> audioManager.openAudioConnection(channel) }
     }
   }
 

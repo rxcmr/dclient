@@ -1,6 +1,8 @@
 package com.fortuneteller.dclient.commands.music.children
 
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
@@ -39,11 +41,15 @@ import com.jagrosh.jdautilities.command.CommandEvent
  */
 class PauseCommand : Command() {
   override fun execute(event: CommandEvent) {
-    event.reply("")
+    with(TrackLoader.instance) {
+      if (!getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException("Playback is currently paused.")
+      else pause(event.guild, true)
+    }
   }
 
   init {
     name = "pause"
+    aliases = arrayOf("pp")
     help = "Pauses an ongoing track."
     category = Categories.MUSIC.category
     hidden = true

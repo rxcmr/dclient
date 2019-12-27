@@ -44,21 +44,19 @@ import java.util.stream.Collectors
  */
 class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
   private val queue: Queue<AudioTrack>
-  fun queue(track: AudioTrack): Boolean {
-    return !player.startTrack(track, true) && queue.offer(track)
-  }
 
   val trackList: List<String>
     get() {
       val queueSize = AtomicInteger(queue.size)
-      return if (queue.stream()
-          .map { t: AudioTrack -> "`" + queueSize.getAndDecrement() + " - " + t.info.title + "`" }
-          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty())
-        listOf("No tracks left in the queue.")
-      else queue.stream()
-        .map { t: AudioTrack -> "`" + queueSize.getAndDecrement() + " - " + t.info.title + "`" }
+      return if (queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
+          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty()) listOf("No tracks left in the queue.")
+      else queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
         .collect(Collectors.toCollection { LinkedList<String>() })
     }
+
+  fun queue(track: AudioTrack): Boolean {
+    return !player.startTrack(track, true) && queue.offer(track)
+  }
 
   fun nextTrack() {
     player.startTrack(queue.poll(), false)

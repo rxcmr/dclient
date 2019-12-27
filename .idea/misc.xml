@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="EntryPointsManager">
+    <pattern value="dcl.commands.*Command" />
+    <pattern value="dcl.listeners.*Listener" />
+  </component>
+  <component name="ExternalStorageConfigurationManager" enabled="true" />
+  <component name="ProjectResources">
+    <xml-schema-version>XMLSchema_1_1</xml-schema-version>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_13_PREVIEW" default="false" project-jdk-name="13 (2)" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/out" />
+  </component>
+</project>

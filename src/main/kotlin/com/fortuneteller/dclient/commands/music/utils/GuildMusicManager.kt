@@ -37,7 +37,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class GuildMusicManager(manager: AudioPlayerManager) {
-  private val player: AudioPlayer = manager.createPlayer()
+  val player: AudioPlayer = manager.createPlayer()
 
   @JvmField
   val scheduler: TrackScheduler

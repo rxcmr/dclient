@@ -1,11 +1,13 @@
 package com.fortuneteller.dclient.commands.music
 
-import com.fortuneteller.dclient.commands.music.children.*
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import io.github.classgraph.ClassGraph
+import net.dv8tion.jda.api.Permission
 import java.util.*
 import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -45,25 +47,34 @@ import java.util.stream.Collectors
  */
 @SuppressWarnings("unused")
 class MusicCommand : Command() {
-  init {
-    name = "music"
-    aliases = arrayOf("m")
-    children = arrayOf(
-      PlayCommand(), SkipCommand(), LeaveCommand(), SearchCommand(), QueueCommand(), PauseCommand()
-    )
-    help = Arrays.stream(children).map { c ->
-      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
-    }.collect(Collectors.joining("", "General music commands.", ""))
-    arguments = "**<command>**"
-    category = Categories.MUSIC.category
-  }
-
   override fun execute(event: CommandEvent?) {
     event?.reply("""
       play - plays URL
       skip - skips track
       leave - leave VC
       search - search YouTube and play
+      pause - pauses track
+      resume - resumes track
     """.trimIndent())
+  }
+
+  init {
+    name = "music"
+    aliases = arrayOf("m")
+    val musicChildren = ArrayList<Command>()
+    for (mc in ClassGraph()
+      .whitelistPackagesNonRecursive("com.fortuneteller.dclient.commands.music.children")
+      .scan()
+      .getSubclasses(Command::class.java.name)
+      .loadClasses(Command::class.java)) musicChildren.add(mc.getDeclaredConstructor().newInstance())
+    children = musicChildren.toTypedArray()
+    help = Arrays.stream(children).map { c ->
+      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
+    }.collect(Collectors.joining("", "General music commands.", ""))
+    arguments = "**<command>**"
+    botPermissions = arrayOf(
+      Permission.VOICE_CONNECT, Permission.VOICE_SPEAK, Permission.VOICE_STREAM, Permission.PRIORITY_SPEAKER
+    )
+    category = Categories.MUSIC.category
   }
 }

@@ -71,7 +71,7 @@ import javax.security.auth.login.LoginException
  */
 
 class Contraption(private val token: String,
-                  var prefix: String,
+                  private var prefix: String,
                   private val shards: Int,
                   private val commands: Collection<Command>,
                   private val listeners: Collection<Any>?) : Thread("Von Bolt"), DirectMessage {
@@ -80,7 +80,7 @@ class Contraption(private val token: String,
     lateinit var instance: Contraption
     lateinit var prefix: String
     const val ID: String = "175610330217447424"
-    const val VERSION = "1.8.1l"
+    val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.2l"
     const val esc = "\u001B"
   }
 
@@ -227,7 +227,7 @@ class Contraption(private val token: String,
       if (!exceptionThrown) {
         info("$esc[1;93mContraption$esc[0m instance: " + toString())
         instance = this
-        prefix = instance.prefix
+        Companion.prefix = instance.prefix
       } else {
         error("My disappointment is immeasurable, and my day is ruined.")
       }

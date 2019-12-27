@@ -49,38 +49,42 @@ import com.jagrosh.jdautilities.examples.command.ShutdownCommand
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PilotCommandListener : CommandListener {
-  override fun onCommandException(event: CommandEvent?, command: Command?, throwable: Throwable?) {
-    val owner = event?.jda?.getUserById(Contraption.ID)
-    event?.channel?.sendTyping()?.queue()
-    if (command is PingCommand) event?.reply("Request didn't go through.")
-    else if (command is TestCommand) event?.reply("```kotlin\nTest complete.\nThrew:\n$throwable```")
-    else if (command is JagTagCommand || command is SlowmodeCommand) event?.reply(throwable?.message)
-    else if (command is PlayCommand) SearchCommand().execute(event!!)
-    else event?.reply(when (command?.arguments) {
-      null -> {
-        "Something wrong happened..."
+  override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) {
+    with(event) e@{
+      val owner = jda?.getUserById(Contraption.ID)!!
+      channel?.sendTyping()?.queue()
+      with(command) c@{
+        with(throwable) t@{
+          when (command) {
+            is PingCommand -> reply("Request didn't go through.")
+            is TestCommand -> reply("```kotlin\nTest complete.\nThrew:\n$this@t```")
+            is JagTagCommand, is SlowmodeCommand -> reply(message)
+            is PlayCommand -> SearchCommand().execute(this@e)
+            else -> {
+              this@e.message?.addReaction("\uD83D\uDE41")?.queue()
+              DirectMessage.sendDirectMessage("```java\n", owner, "$this@t\n```")
+              reply(when (arguments) {
+                null -> "Something wrong happened..."
+                else -> "${Contraption.prefix}$name $arguments"
+              })
+            }
+          }
+        }
       }
-      else -> {
-        "${Contraption.instance.prefix}${command.name} ${command.arguments}"
-      }
-    })
-    if (command !is PlayCommand) {
-      event?.message?.addReaction("\uD83D\uDE41")?.queue()
-      DirectMessage.sendDirectMessage("```java\n", owner!!, "$throwable\n```")
     }
   }
 
-  override fun onCompletedCommand(event: CommandEvent?, command: Command?) {
+  override fun onCompletedCommand(event: CommandEvent, command: Command) {
     if (command is ShutdownCommand) return
-    event?.message?.addReaction("\uD83D\uDE42")?.queue()
+    event.message?.addReaction("\uD83D\uDE42")?.queue()
   }
 
-  override fun onTerminatedCommand(event: CommandEvent?, command: Command?) {
+  override fun onTerminatedCommand(event: CommandEvent, command: Command) {
     if (command is LeaveCommand) return
-    val owner = event?.jda?.getUserById(Contraption.ID)
-    event?.message?.addReaction("\uD83E\uDD2C")?.queue()
-    event?.channel?.sendTyping()?.queue()
-    event?.reply("Unexpected behavior. Try again.")
+    val owner = event.jda?.getUserById(Contraption.ID)
+    event.message?.addReaction("\uD83E\uDD2C")?.queue()
+    event.channel?.sendTyping()?.queue()
+    event.reply("Unexpected behavior. Try again.")
     DirectMessage.sendDirectMessage(
       "Unexpected behavior. Triggered by: ",
       owner!!,
