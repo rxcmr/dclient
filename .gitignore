@@ -25,3 +25,5 @@
 .env
 .gitconfig
 /src/main/resources/PilotDB.sqlite
+
+!.idea/

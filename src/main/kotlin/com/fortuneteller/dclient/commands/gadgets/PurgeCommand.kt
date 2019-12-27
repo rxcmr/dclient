@@ -4,7 +4,6 @@ import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Message
 import java.util.concurrent.TimeUnit
 
 /*
@@ -38,18 +37,18 @@ import java.util.concurrent.TimeUnit
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PurgeCommand : Command() {
   override fun execute(event: CommandEvent) {
-    val amount = event.args.toInt()
-    event.channel.sendTyping().queue()
-    event.channel.history.retrievePast(amount).queue { messages: List<Message?>? ->
-      event.channel.purgeMessages(messages!!)
+    with(event) {
+      val amount = args.toInt()
+      channel.sendTyping().queue()
+      channel.history.retrievePast(amount).queue { messages -> channel.purgeMessages(messages!!) }
+      channel.sendMessage("Cleared $amount messages.").submit()
+        .thenCompose { msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS) }
+        .whenComplete { _, e -> if (e != null) reply("I was not able to remove my message.") }
     }
-    event.channel.sendMessage("Cleared $amount messages.").submit()
-      .thenCompose { msg: Message -> msg.delete().submitAfter(5, TimeUnit.SECONDS) }
-      .whenComplete { _, e: Throwable? -> if (e != null) event.reply("I was not able to remove my message.") }
   }
 
   init {

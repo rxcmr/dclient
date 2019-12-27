@@ -4,7 +4,7 @@ import com.fortuneteller.dclient.Contraption
 import com.fortuneteller.dclient.utils.PilotUtils.Companion.gc
 import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
 import net.dv8tion.jda.api.JDAInfo
-import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.Permission.*
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.stream.Collectors
@@ -52,13 +52,7 @@ class ReadyEventListener : ListenerAdapter() {
     val jda = event.jda
     val shardInfo = jda.shardInfo
     val shards = "$esc[1;91m[${shardInfo.shardId + 1}/${shardInfo.shardTotal}]$esc[0m"
-    val inviteURL = jda.getInviteUrl(
-      Permission.BAN_MEMBERS,
-      Permission.KICK_MEMBERS,
-      Permission.MESSAGE_MANAGE,
-      Permission.MANAGE_ROLES,
-      Permission.MANAGE_SERVER
-    )
+    val inviteURL = jda.getInviteUrl(BAN_MEMBERS, KICK_MEMBERS, MESSAGE_MANAGE, MANAGE_ROLES, MANAGE_SERVER)
     val guilds = jda.guilds.stream().map { obj -> obj.name }.collect(Collectors.joining(", "))
     jda.restPing.queue { api ->
       info("|$esc[1;92m       R U N N I N G        $esc[0m| Status: $esc[1;92m${jda.status}$esc[0m")

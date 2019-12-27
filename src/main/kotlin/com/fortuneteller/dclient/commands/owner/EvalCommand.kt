@@ -45,90 +45,6 @@ import java.awt.Color
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 @SuppressWarnings("unused")
-/*
-public class EvalCommand extends Command {
-  private final EmbedBuilder embedBuilder = new EmbedBuilder();
-  private final GroovyShell shell;
-  private final String imports;
-
-  public EvalCommand() {
-    name = "eval";
-    aliases = new String[]{"dbg"};
-    ownerCommand = true;
-    help = "JDA evaluator using GroovyShell";
-    arguments = "**<code>**";
-    hidden = true;
-    category = Categories.OWNER.getCategory();
-    shell = new GroovyShell();
-    imports = """
-      import java.io.*;
-      import java.lang.*;
-      import java.util.*;
-      import java.util.concurrent.*;
-      import net.dv8tion.jda.api.*;
-      import net.dv8tion.jda.api.entities.*;
-      import net.dv8tion.jda.api.managers.*;
-      import net.dv8tion.jda.api.utils.*;
-      import com.fortuneteller.dclient.commands.gadgets.*;
-      import com.fortuneteller.dclient.commands.owner.*;
-      import com.fortuneteller.dclient.commands.music.*;
-      import com.fortuneteller.dclient.commands.moderation.*;
-      import com.fortuneteller.dclient.listeners.*;
-      import com.fortuneteller.dclient.commands.utils.*;
-      import com.fortuneteller.dclient.utils.*;
-      """;
-  }
-
-  @Override
-  protected void execute(@NotNull CommandEvent event) {
-    String input = event?.getArgs().replaceAll("(```[a-z]*)", "");
-    try {
-      shell.setProperty("args", event?.getArgs());
-      shell.setProperty("event", event);
-      shell.setProperty("message", event?.getMessage());
-      shell.setProperty("channel", event?.getChannel());
-      shell.setProperty("jda", event?.getJDA());
-      shell.setProperty("guild", event?.getGuild());
-      shell.setProperty("member", event?.getMember());
-      shell.setProperty("user", event?.getMember().getUser());
-      event?.reply(buildEmbed(shell.evaluate(imports + input), input));
-      embedBuilder.clear();
-    } catch (Exception e) {
-      event?.reply(exceptionEmbed(e, input));
-      embedBuilder.clear();
-    }
-  }
-
-  private @NotNull MessageEmbed buildEmbed(@Nullable Object output, @NotNull String args) {
-    return output != null ? embedBuilder
-      .setTitle("```Finished execution.```")
-      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
-      .addField("**Output:** ", String.format("```%s```", output.toString()), false)
-      .build() : embedBuilder
-      .setTitle("```Finished execution.```")
-      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
-      .build();
-  }
-
-  private @NotNull MessageEmbed exceptionEmbed(@NotNull Exception e, @NotNull String args) {
-    var exceptionName = e.getClass().getCanonicalName().split("\\.");
-    var javadoc = String.format(
-      "https://docs.oracle.com/en/java/javase/13/docs/api/java.base/%s/%s/%s.html",
-      exceptionName[0], exceptionName[1], exceptionName[2]
-    );
-    return embedBuilder
-      .setTitle(String.format("```%s```", e.getClass().getSimpleName()),
-        exceptionName[0].equalsIgnoreCase("java") ? javadoc : null
-      )
-      .setDescription(String.format("**Command:** ```groovy%n%s%n```", args))
-      .addField("**Stack Trace:**", String.format("```%s```", e), false)
-      .setColor(Color.RED)
-      .build();
-  }
-}
- */
-
-
 class EvalCommand : Command() {
   private val shell: GroovyShell
   private val imports: String
@@ -138,15 +54,17 @@ class EvalCommand : Command() {
   override fun execute(event: CommandEvent?) {
     val input = event?.args?.replace("(```[a-z]*)".toRegex(), "")
     try {
-      shell.setProperty("args", event?.args)
-      shell.setProperty("event", event)
-      shell.setProperty("message", event?.message)
-      shell.setProperty("channel", event?.channel)
-      shell.setProperty("jda", event?.jda)
-      shell.setProperty("guild", event?.guild)
-      shell.setProperty("member", event?.member)
-      shell.setProperty("user", event?.member?.user)
-      event?.reply(buildEmbed(shell.evaluate("$imports\n$input"), input!!))
+      with(shell) {
+        setProperty("args", event?.args)
+        setProperty("event", event)
+        setProperty("message", event?.message)
+        setProperty("channel", event?.channel)
+        setProperty("jda", event?.jda)
+        setProperty("guild", event?.guild)
+        setProperty("member", event?.member)
+        setProperty("user", event?.member?.user)
+        event?.reply(buildEmbed(evaluate("$imports\n$input"), input!!))
+      }
       embedBuilder.clear()
     } catch (e: Exception) {
       event?.reply(exceptionEmbed(e, input!!))
@@ -155,17 +73,17 @@ class EvalCommand : Command() {
   }
 
   private fun buildEmbed(output: Any?, args: String): MessageEmbed {
-    return if (output != null) {
-      embedBuilder
-        .setTitle("```Finished execution.```")
-        .setDescription("**Command:** ```groovy\n$args\n```")
-        .addField("**Output:** ", "```$output```", false)
-        .build()
-    } else {
-      embedBuilder
-        .setTitle("```Finished execution.```")
-        .setDescription("**Command:** ```groovy\n$args\n```")
-        .build()
+    with(embedBuilder) {
+      return if (output != null) {
+        setTitle("```Finished execution.```")
+        setDescription("**Command:** ```groovy\n$args\n```")
+        addField("**Output:** ", "```$output```", false)
+        build()
+      } else {
+        setTitle("```Finished execution.```")
+        setDescription("**Command:** ```groovy\n$args\n```")
+        build()
+      }
     }
   }
 
@@ -178,7 +96,7 @@ class EvalCommand : Command() {
       .setTitle("```${e.javaClass.simpleName}```",
         if (exceptionName[0].equals("java", ignoreCase = true)) javadoc
         else null)
-      .setDescription("**Command:** ```groovy\n$args\n```")
+      .setDescription("**Command:** ```groovyn$args\n```")
       .addField("**Stack Trace:**", "```$e```", false)
       .setColor(Color.RED)
       .build()
@@ -194,21 +112,21 @@ class EvalCommand : Command() {
     category = Categories.OWNER.category
     shell = GroovyShell()
     imports = """
-      import java.io.*;
-      import java.lang.*;
-      import java.util.*;
-      import java.util.concurrent.*;
-      import net.dv8tion.jda.api.*;
-      import net.dv8tion.jda.api.entities.*;
-      import net.dv8tion.jda.api.managers.*;
-      import net.dv8tion.jda.api.utils.*;
-      import com.fortuneteller.dclient.commands.gadgets.*;
-      import com.fortuneteller.dclient.commands.owner.*;
-      import com.fortuneteller.dclient.commands.music.*;
-      import com.fortuneteller.dclient.commands.moderation.*;
-      import com.fortuneteller.dclient.listeners.*;
-      import com.fortuneteller.dclient.commands.utils.*;
-      import com.fortuneteller.dclient.utils.*;
+      import java.io.*
+      import java.lang.*
+      import java.util.*
+      import java.util.concurrent.*
+      import net.dv8tion.jda.api.*
+      import net.dv8tion.jda.api.entities.*
+      import net.dv8tion.jda.api.managers.*
+      import net.dv8tion.jda.api.utils.*
+      import com.fortuneteller.dclient.commands.gadgets.*
+      import com.fortuneteller.dclient.commands.owner.*
+      import com.fortuneteller.dclient.commands.music.*
+      import com.fortuneteller.dclient.commands.moderation.*
+      import com.fortuneteller.dclient.listeners.*
+      import com.fortuneteller.dclient.commands.utils.*
+      import com.fortuneteller.dclient.utils.*
       """
   }
 

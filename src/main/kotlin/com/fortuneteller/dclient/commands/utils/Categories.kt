@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.utils
 
-import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.Command.Category
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -39,9 +39,9 @@ import com.jagrosh.jdautilities.command.Command
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 
-enum class Categories(val category: Command.Category, val description: String) {
-  GADGETS(Command.Category("Gadgets"), "Gadgets and fun!"),
-  MODERATION(Command.Category("Moderation"), "Moderation utilities."),
-  MUSIC(Command.Category("Music"), "Music related commands."),
-  OWNER(Command.Category("Owner"), "Owner-only utilities.");
+enum class Categories(val category: Category, val description: String) {
+  GADGETS(Category("Gadgets"), "Gadgets and fun!"),
+  MODERATION(Category("Moderation"), "Moderation utilities."),
+  MUSIC(Category("Music"), "Music related commands."),
+  OWNER(Category("Owner"), "Owner-only utilities.");
 }

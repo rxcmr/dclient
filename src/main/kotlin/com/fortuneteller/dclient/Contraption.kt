@@ -96,10 +96,12 @@ class Contraption(private val token: String,
       .filter { c -> c.category == category && (!c.isHidden || c.isOwnerCommand) }
       .forEachOrdered { c ->
         commandInvocation.add("`$prefix${c.name}`")
-        if (c.arguments == null && c.isGuildOnly) commandInformation.add("```GUILD ONLY \n - ${c.help}```")
-        else if (c.isGuildOnly) commandInformation.add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
-        else if (c.arguments != null) commandInformation.add("```- ${c.help}```")
-        else commandInformation.add("```Arguments: ${c.arguments}\n - ${c.help}```")
+        with(commandInformation) {
+          if (c.arguments == null && c.isGuildOnly) add("```GUILD ONLY \n - ${c.help}```")
+          else if (c.isGuildOnly) add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
+          else if (c.arguments != null) add("```- ${c.help}```")
+          else add("```Arguments: ${c.arguments}\n - ${c.help}```")
+        }
         val invokeIter = commandInvocation.iterator()
         val infoIter = commandInformation.iterator()
         while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
@@ -114,29 +116,31 @@ class Contraption(private val token: String,
   private fun buildHelpEmbed(author: User, args: String): MessageEmbed {
     val categories = EnumSet.allOf(Categories::class.java)
     embedBuilder.setDescription("```Prefix: $prefix```")
-    when {
-      args.equals(GADGETS.name, ignoreCase = true) -> {
-        addHeader(GADGETS.name, GADGETS.description)
-        streamCommands(GADGETS.category)
-      }
-      args.equals(MUSIC.name, ignoreCase = true) -> {
-        addHeader(MUSIC.name, MUSIC.description)
-        streamCommands(MUSIC.category)
-      }
-      args.equals(MODERATION.name, ignoreCase = true) -> {
-        addHeader(MODERATION.name, MODERATION.description)
-        streamCommands(MODERATION.category)
-      }
-      args.equals(OWNER.name, ignoreCase = true) -> {
-        addHeader(OWNER.name, OWNER.description)
-        streamCommands(OWNER.category)
-      }
-      else -> {
-        categories.forEach { c ->
-          embedBuilder.addField(
-            "**Category: ${c.name}**",
-            "```py\n${prefix}help ${c.name.toLowerCase()}\n```",
-            false)
+    with(args) {
+      when {
+        equals(GADGETS.name, ignoreCase = true) -> {
+          addHeader(GADGETS.name, GADGETS.description)
+          streamCommands(GADGETS.category)
+        }
+        equals(MUSIC.name, ignoreCase = true) -> {
+          addHeader(MUSIC.name, MUSIC.description)
+          streamCommands(MUSIC.category)
+        }
+        equals(MODERATION.name, ignoreCase = true) -> {
+          addHeader(MODERATION.name, MODERATION.description)
+          streamCommands(MODERATION.category)
+        }
+        equals(OWNER.name, ignoreCase = true) -> {
+          addHeader(OWNER.name, OWNER.description)
+          streamCommands(OWNER.category)
+        }
+        else -> {
+          categories.forEach { c ->
+            embedBuilder.addField(
+              "**Category: ${c.name}**",
+              "```py\n${prefix}help ${c.name.toLowerCase()}\n```",
+              false)
+          }
         }
       }
     }

@@ -40,12 +40,16 @@ import com.jagrosh.jdautilities.command.CommandEvent
  */
 class ShardCommand : Command() {
   override fun execute(event: CommandEvent) {
-    event.channel.sendTyping().queue()
-    val shardManager = Contraption.instance.shardManager
-    event.reply("Shards active: " + shardManager.shardsRunning)
-    event.reply("Shards total: " + shardManager.shardsTotal)
-    event.reply("Reconnecting: " + shardManager.shardsQueued)
-    event.reply("We are on Shard " + event.jda.shardInfo.shardId)
+    with(event) {
+      channel.sendTyping().queue()
+      val shardManager = Contraption.instance.shardManager
+      with(shardManager) {
+        reply("Shards active: $shardsRunning")
+        reply("Shards total: $shardsTotal")
+        reply("Reconnecting: $shardsQueued")
+        reply("We are on Shard " + jda.shardInfo.shardId)
+      }
+    }
   }
 
   init {

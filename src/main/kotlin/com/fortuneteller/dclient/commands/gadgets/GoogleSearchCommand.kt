@@ -43,14 +43,15 @@ import io.github.cdimascio.dotenv.Dotenv
 class GoogleSearchCommand : Command() {
   override fun execute(event: CommandEvent) {
     event.channel.sendTyping().queue()
-    val apiKey = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load()["API_KEY"]
-    val engineID = Dotenv.configure().ignoreIfMissing().ignoreIfMalformed().load()["ENGINE_ID"]
-    val queryArray = event.args.split("\\s+".toRegex()).toTypedArray()
-    val query = queryArray.joinToString(" ")
-    init(apiKey)
-    val results = performSearch(
-      engineID, query, event.jda.httpClient)
-    event.reply(results[0].suggestedResult)
+    with(Dotenv.configure().ignoreIfMissing().ignoreIfMalformed()) {
+      val apiKey = load()["API_KEY"]
+      val engineID = load()["ENGINE_ID"]
+      val queryArray = event.args.split("\\s+".toRegex()).toTypedArray()
+      val query = queryArray.joinToString(" ")
+      init(apiKey)
+      val results = performSearch(engineID, query, event.jda.httpClient)
+      event.reply(results[0].suggestedResult)
+    }
   }
 
   init {

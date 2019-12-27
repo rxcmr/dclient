@@ -51,6 +51,10 @@ interface DirectMessage {
     }
   }
 
+  fun customMessage(user: User, vararg content: Any) {
+    throw UnsupportedOperationException("Override this function!")
+  }
+
   companion object {
     fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
       user.openPrivateChannel().queue { channel: PrivateChannel ->

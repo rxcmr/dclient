@@ -6,7 +6,6 @@ import com.fortuneteller.dclient.commands.moderation.SlowmodeCommand
 import com.fortuneteller.dclient.commands.music.children.LeaveCommand
 import com.fortuneteller.dclient.commands.music.children.PlayCommand
 import com.fortuneteller.dclient.commands.music.children.SearchCommand
-import com.fortuneteller.dclient.commands.owner.CustomQueryCommand
 import com.fortuneteller.dclient.commands.owner.TestCommand
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -55,9 +54,7 @@ class PilotCommandListener : CommandListener {
     event?.channel?.sendTyping()?.queue()
     if (command is PingCommand) event?.reply("Request didn't go through.")
     else if (command is TestCommand) event?.reply("```kotlin\nTest complete.\nThrew:\n$throwable```")
-    else if (command is JagTagCommand || command is SlowmodeCommand)
-      event?.reply(throwable?.message)
-    else if (command is CustomQueryCommand) event?.reply("Not valid SQLite query.")
+    else if (command is JagTagCommand || command is SlowmodeCommand) event?.reply(throwable?.message)
     else if (command is PlayCommand) SearchCommand().execute(event!!)
     else event?.reply(when (command?.arguments) {
       null -> {

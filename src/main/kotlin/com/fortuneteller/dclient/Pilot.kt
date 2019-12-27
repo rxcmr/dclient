@@ -1,13 +1,10 @@
 package com.fortuneteller.dclient
 
-import com.fortuneteller.dclient.commands.gadgets.*
-import com.fortuneteller.dclient.commands.moderation.*
-import com.fortuneteller.dclient.commands.music.MusicCommand
-import com.fortuneteller.dclient.commands.owner.*
-import com.fortuneteller.dclient.listeners.GuildJoinListener
-import com.fortuneteller.dclient.listeners.ReadyEventListener
-import com.fortuneteller.dclient.listeners.ShutdownListener
+import com.jagrosh.jdautilities.command.Command
 import io.github.cdimascio.dotenv.Dotenv
+import io.github.classgraph.ClassGraph
+import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -47,51 +44,36 @@ import io.github.cdimascio.dotenv.Dotenv
  */
 
 class Pilot(token: String?, prefix: String?, shards: Int) {
-  companion object {
-    @JvmStatic
-    fun main(args: Array<String>) {
-      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
-      val mainPrefix = "pl."
-      val shards = 1
-      Pilot(mainToken, mainPrefix, shards)
-    }
-  }
-
   init {
-    //val commands = LinkedList<Command>()
-    //val listeners = LinkedList<Any>()
+    val commands = LinkedList<Command>()
+    val listeners = LinkedList<Any>()
 
-    /*
+
     for (c in ClassGraph()
       .blacklistPackages(
         "com.fortuneteller.dclient.commands.utils",
         "com.fortuneteller.dclient.commands.gadgets.utils",
         "com.fortuneteller.dclient.commands.music.utils",
-        "com.fortuneteller.dclient.commands.music.children"
-      )
+        "com.fortuneteller.dclient.commands.music.children")
       .whitelistPackages("com.fortuneteller.dclient.commands.*")
-      .verbose()
       .scan()
-      .allClasses
+      .getSubclasses(Command::class.java.name)
       .loadClasses(Command::class.java)) commands.add(c.getDeclaredConstructor().newInstance())
 
 
     for (l in ClassGraph()
       .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
       .scan()
-      .allClasses
+      .getSubclasses(ListenerAdapter::class.java.name)
       .loadClasses(ListenerAdapter::class.java)) listeners.add(l.getDeclaredConstructor().newInstance())
-     */
-
-    val commands = listOf(
-      GoogleSearchCommand(), JagTagCommand(), JavadocCommand(), PingCommand(), PurgeCommand(), QueryUserCommand(),
-      ShardCommand(), UptimeCommand(), BanCommand(), KickCommand(), MuteCommand(), SlowmodeCommand(), SoftbanCommand(),
-      MusicCommand(), CustomQueryCommand(), EvalCommand(), GarbageCollectionCommand(), GhostMessageCommand(),
-      LoadCommand(), PauseThreadCommand(), ShutdownCommand(), TestCommand(), UnloadCommand()
-    )
-
-    val listeners = listOf(GuildJoinListener(), ReadyEventListener(), ShutdownListener())
 
     Contraption(token!!, prefix!!, shards, commands, listeners).start()
   }
+}
+
+fun main() {
+  val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
+  val mainPrefix = "pl."
+  val shards = 1
+  Pilot(mainToken, mainPrefix, shards)
 }

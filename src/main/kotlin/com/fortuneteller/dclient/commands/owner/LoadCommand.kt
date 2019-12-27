@@ -6,7 +6,6 @@ import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import io.github.classgraph.ClassGraph
-import io.github.classgraph.ClassInfo
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.lang.reflect.InvocationTargetException
 
@@ -53,8 +52,8 @@ class LoadCommand : Command() {
           .whitelistPackages("com.fortuneteller.dclient.commands.*")
           .blacklistPackages("com.fortuneteller.dclient.commands.utils")
           .scan()
-          .allClasses
-          .filter { c: ClassInfo -> c.simpleName == event.args }
+          .getSubclasses(Command::class.java.name)
+          .filter { c -> c.simpleName == event.args }
           .loadClasses()[0]
         val command = commandClass.getDeclaredConstructor().newInstance() as Command
         commandClient.addCommand(command, commandClient.commands.size - 1)
@@ -62,8 +61,8 @@ class LoadCommand : Command() {
         val listenerClass = ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.listeners")
           .scan()
-          .allClasses
-          .filter { c: ClassInfo -> c.simpleName == event.args }
+          .getSubclasses(ListenerAdapter::class.java.name)
+          .filter { c -> c.simpleName == event.args }
           .loadClasses()[0]
         val listener = listenerClass.getDeclaredConstructor().newInstance() as ListenerAdapter
         shardManager.addEventListener(listener)

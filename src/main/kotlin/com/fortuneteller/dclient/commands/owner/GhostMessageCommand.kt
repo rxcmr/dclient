@@ -44,9 +44,9 @@ class GhostMessageCommand : Command() {
     val args = event.args.split("\\s+".toRegex()).toTypedArray()
     val channel = Objects.requireNonNull(event.jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
     val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-    assert(channel != null)
-    channel!!.sendTyping().queue()
-    if (channel.canTalk()) channel.sendMessage(message).queue() else event.reply("Lacking `MESSAGE_WRITE` permissions.")
+    channel?.sendTyping()?.queue()
+    if (channel?.canTalk()!!) channel.sendMessage(message).queue()
+    else event.reply("Lacking `MESSAGE_WRITE` permissions.")
   }
 
   init {

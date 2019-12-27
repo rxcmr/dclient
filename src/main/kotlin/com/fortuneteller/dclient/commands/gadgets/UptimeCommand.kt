@@ -43,10 +43,12 @@ class UptimeCommand : Command() {
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     val uptime = runtimeMXBean.uptime
     val uptimeInSeconds = uptime / 1000
-    val h = uptimeInSeconds / (60 * 60)
-    val m = uptimeInSeconds / 60 - h * 60
-    val s = uptimeInSeconds % 60
-    event.channel.sendMessageFormat("`%s:%s:%s`", h, m, s).queue()
+    with(uptimeInSeconds) {
+      val h = this / (60 * 60)
+      val m = this / 60 - h * 60
+      val s = this % 60
+      event.channel.sendMessageFormat("`%s:%s:%s`", h, m, s).queue()
+    }
   }
 
   init {

@@ -4,8 +4,6 @@ import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.Member
-import net.dv8tion.jda.api.entities.Role
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.function.Consumer
@@ -46,28 +44,23 @@ import java.util.stream.Collectors
  */
 class MuteCommand : Command() {
   override fun execute(event: CommandEvent) {
-    try {
-      val args = event.args.split("\\s+".toRegex()).toTypedArray()
-      val role = event.guild
-        .roles
-        .stream()
-        .filter { r: Role -> r.permissionsRaw == 0x0L }
-        .collect(Collectors.toList())[0]
-      if (event.guild.roles.contains(role)) {
-        event.message.mentionedMembers.forEach(Consumer { m: Member ->
-          event.textChannel.putPermissionOverride(role).deny(Permission.MESSAGE_WRITE).queue()
-          event.guild.addRoleToMember(m, role).queue()
-          Executors.newSingleThreadScheduledExecutor().schedule(
-            {
-              event.guild.removeRoleFromMember(m, role).queue()
-              event.reply("Unmuted " + m.asMention + " successfully.")
-            }, args[0].toLong(),
-            TimeUnit.MINUTES
-          )
-        })
+    with(event) {
+      try {
+        val args = args.split("\\s+".toRegex()).toTypedArray()
+        val role = guild.roles.stream().filter { r -> r.permissionsRaw == 0x0L }.collect(Collectors.toList())[0]
+        if (guild.roles.contains(role)) {
+          message.mentionedMembers.forEach(Consumer { m ->
+            textChannel.putPermissionOverride(role).deny(Permission.MESSAGE_WRITE).queue()
+            guild.addRoleToMember(m, role).queue()
+            Executors.newSingleThreadScheduledExecutor().schedule({
+              guild.removeRoleFromMember(m, role).queue()
+              reply("Unmuted " + m.asMention + " successfully.")
+            }, args[0].toLong(), TimeUnit.MINUTES)
+          })
+        }
+      } catch (e: IndexOutOfBoundsException) {
+        createMutedRole(event)
       }
-    } catch (e: IndexOutOfBoundsException) {
-      createMutedRole(event)
     }
   }
 

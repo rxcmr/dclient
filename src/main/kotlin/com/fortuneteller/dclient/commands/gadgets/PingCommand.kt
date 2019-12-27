@@ -46,7 +46,7 @@ class PingCommand : Command() {
   fun buildEmbed(event: CommandEvent) {
     val jda = event.jda
     val embedBuilder = EmbedBuilder()
-    jda.restPing.queue { api: Long ->
+    jda.restPing.queue { api ->
       embed = embedBuilder
         .setThumbnail(event.author.effectiveAvatarUrl)
         .addField("**API: **", "```py\n$api ms\n```", true)

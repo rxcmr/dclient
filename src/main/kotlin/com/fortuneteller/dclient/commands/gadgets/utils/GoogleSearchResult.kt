@@ -59,13 +59,12 @@ class GoogleSearchResult {
     }
 
     private fun cleanString(dirtyString: String): String {
-      return StringEscapeUtils.unescapeJava(
-        StringEscapeUtils.unescapeHtml4(
-          dirtyString
-            .replace("\\s+".toRegex(), " ")
-            .replace("<.*?>".toRegex(), "")
-            .replace("\"".toRegex(), "")
-        )
+      return StringEscapeUtils.unescapeJava(StringEscapeUtils.unescapeHtml4(
+        dirtyString
+          .replace("\\s+".toRegex(), " ")
+          .replace("<.*?>".toRegex(), "")
+          .replace("\"".toRegex(), "")
+      )
       )
     }
   }

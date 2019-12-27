@@ -54,6 +54,7 @@ object GoogleSearchHandler {
   private var googleAPIKey: String? = null
   private var startingDate: LocalDateTime? = null
   private val rng = SecureRandom()
+
   @JvmStatic
   fun init(googleAPIKey: String?) {
     GoogleSearchHandler.googleAPIKey = googleAPIKey
@@ -91,20 +92,15 @@ object GoogleSearchHandler {
   private fun performRequest(request: Request, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
     return try {
       val response = okHttpClient.newCall(request).execute()
-      try {
-        if (!response.isSuccessful) throw RequestAbortedException("Failed to get search results.")
+      response.use { r ->
+        if (!r.isSuccessful) throw RequestAbortedException("Failed to get search results.")
         apiUsageCounter++
         val json: String
-        val reader = BufferedReader(InputStreamReader(Objects.requireNonNull(response.body())!!.byteStream()))
-        json = reader.use { input ->
-          input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining())
-        }
+        val reader = BufferedReader(InputStreamReader(Objects.requireNonNull(r.body())!!.byteStream()))
+        json = reader.use { input -> input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining()) }
         val jsonResults = JSONObject(json).getJSONArray("items")
-        IntStream.range(0, jsonResults.length())
-          .mapToObj { i: Int -> fromGoogle(jsonResults.getJSONObject(i)) }
+        IntStream.range(0, jsonResults.length()).mapToObj { i -> fromGoogle(jsonResults.getJSONObject(i)) }
           .collect(Collectors.toCollection { LinkedList<GoogleSearchResult>() })
-      } finally {
-        response.close()
       }
     } catch (e: IOException) {
       LinkedList()

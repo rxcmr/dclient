@@ -44,22 +44,14 @@ import java.util.*
  */
 class JavadocCommand : Command() {
   override fun execute(event: CommandEvent) {
-    Arrays
-      .stream(JavadocPackages.values())
-      .map { j: JavadocPackages -> String.format(j.url, event.args) }
-      .forEachOrdered { formatted: String? ->
-        val okHttpClient = OkHttpClient()
-        val request = Request.Builder().url(formatted!!).head().build()
-        try {
-          okHttpClient.newCall(request).execute().use { response ->
-            if (response.code() == 200) {
-              event.reply(formatted)
-            }
-          }
-        } catch (e: IOException) {
-          event.reply("Something went wrong...")
-        }
+    Arrays.stream(JavadocPackages.values()).map { j -> String.format(j.url, event.args) }.forEachOrdered { formatted ->
+      val request = Request.Builder().url(formatted).head().build()
+      try {
+        OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
+      } catch (e: IOException) {
+        event.reply("Something went wrong...")
       }
+    }
   }
 
   init {

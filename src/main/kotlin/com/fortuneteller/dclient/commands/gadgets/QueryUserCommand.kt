@@ -4,8 +4,10 @@ import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
-import net.dv8tion.jda.api.Permission
-import net.dv8tion.jda.api.entities.*
+import net.dv8tion.jda.api.entities.Member
+import net.dv8tion.jda.api.entities.MessageEmbed
+import net.dv8tion.jda.api.entities.Role
+import net.dv8tion.jda.api.entities.User
 import java.util.*
 import java.util.stream.Collectors
 
@@ -55,30 +57,30 @@ class QueryUserCommand : Command() {
   }
 
   private fun buildEmbed(member: Member, author: User): MessageEmbed {
-    val user = member.user
-    val permissions = member.permissions.stream()
-      .map { obj: Permission -> obj.getName() }.collect(Collectors.joining(", "))
-    val roles = member.roles.stream().map { obj: Role -> obj.name }.collect(Collectors.joining(", "))
-    val clientType = member.activeClients.stream()
-      .map { obj: ClientType -> obj.key }.collect(Collectors.joining(", "))
-    embedBuilder
-      .setTitle("**Queried: **" + user.name)
-      .setDescription(String.format("**Member: **`%s`%n**User: **`%s`", user, member))
-      .setImage(user.effectiveAvatarUrl)
-      .addField("**Avatar ID: **", user.avatarId, false)
-      .addField("**Avatar URL: **", user.effectiveAvatarUrl, false)
-      .addField("**Name: **", String.format("%s#%s", user.name, user.discriminator), false)
-      .addField("**Nickname: **", if (member.nickname == null) "No nickname" else member.nickname, false)
-      .addField("**ID: **", user.id, false)
-      .addField("**Discord Join Date: **", user.timeCreated.toString(), false)
-      .addField("**Guild Join Date: **", member.timeJoined.toString(), false)
-      .addField("**Status: **", member.onlineStatus.key, false)
-      .addField("**Permissions: **", permissions, false)
-      .addField("**Roles: **", if (member.roles.isEmpty()) "None" else roles, false)
-      .addField("**Type: **", clientType, false)
-      .setColor(0x41 + 0x64 + 0x64 + 0x65 + 0x72)
-      .setFooter("requested by: " + author.name, Objects.requireNonNull(author.avatarUrl))
-    return embedBuilder.build()
+    with(member) {
+      val usr = user
+      val permissions = permissions.stream().map { obj -> obj.getName() }.collect(Collectors.joining(", "))
+      val roles = roles.stream().map { obj: Role -> obj.name }.collect(Collectors.joining(", "))
+      val clientType = activeClients.stream().map { obj -> obj.key }.collect(Collectors.joining(", "))
+      embedBuilder
+        .setTitle("**Queried: **" + usr.name)
+        .setDescription(String.format("**Member: **`%s`%n**User: **`%s`", usr, member))
+        .setImage(usr.effectiveAvatarUrl)
+        .addField("**Avatar ID: **", usr.avatarId, false)
+        .addField("**Avatar URL: **", usr.effectiveAvatarUrl, false)
+        .addField("**Name: **", String.format("%s#%s", usr.name, usr.discriminator), false)
+        .addField("**Nickname: **", if (nickname == null) "No nickname" else nickname, false)
+        .addField("**ID: **", usr.id, false)
+        .addField("**Discord Join Date: **", usr.timeCreated.toString(), false)
+        .addField("**Guild Join Date: **", timeJoined.toString(), false)
+        .addField("**Status: **", onlineStatus.key, false)
+        .addField("**Permissions: **", permissions, false)
+        .addField("**Roles: **", if (roles.isEmpty()) "None" else roles, false)
+        .addField("**Type: **", clientType, false)
+        .setColor(0x41 + 0x64 + 0x64 + 0x65 + 0x72)
+        .setFooter("requested by: " + author.name, Objects.requireNonNull(author.avatarUrl))
+      return embedBuilder.build()
+    }
   }
 
   init {
