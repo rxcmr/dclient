@@ -1,4 +1,6 @@
-# dclient [![Build Status](https://travis-ci.org/rxcmr/dclient.svg?branch=master)](https://travis-ci.org/rxcmr/dclient)
+# dclient 
+[![Build Status](https://travis-ci.org/rxcmr/dclient.svg?branch=master)](https://travis-ci.org/rxcmr/dclient)
+[![CircleCI](https://circleci.com/gh/rxcmr/dclient/tree/master.svg?style=svg)](https://circleci.com/gh/rxcmr/dclient/tree/master)
 
 To use, simply call a new instance of Pilot passing in a token, prefix and shards
 
