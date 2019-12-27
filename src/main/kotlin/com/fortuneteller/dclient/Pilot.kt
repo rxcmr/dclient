@@ -43,11 +43,11 @@ import java.util.*
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 
-class Pilot(token: String?, prefix: String?, shards: Int) {
+class Pilot(token: String, prefix: String, shards: Int) {
   companion object {
     @JvmStatic
     fun main(args: Array<String>) {
-      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"]
+      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"] ?: ""
       val mainPrefix = "pl."
       val shards = 1
       Pilot(mainToken, mainPrefix, shards)
@@ -76,6 +76,6 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
         .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
     }
 
-    Contraption(token!!, prefix!!, shards, commands, listeners).start()
+    Contraption(token, prefix, shards, commands, listeners).start()
   }
 }
