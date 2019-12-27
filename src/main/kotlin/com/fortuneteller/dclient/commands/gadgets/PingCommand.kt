@@ -41,16 +41,15 @@ import java.util.concurrent.TimeUnit
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class PingCommand : Command() {
-  private var embed: MessageEmbed? = null
+  private lateinit var embed: MessageEmbed
+
   @Synchronized
   fun buildEmbed(event: CommandEvent) {
-    val jda = event.jda
-    val embedBuilder = EmbedBuilder()
-    jda.restPing.queue { api ->
-      embed = embedBuilder
+    event.jda.restPing.queue { api ->
+      embed = EmbedBuilder()
         .setThumbnail(event.author.effectiveAvatarUrl)
         .addField("**API: **", "```py\n$api ms\n```", true)
-        .addField("**WebSocket: **", "```py\n" + jda.gatewayPing + " ms\n```", true)
+        .addField("**WebSocket: **", "```py\n" + event.jda.gatewayPing + " ms\n```", true)
         .setColor(0xd32ce6)
         .build()
     }

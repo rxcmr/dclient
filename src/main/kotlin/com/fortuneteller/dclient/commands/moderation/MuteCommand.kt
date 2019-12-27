@@ -45,21 +45,24 @@ import java.util.stream.Collectors
 class MuteCommand : Command() {
   override fun execute(event: CommandEvent) {
     with(event) {
-      try {
-        val args = args.split("\\s+".toRegex()).toTypedArray()
-        val role = guild.roles.stream().filter { r -> r.permissionsRaw == 0x0L }.collect(Collectors.toList())[0]
-        if (guild.roles.contains(role)) {
-          message.mentionedMembers.forEach(Consumer { m ->
-            textChannel.putPermissionOverride(role).deny(Permission.MESSAGE_WRITE).queue()
-            guild.addRoleToMember(m, role).queue()
-            Executors.newSingleThreadScheduledExecutor().schedule({
-              guild.removeRoleFromMember(m, role).queue()
-              reply("Unmuted " + m.asMention + " successfully.")
-            }, args[0].toLong(), TimeUnit.MINUTES)
-          })
+      val args = args.split("\\s+".toRegex()).toTypedArray()
+      with(guild) {
+        if (roles.stream().anyMatch { r -> r.permissionsRaw == 0x0L && r.name == "Muted" }) {
+          val role = roles.stream().filter { r -> r.permissionsRaw == 0x0L && r.name == "Muted" }
+            .collect(Collectors.toList())[0]
+          if (roles.contains(role)) {
+            message.mentionedMembers.forEach(Consumer { m ->
+              textChannel.putPermissionOverride(role).deny(Permission.MESSAGE_WRITE).queue()
+              addRoleToMember(m, role).queue()
+              Executors.newSingleThreadScheduledExecutor().schedule({
+                removeRoleFromMember(m, role).queue()
+                reply("Unmuted " + m.asMention + " successfully.")
+              }, args[0].toLong(), TimeUnit.MINUTES)
+            })
+          }
+        } else {
+          createMutedRole(event)
         }
-      } catch (e: IndexOutOfBoundsException) {
-        createMutedRole(event)
       }
     }
   }

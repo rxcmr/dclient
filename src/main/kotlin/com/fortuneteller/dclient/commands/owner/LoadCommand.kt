@@ -1,6 +1,7 @@
 package com.fortuneteller.dclient.commands.owner
 
-import com.fortuneteller.dclient.Contraption
+import com.fortuneteller.dclient.Contraption.Companion.commandClient
+import com.fortuneteller.dclient.Contraption.Companion.shardManager
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.Command
@@ -45,26 +46,22 @@ import java.lang.reflect.InvocationTargetException
 class LoadCommand : Command() {
   override fun execute(event: CommandEvent) {
     try {
-      val shardManager = Contraption.instance.shardManager
-      val commandClient = Contraption.instance.commandClient
       if (event.args.contains("Command")) {
-        val commandClass = ClassGraph()
+        val command = ClassGraph()
           .whitelistPackages("com.fortuneteller.dclient.commands.*")
           .blacklistPackages("com.fortuneteller.dclient.commands.utils")
           .scan()
           .getSubclasses(Command::class.java.name)
           .filter { c -> c.simpleName == event.args }
-          .loadClasses()[0]
-        val command = commandClass.getDeclaredConstructor().newInstance() as Command
+          .loadClasses(Command::class.java)[0].getDeclaredConstructor().newInstance()
         commandClient.addCommand(command, commandClient.commands.size - 1)
       } else if (event.args.contains("Listener")) {
-        val listenerClass = ClassGraph()
+        val listener = ClassGraph()
           .whitelistPackages("com.fortuneteller.dcl.listeners")
           .scan()
           .getSubclasses(ListenerAdapter::class.java.name)
           .filter { c -> c.simpleName == event.args }
-          .loadClasses()[0]
-        val listener = listenerClass.getDeclaredConstructor().newInstance() as ListenerAdapter
+          .loadClasses(ListenerAdapter::class.java)[0].getDeclaredConstructor().newInstance()
         shardManager.addEventListener(listener)
       }
     } catch (e: IndexOutOfBoundsException) {

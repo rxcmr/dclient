@@ -1,6 +1,7 @@
 package com.fortuneteller.dclient.commands.owner
 
-import com.fortuneteller.dclient.Contraption
+import com.fortuneteller.dclient.Contraption.Companion.commandClient
+import com.fortuneteller.dclient.Contraption.Companion.shardManager
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.Command
@@ -42,9 +43,9 @@ import com.jagrosh.jdautilities.command.CommandEvent
 class UnloadCommand : Command() {
   override fun execute(event: CommandEvent) {
     try {
-      if (event.args.contains("Listener")) Contraption.instance.shardManager.removeEventListener(
+      if (event.args.contains("Listener")) shardManager.removeEventListener(
         Class.forName("com.fortuneteller.dcl.listeners.${event.args}")
-      ) else Contraption.instance.commandClient.removeCommand(event.args)
+      ) else commandClient.removeCommand(event.args)
     } catch (e: ClassNotFoundException) {
       throw CommandException(e.message)
     }

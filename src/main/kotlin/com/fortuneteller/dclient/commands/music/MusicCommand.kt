@@ -61,13 +61,14 @@ class MusicCommand : Command() {
   init {
     name = "music"
     aliases = arrayOf("m")
-    val musicChildren = ArrayList<Command>()
-    for (mc in ClassGraph()
-      .whitelistPackagesNonRecursive("com.fortuneteller.dclient.commands.music.children")
-      .scan()
-      .getSubclasses(Command::class.java.name)
-      .loadClasses(Command::class.java)) musicChildren.add(mc.getDeclaredConstructor().newInstance())
-    children = musicChildren.toTypedArray()
+    children = ArrayList<Command>().let {
+      for (mc in ClassGraph()
+        .whitelistPackagesNonRecursive("com.fortuneteller.dclient.commands.music.children")
+        .scan()
+        .getSubclasses(Command::class.java.name)
+        .loadClasses(Command::class.java)) it.add(mc.getDeclaredConstructor().newInstance())
+      it.toTypedArray()
+    }
     help = Arrays.stream(children).map { c ->
       "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
     }.collect(Collectors.joining("", "General music commands.", ""))

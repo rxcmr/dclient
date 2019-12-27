@@ -42,7 +42,7 @@ class ShardCommand : Command() {
   override fun execute(event: CommandEvent) {
     with(event) {
       channel.sendTyping().queue()
-      val shardManager = Contraption.instance.shardManager
+      val shardManager = Contraption.shardManager
       with(shardManager) {
         reply("Shards active: $shardsRunning")
         reply("Shards total: $shardsTotal")

@@ -36,17 +36,21 @@ import java.util.stream.Collectors
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class GhostMessageCommand : Command() {
   override fun execute(event: CommandEvent) {
-    val args = event.args.split("\\s+".toRegex()).toTypedArray()
-    val channel = Objects.requireNonNull(event.jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
-    val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-    channel?.sendTyping()?.queue()
-    if (channel?.canTalk()!!) channel.sendMessage(message).queue()
-    else event.reply("Lacking `MESSAGE_WRITE` permissions.")
+    with(event) {
+      val args = args.split("\\s+".toRegex()).toTypedArray()
+      val channel = Objects.requireNonNull(jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
+      val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
+      channel?.sendTyping()?.queue()
+      if (channel?.canTalk()!!) channel.sendMessage(message).queue()
+      else reply("Lacking `MESSAGE_WRITE` permissions.")
+    }
   }
 
   init {

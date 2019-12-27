@@ -64,8 +64,8 @@ class EvalCommand : Command() {
         setProperty("member", event?.member)
         setProperty("user", event?.member?.user)
         event?.reply(buildEmbed(evaluate("$imports\n$input"), input!!))
+        embedBuilder.clear()
       }
-      embedBuilder.clear()
     } catch (e: Exception) {
       event?.reply(exceptionEmbed(e, input!!))
       embedBuilder.clear()

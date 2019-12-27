@@ -12,7 +12,6 @@ import com.fortuneteller.dclient.utils.UserAgentInterceptor
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandClientBuilder
-import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -24,12 +23,13 @@ import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder
 import net.dv8tion.jda.api.sharding.ShardManager
 import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.Compression
-import okhttp3.OkHttpClient
+import okhttp3.OkHttpClient.Builder
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap
 import java.net.UnknownHostException
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import javax.security.auth.login.LoginException
 
@@ -78,14 +78,14 @@ class Contraption(private val token: String,
 
   companion object {
     lateinit var instance: Contraption
+    lateinit var shardManager: ShardManager
+    lateinit var commandClient: CommandClient
     lateinit var prefix: String
     const val ID: String = "175610330217447424"
     val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.2l"
     const val esc = "\u001B"
   }
 
-  lateinit var shardManager: ShardManager
-  lateinit var commandClient: CommandClient
   private val embedBuilder = EmbedBuilder()
 
   private fun streamCommands(category: Command.Category) {
@@ -109,9 +109,8 @@ class Contraption(private val token: String,
     commandContent.forEach { (k, v) -> embedBuilder.addField(k, v, false) }
   }
 
-  private fun addHeader(name: String, description: String) {
-    embedBuilder.addField("**$name**", "**Description:** *$description* ", false)
-  }
+  private fun addHeader(name: String, description: String) = embedBuilder
+    .addField("**$name**", "**Description:** *$description* ", false)
 
   private fun buildHelpEmbed(author: User, args: String): MessageEmbed {
     val categories = EnumSet.allOf(Categories::class.java)
@@ -150,98 +149,95 @@ class Contraption(private val token: String,
     return embedBuilder.build()
   }
 
-  private fun buildHelpConsumer(event: CommandEvent) {
-    sendDirectMessage(buildHelpEmbed(event.author, event.args), event.author, null)
-    embedBuilder.clear()
-  }
-
   private fun buildCommandClient(): CommandClient {
-    val commandClientBuilder = CommandClientBuilder()
-    info("Building $esc[1;93mCommandClient$esc[0m.")
-    commands.forEach { c -> commandClientBuilder.addCommand(c) }
-    commandClient = commandClientBuilder
-      .setOwnerId(ID)
-      .setPrefix(prefix)
-      .setActivity(Activity.listening("events."))
-      .setStatus(OnlineStatus.DO_NOT_DISTURB)
-      .setListener(PilotCommandListener())
-      .setHelpConsumer { e -> buildHelpConsumer(e) }
-      .setShutdownAutomatically(true)
-      .build()
-    return commandClient
+    CommandClientBuilder().let {
+      info("Building $esc[1;93mCommandClient$esc[0m.")
+      commands.forEach { c -> it.addCommand(c) }
+      commandClient = it
+        .setOwnerId(ID)
+        .setPrefix(prefix)
+        .setActivity(Activity.listening("events."))
+        .setStatus(OnlineStatus.DO_NOT_DISTURB)
+        .setListener(PilotCommandListener())
+        .setHelpConsumer { e ->
+          sendDirectMessage(buildHelpEmbed(e.author, e.args), e.author, null)
+          embedBuilder.clear()
+        }
+        .setShutdownAutomatically(true)
+        .build()
+      return commandClient
+    }
   }
 
   private fun buildShardManager(): ShardManager {
-    val factory = PilotThreadFactory("Bolt Guard")
-    shardManager = DefaultShardManagerBuilder()
-      .setShardsTotal(shards)
-      .setToken(token)
-      .addEventListeners(buildCommandClient())
-      .setCompression(Compression.ZLIB)
-      .setCallbackPool(Executors.newFixedThreadPool(shards, factory), true)
-      .setGatewayPool(Executors.newScheduledThreadPool(shards, factory), true)
-      .setRateLimitPool(Executors.newScheduledThreadPool(shards, factory), true)
-      .setHttpClientBuilder(OkHttpClient.Builder()
-        .dns(CloudFlareDNS())
-        .addInterceptor(UserAgentInterceptor())
-        .connectTimeout(1, TimeUnit.MINUTES))
-      .setUseShutdownNow(true)
-      .setRelativeRateLimit(false)
-      .setContextEnabled(true)
-      .setChunkingFilter(ChunkingFilter.NONE)
-      .addEventListeners(listeners ?: listOf<Any>(DefaultListener()))
-      .build()
-    return shardManager
+    PilotThreadFactory("Bolt Guard").let {
+      shardManager = DefaultShardManagerBuilder()
+        .setShardsTotal(shards)
+        .setToken(token)
+        .addEventListeners(buildCommandClient())
+        .setCompression(Compression.ZLIB)
+        .setCallbackPool(Executors.newFixedThreadPool(shards, it), true)
+        .setGatewayPool(Executors.newScheduledThreadPool(shards, it), true)
+        .setRateLimitPool(Executors.newScheduledThreadPool(shards, it), true)
+        .setHttpClientBuilder(Builder()
+          .dns(CloudFlareDNS())
+          .addInterceptor(UserAgentInterceptor())
+          .connectTimeout(1, TimeUnit.MINUTES))
+        .setUseShutdownNow(true)
+        .setRelativeRateLimit(false)
+        .setContextEnabled(true)
+        .setChunkingFilter(ChunkingFilter.NONE)
+        .addEventListeners(listeners ?: listOf<Any>(DefaultListener()))
+        .build()
+      return shardManager
+    }
   }
 
   override fun run() {
-    var exceptionThrown = false
-    val pattern = Pattern.compile("([A-Z])\\w+")
-    try {
-      info("Building $esc[1;93mShardManager$esc[0m.")
-      shardManager = buildShardManager()
-      info("Running.")
-      info(if (shards > 1) "$esc[1;91m$shards$esc[0m shards active." else "$esc[1;91m$shards$esc[0m shard active.")
-      commands.forEach { c ->
-        val matcher = pattern.matcher(c.toString())
-        while (matcher.find()) info(String.format("$esc[1;93mCommand$esc[0m loaded: $esc[1;92m%s$esc[0m",
-          matcher.group(0)))
-      }
-      if (listeners == null) return
-      listeners.forEach { l ->
-        val matcher = pattern.matcher(l.toString())
-        while (matcher.find())
-          info(String.format("$esc[1;93mEventListener$esc[0m loaded: $esc[1;92m%s$esc[0m", matcher.group(0)))
-      }
-    } catch (l: LoginException) {
-      error("Invalid token.")
-      exceptionThrown = true
-    } catch (i: IllegalArgumentException) {
-      error("$esc[1;93mCommands$esc[0m/$esc[1;93mEventListeners$esc[0m loading failed!")
-      exceptionThrown = true
-    } catch (u: UnknownHostException) {
-      exceptionThrown = true
-      error("Cannot connect to $esc[1;95mDiscord API$esc[0m/" +
-        "$esc[1;95mWebSocket$esc[0m, or $esc[1;94mCloudFlare DNS$esc[0m.")
-    } finally {
-      if (!exceptionThrown) {
-        info("$esc[1;93mContraption$esc[0m instance: " + toString())
-        instance = this
-        Companion.prefix = instance.prefix
-      } else {
-        error("My disappointment is immeasurable, and my day is ruined.")
+    AtomicBoolean(false).let {
+      val pattern = Pattern.compile("([A-Z])\\w+")
+      try {
+        info("Building $esc[1;93mShardManager$esc[0m.")
+        shardManager = buildShardManager()
+        info("Running.")
+        info(if (shards > 1) "$esc[1;91m$shards$esc[0m shards active." else "$esc[1;91m$shards$esc[0m shard active.")
+        commands.forEach { c ->
+          pattern.matcher(c.toString()).let { p ->
+            while (p.find()) info("$esc[1;93mCommand$esc[0m loaded: $esc[1;92m${p.group(0)}$esc[0m")
+          }
+        }
+        if (listeners == null) return
+        listeners.forEach { l ->
+          pattern.matcher(l.toString()).let { p ->
+            while (p.find()) info("$esc[1;93mEventListener$esc[0m loaded: $esc[1;92m${p.group(0)}$esc[0m")
+          }
+        }
+      } catch (l: LoginException) {
+        error("Invalid token.")
+        it.set(true)
+      } catch (i: IllegalArgumentException) {
+        error("$esc[1;93mCommands$esc[0m/$esc[1;93mEventListeners$esc[0m loading failed!")
+        it.set(true)
+      } catch (u: UnknownHostException) {
+        it.set(true)
+        error("Cannot connect to $esc[1;95mDiscord API$esc[0m/" +
+          "$esc[1;95mWebSocket$esc[0m, or $esc[1;94mCloudFlare DNS$esc[0m.")
+      } finally {
+        if (!it.get()) {
+          info("$esc[1;93mContraption$esc[0m instance: " + toString())
+          instance = this
+          Companion.prefix = instance.prefix
+        } else {
+          error("My disappointment is immeasurable, and my day is ruined.")
+        }
       }
     }
   }
 
-  override fun toString(): String {
-    return "type: $esc[1;93m" + Thread::class.simpleName + "$esc[0m name: " + name
-  }
+  override fun toString() = "type: $esc[1;93m${Thread::class.simpleName}$esc[0m name: $name"
 
   private class DefaultListener : ListenerAdapter() {
-    override fun onReady(event: ReadyEvent) {
-      info("Ready!")
-    }
+    override fun onReady(event: ReadyEvent) = info("Ready!")
   }
 
   init {

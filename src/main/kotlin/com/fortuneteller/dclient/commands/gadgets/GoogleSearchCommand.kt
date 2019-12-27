@@ -44,12 +44,9 @@ class GoogleSearchCommand : Command() {
   override fun execute(event: CommandEvent) {
     event.channel.sendTyping().queue()
     with(Dotenv.configure().ignoreIfMissing().ignoreIfMalformed()) {
-      val apiKey = load()["API_KEY"]
-      val engineID = load()["ENGINE_ID"]
-      val queryArray = event.args.split("\\s+".toRegex()).toTypedArray()
-      val query = queryArray.joinToString(" ")
-      init(apiKey)
-      val results = performSearch(engineID, query, event.jda.httpClient)
+      val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
+      init(load()["API_KEY"])
+      val results = performSearch(load()["ENGINE_ID"], query, event.jda.httpClient)
       event.reply(results[0].suggestedResult)
     }
   }

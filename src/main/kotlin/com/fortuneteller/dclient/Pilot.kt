@@ -55,25 +55,26 @@ class Pilot(token: String?, prefix: String?, shards: Int) {
   }
 
   init {
-    val commands = LinkedList<Command>()
-    val listeners = LinkedList<Any>()
+    val commands = LinkedList<Command>().apply {
+      for (c in ClassGraph()
+        .blacklistPackages(
+          "com.fortuneteller.dclient.commands.utils",
+          "com.fortuneteller.dclient.commands.gadgets.utils",
+          "com.fortuneteller.dclient.commands.music.utils",
+          "com.fortuneteller.dclient.commands.music.children")
+        .whitelistPackages("com.fortuneteller.dclient.commands.*")
+        .scan()
+        .getSubclasses(Command::class.java.name)
+        .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
+    }
 
-    for (c in ClassGraph()
-      .blacklistPackages(
-        "com.fortuneteller.dclient.commands.utils",
-        "com.fortuneteller.dclient.commands.gadgets.utils",
-        "com.fortuneteller.dclient.commands.music.utils",
-        "com.fortuneteller.dclient.commands.music.children")
-      .whitelistPackages("com.fortuneteller.dclient.commands.*")
-      .scan()
-      .getSubclasses(Command::class.java.name)
-      .loadClasses(Command::class.java)) commands.add(c.getDeclaredConstructor().newInstance())
-
-    for (l in ClassGraph()
-      .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
-      .scan()
-      .getSubclasses(ListenerAdapter::class.java.name)
-      .loadClasses(ListenerAdapter::class.java)) listeners.add(l.getDeclaredConstructor().newInstance())
+    val listeners = LinkedList<Any>().apply {
+      for (l in ClassGraph()
+        .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
+        .scan()
+        .getSubclasses(ListenerAdapter::class.java.name)
+        .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
+    }
 
     Contraption(token!!, prefix!!, shards, commands, listeners).start()
   }
