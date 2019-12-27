@@ -12,6 +12,7 @@
 # IntelliJ files
 **/out/
 .idea/
+/.idea/
 *.iml
 *.ipr
 *.iws

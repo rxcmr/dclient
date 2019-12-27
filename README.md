@@ -1,18 +1,14 @@
-# dclient
+# dclient [![Build Status](https://travis-ci.org/rxcmr/dclient.svg?branch=master)](https://travis-ci.org/rxcmr/dclient)
 
 To use, simply call a new instance of Pilot passing in a token, prefix and shards
 
 Requirements:
-- `.env` file in root directory, with Discord API Token (TOKEN) field,
- Google Custom Search API Token (API_KEY) field,
- and Engine ID (ENGINE_ID) field.
+- `.env` file in root directory, with Google Custom Search API Token (API_KEY) field,
+ YouTube API v3 Token (YT_API_KEY) field, and Engine ID (ENGINE_ID) field.
 
-```java
-package com.fortuneteller.dclient;
-@SuppressWarnings("ALL")
-public class Runner {
-  int shards = 1;
-  public static void main(String[] args) throws ReflectiveOperationException { new Pilot("token", "prefix", shards); }
+```kotlin
+fun main() {
+  Pilot("token", "pl.", 1)
 }
 ```
 
