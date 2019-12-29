@@ -23,7 +23,9 @@
 *.nb-gradle-properties
 
 # actual files
-.env
+src/main/resources/.env
+src/main/resources/PilotDB.sqlite
+/resources/.env
 .gitconfig
 /src/main/resources/PilotDB.sqlite
 src/test/

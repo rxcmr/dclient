@@ -1,9 +1,9 @@
-package com.fortuneteller.dclient.utils
+package com.fortuneteller.dclient.commands.utils
 
-import okhttp3.Dns
-import java.net.InetAddress
-import java.net.UnknownHostException
-import java.util.*
+import net.dv8tion.jda.api.requests.RestAction
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,16 +41,18 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class CloudFlareDNS : Dns {
-  override fun lookup(s: String): List<InetAddress> = LinkedList<InetAddress>().apply {
-    Collections.addAll(this, *InetAddress.getAllByName(s))
+
+interface RestActionUtils {
+  suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
+    queue({ success -> it.resume(success) })
+    { failed -> if (failure == null) it.resumeWithException(failed) else failure.invoke(failed) }
   }
 
-  init {
-    try {
-      lookup("1.1.1.1")
-    } catch (e: UnknownHostException) {
-      lookup("1.0.0.1")
-    }
+  suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
+    queue({ success -> it.resume(success) }) { _ -> it.resume(null) }
+  }
+
+  suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
+    queue({ _ -> it.resume(true) }) { _ -> it.resume(false) }
   }
 }

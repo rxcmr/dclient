@@ -42,7 +42,5 @@ import java.util.concurrent.ThreadFactory
 class PilotThreadFactory(private val name: String) : ThreadFactory {
   private var threadCount = 0
   
-  override fun newThread(r: Runnable): Thread {
-    return Thread(r, "$name - ${threadCount++}")
-  }
+  override fun newThread(r: Runnable) = Thread(r, "$name - ${threadCount++}")
 }

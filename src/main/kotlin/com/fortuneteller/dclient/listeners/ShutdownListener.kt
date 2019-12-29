@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.listeners
 
-import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
+import com.fortuneteller.dclient.utils.PilotUtils.info
 import net.dv8tion.jda.api.events.ShutdownEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import kotlin.system.exitProcess
@@ -45,7 +45,7 @@ import kotlin.system.exitProcess
 class ShutdownListener : ListenerAdapter() {
   override fun onShutdown(event: ShutdownEvent) {
     info("Try again in my next life.")
-    info("Shutdown with code: " + event.code)
+    info("Shutdown with code: ${event.code}")
     exitProcess(0xadde4)
   }
 }

@@ -1,10 +1,9 @@
 package com.fortuneteller.dclient.listeners
 
 import com.fortuneteller.dclient.Contraption
-import com.fortuneteller.dclient.utils.PilotUtils.Companion.gc
-import com.fortuneteller.dclient.utils.PilotUtils.Companion.info
+import com.fortuneteller.dclient.utils.PilotUtils
 import net.dv8tion.jda.api.JDAInfo
-import net.dv8tion.jda.api.Permission.*
+import net.dv8tion.jda.api.Permission
 import net.dv8tion.jda.api.events.ReadyEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.stream.Collectors
@@ -47,26 +46,31 @@ import java.util.stream.Collectors
  */
 @SuppressWarnings("unused")
 class ReadyEventListener : ListenerAdapter() {
-  override fun onReady(event: ReadyEvent) {
+  override fun onReady(event: ReadyEvent) = event.jda.let { j ->
     val esc = Contraption.esc
-    val jda = event.jda
-    val shardInfo = jda.shardInfo
+    val shardInfo = j.shardInfo
     val shards = "$esc[1;91m[${shardInfo.shardId + 1}/${shardInfo.shardTotal}]$esc[0m"
-    val inviteURL = jda.getInviteUrl(BAN_MEMBERS, KICK_MEMBERS, MESSAGE_MANAGE, MANAGE_ROLES, MANAGE_SERVER)
-    val guilds = jda.guilds.stream().map { obj -> obj.name }.collect(Collectors.joining(", "))
-    jda.restPing.queue { api ->
-      info("|$esc[1;92m       R U N N I N G        $esc[0m| Status: $esc[1;92m${jda.status}$esc[0m")
-      info("|                            | Logged in as: " + jda.selfUser.asTag)
-      info("|$esc[1;95m       ██╗██████╗  █████╗   $esc[0m| Guilds available: ${event.guildAvailableCount}")
-      info("|$esc[1;95m       ██║██╔══██╗██╔══██╗  $esc[0m| Owner ID: ${Contraption.ID}")
-      info("|$esc[1;95m  ██   ██║██║  ██║██╔══██║  $esc[0m| Guilds: $guilds")
-      info("|$esc[1;95m  ╚█████╔╝██████╔╝██║  ██║  $esc[0m| Shard ID: ${shardInfo.shardId}")
-      info("|$esc[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  $esc[0m| Invite URL: $inviteURL")
-      info("|                            | Account type: " + jda.accountType)
-      info("|$esc[1;92m    [version   ${JDAInfo.VERSION}]    $esc[0m| WebSocket Ping: ${jda.gatewayPing}")
-      info("|$esc[1;92m    [dcl version ${Contraption.VERSION}]    $esc[0m| API Ping: $api")
-      info("|                            | Shards: $shards")
+    val inviteURL = j.getInviteUrl(
+      Permission.BAN_MEMBERS,
+      Permission.KICK_MEMBERS,
+      Permission.MESSAGE_MANAGE,
+      Permission.MANAGE_ROLES,
+      Permission.MANAGE_SERVER
+    )
+    val guilds = j.guilds.stream().map { obj -> obj.name }.collect(Collectors.joining(", "))
+    j.restPing.queue { api ->
+      PilotUtils.info("|$esc[1;92m       R U N N I N G        $esc[0m| Status: $esc[1;92m${j.status}$esc[0m")
+      PilotUtils.info("|                            | Logged in as: ${j.selfUser.asTag}")
+      PilotUtils.info("|$esc[1;95m       ██╗██████╗  █████╗   $esc[0m| Guilds available: ${event.guildAvailableCount}")
+      PilotUtils.info("|$esc[1;95m       ██║██╔══██╗██╔══██╗  $esc[0m| Owner ID: ${Contraption.ID}")
+      PilotUtils.info("|$esc[1;95m  ██   ██║██║  ██║██╔══██║  $esc[0m| Guilds: $guilds")
+      PilotUtils.info("|$esc[1;95m  ╚█████╔╝██████╔╝██║  ██║  $esc[0m| Shard ID: ${shardInfo.shardId}")
+      PilotUtils.info("|$esc[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  $esc[0m| Invite URL: $inviteURL")
+      PilotUtils.info("|                            | Account type: ${j.accountType}")
+      PilotUtils.info("|$esc[1;92m    [version   ${JDAInfo.VERSION}]    $esc[0m| WebSocket Ping: ${j.gatewayPing}")
+      PilotUtils.info("|$esc[1;92m    [dcl version ${Contraption.VERSION}]    $esc[0m| API Ping: $api")
+      PilotUtils.info("|                            | Shards: $shards")
     }
-    gc()
+    PilotUtils.gc()
   }
 }

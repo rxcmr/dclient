@@ -1,7 +1,7 @@
 package com.fortuneteller.dclient
 
+import com.fortuneteller.dclient.utils.EnvLoader
 import com.jagrosh.jdautilities.command.Command
-import io.github.cdimascio.dotenv.Dotenv
 import io.github.classgraph.ClassGraph
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import java.util.*
@@ -42,20 +42,14 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+class Pilot(private val token: String, private val prefix: String, private val shards: Int) : Runnable {
+  private var commands: Collection<Command>
+  private var listeners: Collection<Any>
 
-class Pilot(token: String, prefix: String, shards: Int) {
-  companion object {
-    @JvmStatic
-    fun main(args: Array<String>) {
-      val mainToken = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["TOKEN"] ?: ""
-      val mainPrefix = "pl."
-      val shards = 1
-      Pilot(mainToken, mainPrefix, shards)
-    }
-  }
+  override fun run() = Contraption(token, prefix, shards, commands, listeners).start()
 
   init {
-    val commands = LinkedList<Command>().apply {
+    commands = LinkedList<Command>().apply {
       for (c in ClassGraph()
         .blacklistPackages(
           "com.fortuneteller.dclient.commands.utils",
@@ -68,14 +62,14 @@ class Pilot(token: String, prefix: String, shards: Int) {
         .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
     }
 
-    val listeners = LinkedList<Any>().apply {
+    listeners = LinkedList<Any>().apply {
       for (l in ClassGraph()
         .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
         .scan()
         .getSubclasses(ListenerAdapter::class.java.name)
         .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
     }
-
-    Contraption(token, prefix, shards, commands, listeners).start()
   }
 }
+
+fun main() = Pilot(EnvLoader.load("TOKEN"), "pl.", 1).run()

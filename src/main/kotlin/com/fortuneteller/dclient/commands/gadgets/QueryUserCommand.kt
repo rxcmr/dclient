@@ -6,7 +6,6 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.entities.User
 import java.util.stream.Collectors
 
@@ -55,9 +54,9 @@ class QueryUserCommand : Command() {
   private fun buildEmbed(member: Member, author: User): MessageEmbed {
     with(member) {
       user.let {
-        val permissions = permissions.stream().map { obj -> obj.getName() }.collect(Collectors.joining(", "))
-        val roles = roles.stream().map { obj: Role -> obj.name }.collect(Collectors.joining(", "))
-        val clientType = activeClients.stream().map { obj -> obj.key }.collect(Collectors.joining(", "))
+        val permissions = permissions.stream().map { p -> p.getName() }.collect(Collectors.joining(", "))
+        val roles = roles.stream().map { r -> r.name }.collect(Collectors.joining(", "))
+        val clientType = activeClients.stream().map { c -> c.key }.collect(Collectors.joining(", "))
         return EmbedBuilder()
           .setTitle("**Queried: **" + it.name)
           .setDescription(String.format("**Member: **`%s`%n**User: **`%s`", it, member))

@@ -1,7 +1,7 @@
 package com.fortuneteller.dclient.commands.owner
 
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.utils.PilotUtils.Companion.warn
+import com.fortuneteller.dclient.utils.PilotUtils.warn
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 

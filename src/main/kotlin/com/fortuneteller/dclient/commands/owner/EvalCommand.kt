@@ -96,7 +96,7 @@ class EvalCommand : Command() {
       .setTitle("```${e.javaClass.simpleName}```",
         if (exceptionName[0].equals("java", ignoreCase = true)) javadoc
         else null)
-      .setDescription("**Command:** ```groovyn$args\n```")
+      .setDescription("**Command:** ```groovy\n$args\n```")
       .addField("**Stack Trace:**", "```$e```", false)
       .setColor(Color.RED)
       .build()

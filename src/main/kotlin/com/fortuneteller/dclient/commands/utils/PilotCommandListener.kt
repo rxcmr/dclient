@@ -57,12 +57,12 @@ class PilotCommandListener : CommandListener {
         with(throwable) t@{
           when (command) {
             is PingCommand -> reply("Request didn't go through.")
-            is TestCommand -> reply("```kotlin\nTest complete.\nThrew:\n$this@t```")
+            is TestCommand -> reply("```kotlin\nTest complete.\nThrew:\n${this@t}t```")
             is JagTagCommand, is SlowmodeCommand -> reply(message)
             is PlayCommand -> SearchCommand().execute(this@e)
             else -> {
               this@e.message?.addReaction("\uD83D\uDE41")?.queue()
-              DirectMessage.sendDirectMessage("```java\n", owner, "$this@t\n```")
+              DirectMessage.sendDirectMessage("```java\n", owner, "${this@t}\n```")
               reply(when (arguments) {
                 null -> "Something wrong happened..."
                 else -> "${Contraption.prefix}$name $arguments"
@@ -74,7 +74,7 @@ class PilotCommandListener : CommandListener {
     }
   }
 
-  override fun onCompletedCommand(event: CommandEvent, command: Command) {
+  override fun onCompletedCommand(event: CommandEvent, command: Command?) {
     if (command is ShutdownCommand) return
     event.message?.addReaction("\uD83D\uDE42")?.queue()
   }

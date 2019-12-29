@@ -49,7 +49,7 @@ class PingCommand : Command() {
       embed = EmbedBuilder()
         .setThumbnail(event.author.effectiveAvatarUrl)
         .addField("**API: **", "```py\n$api ms\n```", true)
-        .addField("**WebSocket: **", "```py\n" + event.jda.gatewayPing + " ms\n```", true)
+        .addField("**WebSocket: **", "```py\n${event.jda.gatewayPing} ms\n```", true)
         .setColor(0xd32ce6)
         .build()
     }

@@ -60,39 +60,34 @@ class TrackLoader {
   private val musicManagers: MutableMap<Long, GuildMusicManager>
 
   fun loadAndPlay(channel: TextChannel, trackURL: String) {
-    val musicManager = getGuildAudioPlayer(channel.guild)
-    playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
-      override fun trackLoaded(track: AudioTrack) {
-        channel.sendMessageFormat("Adding to queue: **%s**", track.info.title).queue()
-        play(channel.guild, musicManager, track)
-      }
+    with(channel) {
+      val musicManager = getGuildAudioPlayer(guild)
+      playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
+        override fun trackLoaded(track: AudioTrack) {
+          sendMessage("Adding to queue: **${track.info.title}**").queue()
+          play(guild, musicManager, track)
+        }
 
-      override fun playlistLoaded(playlist: AudioPlaylist) {
-        var firstTrack = playlist.selectedTrack
-        if (firstTrack == null) firstTrack = playlist.tracks[0]
-        channel.sendMessageFormat("Adding to queue: **%s** *(first track of playlist %s)*",
-          firstTrack?.info?.title,
-          playlist.name).queue()
-        play(channel.guild, musicManager, firstTrack)
-      }
+        override fun playlistLoaded(playlist: AudioPlaylist) {
+          var firstTrack = playlist.selectedTrack
+          if (firstTrack == null) firstTrack = playlist.tracks[0]
+          sendMessage(
+            "Adding to queue: **${firstTrack?.info?.title}** *(first track of playlist ${playlist.name})*").queue()
+          play(guild, musicManager, firstTrack)
+        }
 
-      override fun noMatches() {
-        channel.sendMessage("Nothing found by: $trackURL.").queue()
-      }
+        override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
 
-      override fun loadFailed(exception: FriendlyException) {
-        channel.sendMessage("Could not play: " + exception.message).queue()
-      }
-    })
+        override fun loadFailed(exception: FriendlyException) = sendMessage(
+          "Could not play: ${exception.message}").queue()
+
+      })
+    }
   }
 
   fun displayQueue(channel: TextChannel): String {
     val musicManager = getGuildAudioPlayer(channel.guild)
     return java.lang.String.join("\n", musicManager.scheduler.trackList)
-  }
-
-  fun getScheduler(channel: TextChannel): TrackScheduler {
-    return getGuildAudioPlayer(channel.guild).scheduler
   }
 
   private fun play(guild: Guild, musicManager: GuildMusicManager, track: AudioTrack?) {

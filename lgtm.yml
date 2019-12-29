@@ -1,4 +1,0 @@
-extraction:
-  index:
-    build_command:
-      - gradle compileKotlin

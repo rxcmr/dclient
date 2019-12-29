@@ -1,7 +1,7 @@
 package com.fortuneteller.dclient.utils
 
 import org.slf4j.LoggerFactory.getLogger
-import java.lang.StackWalker.Option
+import java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE
 import java.lang.StackWalker.getInstance
 
 /*
@@ -40,21 +40,19 @@ import java.lang.StackWalker.getInstance
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class PilotUtils private constructor() {
-  companion object {
-    fun info(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).info(m)
+object PilotUtils {
+  fun info(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).info(m)
 
-    fun warn(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).warn(m)
+  fun warn(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).warn(m)
 
-    fun error(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m)
+  fun error(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).error(m)
 
-    fun error(m: String, e: Exception) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
+  fun error(m: String, e: Exception) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
 
-    fun debug(m: String) = getLogger(getInstance(Option.RETAIN_CLASS_REFERENCE).callerClass).debug(m)
+  fun debug(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).debug(m)
 
-    fun gc() {
-      warn("Garbage collection happening soon...")
-      System.gc()
-    }
+  fun gc() {
+    warn("Garbage collection happening soon...")
+    System.gc()
   }
 }

@@ -39,22 +39,6 @@ import net.dv8tion.jda.api.entities.User
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 interface DirectMessage {
-  fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
-    user.openPrivateChannel().queue { channel: PrivateChannel ->
-      if (content is MessageEmbed) {
-        if (exceptionMessage == null)
-          channel.sendMessage(content).queue()
-        else channel.sendMessage("$content$exceptionMessage").queue()
-      } else if (exceptionMessage == null)
-        channel.sendMessage(content.toString()).queue()
-      else channel.sendMessage("$content$exceptionMessage").queue()
-    }
-  }
-
-  fun customMessage(user: User, vararg content: Any) {
-    throw UnsupportedOperationException("Override this function!")
-  }
-
   companion object {
     fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
       user.openPrivateChannel().queue { channel: PrivateChannel ->
@@ -65,5 +49,9 @@ interface DirectMessage {
         else channel.sendMessage("$content$exceptionMessage").queue()
       }
     }
+  }
+
+  fun customMessage(user: User, vararg content: Any) {
+    throw UnsupportedOperationException("Override this function!")
   }
 }

@@ -8,6 +8,7 @@ import com.fortuneteller.dclient.database.SQLItemMode.*
 import com.fortuneteller.dclient.database.SQLUtils
 import com.fortuneteller.dclient.database.SQLUtils.Companion.connect
 import com.fortuneteller.dclient.database.SQLUtils.Companion.createDatabase
+import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jagtag.Parser
@@ -17,13 +18,13 @@ import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.sqlite.SQLiteException
 import java.io.File
 import java.security.SecureRandom
-import java.sql.SQLException
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.stream.Collectors
-import kotlin.collections.HashSet
+import kotlin.collections.LinkedHashSet
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -62,8 +63,8 @@ import kotlin.collections.HashSet
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class JagTagCommand : Command(), SQLUtils {
-  private val tags: HashSet<Tag> = HashSet()
-  private val tagCache: HashSet<Tag> = HashSet()
+  private val tags = LinkedHashSet<Tag>()
+  private val tagCache = LinkedHashSet<Tag>()
 
   @Synchronized
   public override fun execute(event: CommandEvent?) {
@@ -79,9 +80,8 @@ class JagTagCommand : Command(), SQLUtils {
             "global", "g" -> {
               when (args[1]) {
                 "create", "new", "add" -> {
-                  if (args[2].matches(
-                      "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
-                  ) throw CommandException("Be unique, these are reserved command parameters.")
+                  if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
+                    throw CommandException("Be unique, these are reserved command parameters.")
                   select(ALL)
                   val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
                   if (message.attachments.isNotEmpty()) {
@@ -114,7 +114,7 @@ class JagTagCommand : Command(), SQLUtils {
                   } catch (e: CommandException) {
                     throw CommandException(e.message)
                   } finally {
-                    if (t.tagKey == args[0] && t.guildID == "GLOBAL") reply(t.tagValue)
+                    if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply(t.tagValue)
                   }
                 }
                 "cblkraw" -> stream().forEachOrdered { t ->
@@ -124,7 +124,7 @@ class JagTagCommand : Command(), SQLUtils {
                   } catch (e: CommandException) {
                     throw CommandException(e.message)
                   } finally {
-                    if (t.tagKey == args[0] && t.guildID == "GLOBAL") reply("```${t.tagValue}```")
+                    if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply("```${t.tagValue}```")
                   }
                 }
                 else -> stream().forEachOrdered { t ->
@@ -134,7 +134,7 @@ class JagTagCommand : Command(), SQLUtils {
                   } catch (e: CommandException) {
                     throw CommandException(e.message)
                   } finally {
-                    if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag.parse(t.tagValue))
+                    if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag.parse(t.tagValue))
                   }
                 }
               }
@@ -204,14 +204,14 @@ class JagTagCommand : Command(), SQLUtils {
               jda.addEventListener(
                 object : ListenerAdapter() {
                   override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-                    with(event) {
-                      if (author.isBot || author.isFake || channel.id != id) return
-                      channel.sendTyping().queue()
-                      val message = message.contentRaw.split("\\s+").toTypedArray()
+                    event.let {
+                      if (it.author.isBot || it.author.isFake || it.channel.id != id) return
+                      it.channel.sendTyping().queue()
+                      val message = it.message.contentRaw.split("\\s+").toTypedArray()
                       val arguments = message.joinToString(" ")
-                      val parser = buildParser(event)
+                      val parser = buildParser(it)
                       if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
-                      else channel.sendMessage(parser.parse(arguments)).queue()
+                      else it.channel.sendMessage(parser.parse(arguments)).queue()
                     }
                   }
                 }
@@ -231,61 +231,68 @@ class JagTagCommand : Command(), SQLUtils {
               }
             }
           }
-        } catch (s: SQLException) {
+        } catch (s: SQLiteException) {
           reply(s.message)
           if (s.errorCode == 19) throw CommandException("Tag exists or missing parameters.")
           else throw CommandException(s.message + s.message)
         }
       }
     }
+
   }
 
   private fun buildParser(event: Any): Parser {
     if (event is CommandEvent) {
-      return JagTag.newDefaultBuilder().addMethods(with(event) {
-        listOf(
+      val methods = LinkedList<Method>().apply {
+        with(event) {
           with(author) {
-            Method("author") { _ -> name }
-            Method("mAuthor") { _ -> asMention }
-          },
+            add(Method("author") { _ -> name })
+            add(Method("mAuthor") { _ -> asMention })
+          }
           with(guild) {
-            Method("guild") { _ -> name }
-            Method("guildID") { _ -> id }
-            Method("memberCount") { _ -> memberCount.toString() }
-            Method("boostCount") { _ -> boostCount.toString() }
-            Method("owner") { _ -> owner?.effectiveName }
-            Method("ownerID") { _ -> ownerId }
-            Method("roles") { _ -> roles.stream().map(Role::getName).collect(Collectors.joining(", ")) }
-            Method("randMember") { _ -> members[SecureRandom().nextInt(members.size)].effectiveName }
-            Method("randChannel") { _ -> channels[SecureRandom().nextInt(channels.size)].name }
-          },
-          Method("strlen") { _ -> (args.split("\\s+".toRegex()).size - 1).toString() },
-          Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) }
-        )
-      }).build()
+            add(Method("guild") { _ -> name })
+            add(Method("guildID") { _ -> id })
+            add(Method("memberCount") { _ -> memberCount.toString() })
+            add(Method("boostCount") { _ -> boostCount.toString() })
+            add(Method("owner") { _ -> owner?.effectiveName })
+            add(Method("ownerID") { _ -> ownerId })
+            add(Method("roles") { _ -> roles.stream().map(Role::getName).collect(Collectors.joining(", ")) })
+            add(Method("randMember") { _ -> members[SecureRandom().nextInt(members.size)].effectiveName })
+            add(Method("randChannel") { _ -> channels[SecureRandom().nextInt(channels.size)].name })
+          }
+          add(Method("strlen") { _ -> (args.split("\\s+".toRegex()).size - 1).toString() })
+          add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
+        }
+      }
+      return JagTag.newDefaultBuilder().addMethods(methods).build()
     } else {
       event as GuildMessageReceivedEvent
-      return JagTag.newDefaultBuilder().addMethods(with(event) {
-        listOf(
+      val methods = LinkedList<Method>().apply {
+        with(event) {
           with(author) {
-            Method("author") { _ -> name }
-            Method("mAuthor") { _ -> asMention }
-          },
+            add(Method("author") { _ -> name })
+            add(Method("mAuthor") { _ -> asMention })
+          }
           with(guild) {
-            Method("guild") { _ -> name }
-            Method("guildID") { _ -> id }
-            Method("memberCount") { _ -> memberCount.toString() }
-            Method("boostCount") { _ -> boostCount.toString() }
-            Method("owner") { _ -> owner?.effectiveName }
-            Method("ownerID") { _ -> ownerId }
-            Method("roles") { _ -> roles.stream().map(Role::getName).collect(Collectors.joining(", ")) }
-            Method("randMember") { _ -> members[SecureRandom().nextInt(members.size)].effectiveName }
-            Method("randChannel") { _ -> channels[SecureRandom().nextInt(channels.size)].name }
-          },
-          Method("strlen") { _ -> (message.contentRaw.split("\\s+".toRegex()).size - 1).toString() },
-          Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) }
-        )
-      }).build()
+            add(Method("guild") { _ -> name })
+            add(Method("guildID") { _ -> id })
+            add(Method("memberCount") { _ -> memberCount.toString() })
+            add(Method("boostCount") { _ -> boostCount.toString() })
+            add(Method("owner") { _ -> owner?.effectiveName })
+            add(Method("ownerID") { _ -> ownerId })
+            add(Method("roles") { _ ->
+              roles.stream().map(Role::getName).collect(Collectors.joining(", "))
+            })
+            SecureRandom().let {
+              add(Method("randMember") { _ -> members[it.nextInt(members.size)].effectiveName })
+              add(Method("randChannel") { _ -> channels[it.nextInt(channels.size)].name })
+            }
+          }
+          add(Method("strlen") { _ -> (message.contentRaw.split("\\s+".toRegex()).size).toString() })
+          add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
+        }
+      }
+      return JagTag.newDefaultBuilder().addMethods(methods).build()
     }
   }
 
@@ -298,7 +305,7 @@ class JagTagCommand : Command(), SQLUtils {
         ownerID TEXT NOT NULL,
         guildID TEXT NOT NULL,
         UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
-        CHECK (length (tagKey) != 0 AND length (tagValue) != 0)
+        CHECK (length (tagKey) > 0 AND length (tagValue) > 0)
       );
       PRAGMA auto_vacuum = FULL;
       """
@@ -309,8 +316,7 @@ class JagTagCommand : Command(), SQLUtils {
   @Synchronized
   override fun insert(mode: SQLItemMode, vararg args: String?) {
     val sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)"
-    val connection = connect()
-    val preparedStatement = connection.prepareStatement(sql)
+    val preparedStatement = connect().prepareStatement(sql)
     when (mode) {
       LVALUE -> {
         with(preparedStatement) {
@@ -339,11 +345,8 @@ class JagTagCommand : Command(), SQLUtils {
     when (mode) {
       ALL -> {
         val sql = "SELECT * FROM tags"
-        val connection = connect()
-        val preparedStatement = connection.prepareStatement(sql)
-        val resultSet = preparedStatement.executeQuery()
         tagCache.clear()
-        with(resultSet) {
+        with(connect().prepareStatement(sql).executeQuery()) {
           while (next()) tagCache.add(Tag().set(
             getString("tagKey"),
             getString("tagValue"),
@@ -354,12 +357,10 @@ class JagTagCommand : Command(), SQLUtils {
       }
       LVALUE, GVALUE -> {
         val sql = "SELECT tagValue FROM tags"
-        val connection = connect()
-        val preparedStatement = connection.prepareStatement(sql)
-        val resultSet = preparedStatement.executeQuery()
         tagCache.clear()
-        while (resultSet.next())
-          for (t in tags) if (t.ownerID == resultSet.getString("tagValue")) tagCache.add(t)
+        with(connect().prepareStatement(sql).executeQuery()) {
+          while (next()) for (t in tags) if (t.ownerID == getString("tagValue")) tagCache.add(t)
+        }
       }
       else -> return
     }
@@ -368,9 +369,7 @@ class JagTagCommand : Command(), SQLUtils {
   @Synchronized
   override fun delete(mode: SQLItemMode, vararg args: String?) {
     val sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
-    val connection = connect()
-    val preparedStatement = connection.prepareStatement(sql)
-    with(preparedStatement) {
+    with(connect().prepareStatement(sql)) {
       when (mode) {
         LVALUE -> {
           setString(1, args[0])
@@ -392,9 +391,7 @@ class JagTagCommand : Command(), SQLUtils {
   @Synchronized
   override fun update(mode: SQLItemMode, vararg args: String?) {
     val sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
-    val connection = connect()
-    val preparedStatement = connection.prepareStatement(sql)
-    with(preparedStatement) {
+    with(connect().prepareStatement(sql)) {
       when (mode) {
         LVALUE -> {
           setString(1, args[1])
@@ -418,9 +415,7 @@ class JagTagCommand : Command(), SQLUtils {
   @Synchronized
   override fun exists(mode: SQLItemMode, vararg args: String?): Boolean {
     val sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)"
-    val connection = connect()
-    val preparedStatement = connection.prepareStatement(sql)
-    return with(preparedStatement) {
+    return with(connect().prepareStatement(sql)) {
       when (mode) {
         LVALUE -> {
           setString(1, args[0])
@@ -445,15 +440,16 @@ class JagTagCommand : Command(), SQLUtils {
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    val db = File("C:\\Users\\Marvin\\IdeaProjects\\dclient\\src\\main\\resources\\PilotDB.sqlite")
-    if (!db.exists()) {
-      if (db.createNewFile()) {
-        createDatabase()
-        createTable()
+    with(File(javaClass.classLoader.getResource("PilotDB.sqlite")!!.path)) {
+      if (!exists()) {
+        if (createNewFile()) {
+          createDatabase()
+          createTable()
+        } else PilotUtils.error("Unable to create a new database.")
+      } else {
+        select(ALL)
+        tags.addAll(tagCache)
       }
-    } else {
-      select(ALL)
-      tags.addAll(tagCache)
     }
   }
 }

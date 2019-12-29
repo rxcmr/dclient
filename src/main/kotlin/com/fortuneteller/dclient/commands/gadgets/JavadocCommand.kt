@@ -6,7 +6,6 @@ import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.io.IOException
 import java.util.*
 
 /*
@@ -48,11 +47,7 @@ class JavadocCommand : Command() {
   override fun execute(event: CommandEvent) {
     Arrays.stream(JavadocPackages.values()).map { j -> String.format(j.url, event.args) }.forEachOrdered { formatted ->
       val request = Request.Builder().url(formatted).head().build()
-      try {
-        OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
-      } catch (e: IOException) {
-        event.reply("Something went wrong...")
-      }
+      OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
     }
   }
 

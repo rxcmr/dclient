@@ -42,13 +42,11 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
  */
 @SuppressWarnings("unused")
 class GuildJoinListener : ListenerAdapter() {
-  override fun onGuildJoin(event: GuildJoinEvent) {
-    with(event.guild.defaultChannel!!) {
-      val prefix = Contraption.prefix
-      if (canTalk()) {
-        sendTyping().queue()
-        sendMessage("```hello, type ${prefix}help```").queue()
-      }
+  override fun onGuildJoin(event: GuildJoinEvent) = with(event.guild.defaultChannel!!) {
+    val prefix = Contraption.prefix
+    if (canTalk()) {
+      sendTyping().queue()
+      sendMessage("```hello, type ${prefix}help```").queue()
     }
   }
 }

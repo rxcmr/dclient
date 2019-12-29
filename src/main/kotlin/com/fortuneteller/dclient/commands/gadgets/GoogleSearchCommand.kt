@@ -3,9 +3,9 @@ package com.fortuneteller.dclient.commands.gadgets
 import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.init
 import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.performSearch
 import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.utils.EnvLoader
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import io.github.cdimascio.dotenv.Dotenv
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -43,10 +43,10 @@ import io.github.cdimascio.dotenv.Dotenv
 class GoogleSearchCommand : Command() {
   override fun execute(event: CommandEvent) {
     event.channel.sendTyping().queue()
-    with(Dotenv.configure().ignoreIfMissing().ignoreIfMalformed()) {
+    with(EnvLoader) {
       val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
-      init(load()["API_KEY"])
-      val results = performSearch(load()["ENGINE_ID"], query, event.jda.httpClient)
+      init(load("API_KEY"))
+      val results = performSearch(load("ENGINE_ID"), query, event.jda.httpClient)
       event.reply(results[0].suggestedResult)
     }
   }

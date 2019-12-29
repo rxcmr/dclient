@@ -3,10 +3,10 @@ package com.fortuneteller.dclient.commands.music.children
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.PilotUtils.Companion.warn
+import com.fortuneteller.dclient.utils.EnvLoader
+import com.fortuneteller.dclient.utils.PilotUtils.warn
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import io.github.cdimascio.dotenv.Dotenv
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -54,12 +54,11 @@ class SearchCommand : Command() {
     if (event.args.isEmpty()) throw CommandException("Search term cannot be empty!")
     val client = event.jda.httpClient
     if (useCount <= 80) {
-      val apiKey = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()["YT_API_KEY"]
       val request = Request.Builder()
         .url(String.format(
           "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=%s&key=%s",
           event.args,
-          apiKey
+          EnvLoader.load("YT_API_KEY")
         )).build()
       try {
         client.newCall(request).execute().use { response ->

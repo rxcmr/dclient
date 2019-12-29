@@ -1,9 +1,6 @@
-package com.fortuneteller.dclient.utils
+package com.fortuneteller.dclient.listeners
 
-import okhttp3.Dns
-import java.net.InetAddress
-import java.net.UnknownHostException
-import java.util.*
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,16 +38,6 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class CloudFlareDNS : Dns {
-  override fun lookup(s: String): List<InetAddress> = LinkedList<InetAddress>().apply {
-    Collections.addAll(this, *InetAddress.getAllByName(s))
-  }
+@SuppressWarnings("unused")
 
-  init {
-    try {
-      lookup("1.1.1.1")
-    } catch (e: UnknownHostException) {
-      lookup("1.0.0.1")
-    }
-  }
-}
+class TestListener : ListenerAdapter()
