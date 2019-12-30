@@ -1,7 +1,6 @@
 package com.fortuneteller.dclient.commands.gadgets
 
-import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.init
-import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler.performSearch
+import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.utils.EnvLoader
 import com.jagrosh.jdautilities.command.Command
@@ -41,14 +40,12 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class GoogleSearchCommand : Command() {
-  override fun execute(event: CommandEvent) {
+  override fun execute(event: CommandEvent) = with(EnvLoader) {
     event.channel.sendTyping().queue()
-    with(EnvLoader) {
-      val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
-      init(load("API_KEY"))
-      val results = performSearch(load("ENGINE_ID"), query, event.jda.httpClient)
-      event.reply(results[0].suggestedResult)
-    }
+    val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
+    GoogleSearchHandler.init(load("API_KEY"))
+    val results = GoogleSearchHandler.performSearch(load("ENGINE_ID"), query, event.jda.httpClient)
+    event.reply(results[0].suggestedResult)
   }
 
   init {

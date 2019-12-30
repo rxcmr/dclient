@@ -1,9 +1,6 @@
 package com.fortuneteller.dclient.commands.owner
 
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.database.SQLItemMode
-import com.fortuneteller.dclient.database.SQLItemMode.*
-import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
@@ -41,24 +38,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class TestCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    classGraphWhenMappings(LVALUE)
-  }
-
-  private fun classGraphWhenMappings(mode: SQLItemMode) {
-    when (mode) {
-      LVALUE -> PilotUtils.info("Hello!")
-      ALL -> TODO()
-      KEY -> TODO()
-      GVALUE -> TODO()
-      ID -> TODO()
-      GID -> TODO()
-      KNI -> TODO()
-      NULL -> TODO()
-      WILDCARD_ALPHA -> TODO()
-      WILDCARD_BETA -> TODO()
-    }
-  }
+  override fun execute(event: CommandEvent) = throw UnsupportedOperationException("Not testing anytime soon.")
 
   init {
     name = "test"

@@ -40,15 +40,13 @@ import java.util.concurrent.TimeUnit
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PurgeCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    with(event) {
-      val amount = args.toInt()
-      channel.sendTyping().queue()
-      channel.history.retrievePast(amount).queue { messages -> channel.purgeMessages(messages!!) }
-      channel.sendMessage("Cleared $amount messages.").submit()
-        .thenCompose { msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS) }
-        .whenComplete { _, e -> if (e != null) reply("I was not able to remove my message.") }
-    }
+  override fun execute(event: CommandEvent): Unit = with(event) {
+    val amount = args.toInt()
+    channel.sendTyping().queue()
+    channel.history.retrievePast(amount).queue { messages -> channel.purgeMessages(messages!!) }
+    channel.sendMessage("Cleared $amount messages.").submit()
+      .thenCompose { msg -> msg.delete().submitAfter(5, TimeUnit.SECONDS) }
+      .whenComplete { _, e -> if (e != null) reply("I was not able to remove my message.") }
   }
 
   init {

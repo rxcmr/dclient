@@ -59,30 +59,27 @@ class TrackLoader {
   private val playerManager: AudioPlayerManager
   private val musicManagers: MutableMap<Long, GuildMusicManager>
 
-  fun loadAndPlay(channel: TextChannel, trackURL: String) {
-    with(channel) {
-      val musicManager = getGuildAudioPlayer(guild)
-      playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
-        override fun trackLoaded(track: AudioTrack) {
-          sendMessage("Adding to queue: **${track.info.title}**").queue()
-          play(guild, musicManager, track)
-        }
+  fun loadAndPlay(channel: TextChannel, trackURL: String): Unit = with(channel) {
+    val musicManager = getGuildAudioPlayer(guild)
+    playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
+      override fun trackLoaded(track: AudioTrack) {
+        sendMessage("Adding to queue: **${track.info.title}**").queue()
+        play(guild, musicManager, track)
+      }
 
-        override fun playlistLoaded(playlist: AudioPlaylist) {
-          var firstTrack = playlist.selectedTrack
-          if (firstTrack == null) firstTrack = playlist.tracks[0]
-          sendMessage(
-            "Adding to queue: **${firstTrack?.info?.title}** *(first track of playlist ${playlist.name})*").queue()
-          play(guild, musicManager, firstTrack)
-        }
+      override fun playlistLoaded(playlist: AudioPlaylist) {
+        var firstTrack = playlist.selectedTrack
+        if (firstTrack == null) firstTrack = playlist.tracks[0]
+        sendMessage(
+          "Adding to queue: **${firstTrack?.info?.title}** *(first track of playlist ${playlist.name})*").queue()
+        play(guild, musicManager, firstTrack)
+      }
 
-        override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
+      override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
 
-        override fun loadFailed(exception: FriendlyException) = sendMessage(
-          "Could not play: ${exception.message}").queue()
-
-      })
-    }
+      override fun loadFailed(exception: FriendlyException) = sendMessage(
+        "Could not play: ${exception.message}").queue()
+    })
   }
 
   fun displayQueue(channel: TextChannel): String {
@@ -114,20 +111,21 @@ class TrackLoader {
   }
 
   @Contract("_ -> param1")
-  private fun registerSourceManagers(manager: AudioPlayerManager): AudioPlayerManager {
-    val youtubeAudioSourceManager = YoutubeAudioSourceManager()
-    youtubeAudioSourceManager.configureRequests { config ->
-      RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
+  private fun registerSourceManagers(manager: AudioPlayerManager) = with(manager) {
+    YoutubeAudioSourceManager().let {
+      it.configureRequests { config ->
+        RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
+      }
+      registerSourceManager(it)
     }
-    manager.registerSourceManager(youtubeAudioSourceManager)
-    manager.registerSourceManager(SoundCloudAudioSourceManager.createDefault())
-    manager.registerSourceManager(TwitchStreamAudioSourceManager())
-    manager.registerSourceManager(BandcampAudioSourceManager())
-    manager.registerSourceManager(VimeoAudioSourceManager())
-    manager.registerSourceManager(BeamAudioSourceManager())
-    manager.registerSourceManager(LocalAudioSourceManager())
-    manager.registerSourceManager(HttpAudioSourceManager())
-    return manager
+    registerSourceManager(SoundCloudAudioSourceManager.createDefault())
+    registerSourceManager(TwitchStreamAudioSourceManager())
+    registerSourceManager(BandcampAudioSourceManager())
+    registerSourceManager(VimeoAudioSourceManager())
+    registerSourceManager(BeamAudioSourceManager())
+    registerSourceManager(LocalAudioSourceManager())
+    registerSourceManager(HttpAudioSourceManager())
+    this
   }
 
   companion object {

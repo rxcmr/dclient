@@ -44,11 +44,9 @@ import java.util.*
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    Arrays.stream(JavadocPackages.values()).map { j -> String.format(j.url, event.args) }.forEachOrdered { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
-    }
+  override fun execute(event: CommandEvent) = Arrays.stream(JavadocPackages.values()).map { j -> String.format(j.url, event.args) }.forEachOrdered { formatted ->
+    val request = Request.Builder().url(formatted).head().build()
+    OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
   }
 
   init {

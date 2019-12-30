@@ -44,15 +44,13 @@ class PingCommand : Command() {
   private lateinit var embed: MessageEmbed
 
   @Synchronized
-  fun buildEmbed(event: CommandEvent) {
-    event.jda.restPing.queue { api ->
-      embed = EmbedBuilder()
-        .setThumbnail(event.author.effectiveAvatarUrl)
-        .addField("**API: **", "```py\n$api ms\n```", true)
-        .addField("**WebSocket: **", "```py\n${event.jda.gatewayPing} ms\n```", true)
-        .setColor(0xd32ce6)
-        .build()
-    }
+  fun buildEmbed(event: CommandEvent) = event.jda.restPing.queue { api ->
+    embed = EmbedBuilder()
+      .setThumbnail(event.author.effectiveAvatarUrl)
+      .addField("**API: **", "```py\n$api ms\n```", true)
+      .addField("**WebSocket: **", "```py\n${event.jda.gatewayPing} ms\n```", true)
+      .setColor(0xd32ce6)
+      .build()
   }
 
   override fun execute(event: CommandEvent) {

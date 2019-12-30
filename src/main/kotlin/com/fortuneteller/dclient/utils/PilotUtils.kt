@@ -41,15 +41,19 @@ import java.lang.StackWalker.getInstance
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 object PilotUtils {
-  fun info(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).info(m)
+  private val logger = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass)
 
-  fun warn(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).warn(m)
+  fun info(m: String) = logger.info(m)
 
-  fun error(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).error(m)
+  fun warn(m: String) = logger.warn(m)
 
-  fun error(m: String, e: Exception) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).error(m, e)
+  fun error(m: String) = logger.error(m)
 
-  fun debug(m: String) = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass).debug(m)
+  fun error(m: String, e: Exception) = logger.error(m, e)
+
+  fun debug(m: String) = logger.debug(m)
+
+  fun trace(m: String) = logger.trace(m)
 
   fun gc() {
     warn("Garbage collection happening soon...")

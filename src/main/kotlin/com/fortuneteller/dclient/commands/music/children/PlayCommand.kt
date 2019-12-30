@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.Command
@@ -42,14 +42,14 @@ import java.net.URL
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class PlayCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    if (event.args.isEmpty()) throw CommandException("URL cannot be empty!")
+  override fun execute(event: CommandEvent) = with(event) {
+    if (args.isEmpty()) throw CommandException("URL cannot be empty!")
     try {
-      URL(event.args)
+      URL(args)
     } catch (e: MalformedURLException) {
       throw CommandException()
     }
-    instance.loadAndPlay(event.textChannel, event.args)
+    TrackLoader.instance.loadAndPlay(textChannel, args)
   }
 
   init {

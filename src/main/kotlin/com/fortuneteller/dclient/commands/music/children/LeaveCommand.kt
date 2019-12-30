@@ -39,9 +39,7 @@ import net.dv8tion.jda.api.Permission
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class LeaveCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    event.guild.kickVoiceMember(event.selfMember).queue()
-  }
+  override fun execute(event: CommandEvent) = event.guild.kickVoiceMember(event.selfMember).queue()
 
   init {
     name = "leave"

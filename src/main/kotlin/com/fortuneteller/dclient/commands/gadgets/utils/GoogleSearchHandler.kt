@@ -49,19 +49,18 @@ import java.util.stream.IntStream
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 object GoogleSearchHandler {
-  private const val URL = "https://www.googleapis.com/customsearch/v1?safe=medium&cx=%s&key=%s&num=%s&q=%s"
   private var apiUsageCounter = 0
   private var googleAPIKey: String? = null
   private var startingDate: LocalDateTime? = null
   private val rng = SecureRandom()
 
   @JvmStatic
-  fun init(googleAPIKey: String?) {
+  fun init(googleAPIKey: String) {
     GoogleSearchHandler.googleAPIKey = googleAPIKey
     startingDate = LocalDateTime.now()
   }
 
-  fun performSearch(engineId: String?, terms: String, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
+  fun performSearch(engineId: String, terms: String, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
     return performSearch(engineId, terms, 1, okHttpClient)
   }
 
@@ -79,8 +78,8 @@ object GoogleSearchHandler {
         apiUsageCounter = 1
       } else check(apiUsageCounter < 80) { "Limit reached. (80)" }
       searchTerms = searchTerms.replace(" ", "%20")
-      val searchUrl = String.format(URL, engineId, googleAPIKey, resultCount, searchTerms)
-      val searchURL = URL(searchUrl)
+      val searchURL = URL("https://www.googleapis.com/customsearch/" +
+        "v1?safe=medium&cx=$engineId&key=$googleAPIKey&num=$resultCount&q=$searchTerms")
       val request = Request.Builder().url(searchURL).build()
       performRequest(request, okHttpClient)
     } catch (e: IOException) {

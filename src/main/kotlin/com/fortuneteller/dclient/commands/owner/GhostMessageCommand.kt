@@ -42,15 +42,13 @@ import java.util.stream.Collectors
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class GhostMessageCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    with(event) {
-      val args = args.split("\\s+".toRegex()).toTypedArray()
-      val channel = Objects.requireNonNull(jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
-      val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-      channel?.sendTyping()?.queue()
-      if (channel?.canTalk()!!) channel.sendMessage(message).queue()
-      else reply("Lacking `MESSAGE_WRITE` permissions.")
-    }
+  override fun execute(event: CommandEvent) = with(event) {
+    val args = args.split("\\s+".toRegex()).toTypedArray()
+    val channel = Objects.requireNonNull(jda.getGuildById(args[0]))!!.getTextChannelById(args[1])
+    val message = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
+    channel?.sendTyping()?.queue()
+    if (channel?.canTalk()!!) channel.sendMessage(message).queue()
+    else reply("Lacking `MESSAGE_WRITE` permissions.")
   }
 
   init {

@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -39,9 +39,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class QueueCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    event.reply(instance.displayQueue(event.textChannel))
-  }
+  override fun execute(event: CommandEvent) = event.reply(TrackLoader.instance.displayQueue(event.textChannel))
 
   init {
     name = "queue"

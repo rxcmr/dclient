@@ -40,11 +40,9 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class PauseCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    with(TrackLoader.instance) {
-      if (!getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException("Playback is currently paused.")
-      else pause(event.guild, true)
-    }
+  override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
+    if (!getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException("Playback is currently paused.")
+    else pause(event.guild, true)
   }
 
   init {

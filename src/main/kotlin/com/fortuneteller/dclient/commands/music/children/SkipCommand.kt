@@ -39,9 +39,9 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class SkipCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    event.channel.sendTyping().queue()
-    instance.skipTrack(event.textChannel)
+  override fun execute(event: CommandEvent) = with(event) {
+    channel.sendTyping().queue()
+    instance.skipTrack(textChannel)
   }
 
   init {

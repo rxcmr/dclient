@@ -54,16 +54,12 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
         .collect(Collectors.toCollection { LinkedList<String>() })
     }
 
-  fun queue(track: AudioTrack): Boolean {
-    return !player.startTrack(track, true) && queue.offer(track)
-  }
+  fun queue(track: AudioTrack) = !player.startTrack(track, true) && queue.offer(track)
 
-  fun nextTrack() {
-    player.startTrack(queue.poll(), false)
-  }
+  fun nextTrack() = player.startTrack(queue.poll(), false)
 
-  override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) {
-    if (reason.mayStartNext) nextTrack()
+  override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) = with(reason) {
+    if (mayStartNext) nextTrack()
   }
 
   init {

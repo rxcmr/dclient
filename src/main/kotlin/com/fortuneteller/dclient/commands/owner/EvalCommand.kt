@@ -72,18 +72,16 @@ class EvalCommand : Command() {
     }
   }
 
-  private fun buildEmbed(output: Any?, args: String): MessageEmbed {
-    with(embedBuilder) {
-      return if (output != null) {
-        setTitle("```Finished execution.```")
-        setDescription("**Command:** ```groovy\n$args\n```")
-        addField("**Output:** ", "```$output```", false)
-        build()
-      } else {
-        setTitle("```Finished execution.```")
-        setDescription("**Command:** ```groovy\n$args\n```")
-        build()
-      }
+  private fun buildEmbed(output: Any?, args: String) = with(embedBuilder) {
+    if (output != null) {
+      setTitle("```Finished execution.```")
+      setDescription("**Command:** ```groovy\n$args\n```")
+      addField("**Output:** ", "```$output```", false)
+      build()
+    } else {
+      setTitle("```Finished execution.```")
+      setDescription("**Command:** ```groovy\n$args\n```")
+      build()
     }
   }
 

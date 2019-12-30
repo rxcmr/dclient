@@ -1,10 +1,10 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.fortuneteller.dclient.utils.EnvLoader
-import com.fortuneteller.dclient.utils.PilotUtils.warn
+import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import okhttp3.Request
@@ -12,7 +12,6 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.util.*
 import java.util.stream.Collectors
 
 /*
@@ -50,51 +49,52 @@ import java.util.stream.Collectors
  */
 class SearchCommand : Command() {
   private var useCount = 0
-  public override fun execute(event: CommandEvent) {
-    if (event.args.isEmpty()) throw CommandException("Search term cannot be empty!")
-    val client = event.jda.httpClient
+  public override fun execute(event: CommandEvent) = event.let {
+    if (it.args.isEmpty()) throw CommandException("Search term cannot be empty!")
+    val client = it.jda.httpClient
     if (useCount <= 80) {
       val request = Request.Builder()
         .url(String.format(
           "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=%s&key=%s",
-          event.args,
+          it.args,
           EnvLoader.load("YT_API_KEY")
         )).build()
       try {
-        client.newCall(request).execute().use { response ->
+        client.newCall(request).execute().use { r ->
           useCount++
-          if (!response.isSuccessful) {
+          if (!r.isSuccessful) {
             throw CommandException("Request failed.")
           } else {
             var json = ""
-            BufferedReader(InputStreamReader(Objects.requireNonNull(response.body())!!.byteStream())).use { input -> json = input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining()) }
+            BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
+              json = i.lines().map { l -> "$l\n" }
+                .collect(Collectors.joining())
+            }
             val itemsArray = JSONObject(json).getJSONArray("items")
             val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
-            instance.loadAndPlay(event.textChannel,
-              "https://www.youtube.com/watch?v=$videoID")
+            TrackLoader.instance.loadAndPlay(it.textChannel, "https://www.youtube.com/watch?v=$videoID")
           }
         }
       } catch (e: IOException) {
         throw CommandException(e.message)
       }
     } else {
-      warn("API limit reached, using scraper...")
-      val request = Request.Builder().url(String.format(
-        "http://youtube-scrape.herokuapp.com/api/search?q=%s&page=1",
-        event.args
-      )).build()
+      PilotUtils.warn("API limit reached, using scraper...")
+      val request = Request.Builder().url("http://youtube-scrape.herokuapp.com/api/search?q=${it.args}&page=1")
+        .build()
       try {
-        client.newCall(request).execute().use { response ->
-          if (!response.isSuccessful) {
+        client.newCall(request).execute().use { r ->
+          if (!r.isSuccessful) {
             throw CommandException("Request failed.")
           }
           var json = ""
-          BufferedReader(InputStreamReader(Objects.requireNonNull(
-            response.body(),
-            "Response body is null")!!.byteStream())).use { input -> json = input.lines().map { l: String -> l + "\n" }.collect(Collectors.joining()) }
+          BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
+            json = i.lines().map { l -> "$l\n" }
+              .collect(Collectors.joining())
+          }
           val itemsArray = JSONObject(json).getJSONArray("results")
           val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
-          instance.loadAndPlay(event.textChannel, videoURL)
+          TrackLoader.instance.loadAndPlay(it.textChannel, videoURL)
         }
       } catch (e: IOException) {
         throw CommandException(e.message)

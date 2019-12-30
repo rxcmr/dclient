@@ -11,7 +11,6 @@ import com.fortuneteller.dclient.database.SQLUtils.Companion.createDatabase
 import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
-import com.jagrosh.jagtag.Parser
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.entities.ChannelType
@@ -134,7 +133,7 @@ class JagTagCommand : Command(), SQLUtils {
                   } catch (e: CommandException) {
                     throw CommandException(e.message)
                   } finally {
-                    if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag.parse(t.tagValue))
+                    if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag?.parse(t.tagValue))
                   }
                 }
               }
@@ -211,7 +210,7 @@ class JagTagCommand : Command(), SQLUtils {
                       val arguments = message.joinToString(" ")
                       val parser = buildParser(it)
                       if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
-                      else it.channel.sendMessage(parser.parse(arguments)).queue()
+                      else it.channel.sendMessage(parser?.parse(arguments)!!).queue()
                     }
                   }
                 }
@@ -226,22 +225,21 @@ class JagTagCommand : Command(), SQLUtils {
                 } catch (e: CommandException) {
                   throw CommandException(e.message)
                 } finally {
-                  if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag.parse(t.tagValue))
+                  if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag?.parse(t.tagValue))
                 }
               }
             }
           }
         } catch (s: SQLiteException) {
-          reply(s.message)
           if (s.errorCode == 19) throw CommandException("Tag exists or missing parameters.")
-          else throw CommandException(s.message + s.message)
+          else throw CommandException(s.message)
         }
       }
     }
 
   }
 
-  private fun buildParser(event: Any): Parser {
+  private fun buildParser(event: Any) = JagTag.newDefaultBuilder()?.let {
     if (event is CommandEvent) {
       val methods = LinkedList<Method>().apply {
         with(event) {
@@ -264,7 +262,7 @@ class JagTagCommand : Command(), SQLUtils {
           add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
         }
       }
-      return JagTag.newDefaultBuilder().addMethods(methods).build()
+      it.addMethods(methods).build()
     } else {
       event as GuildMessageReceivedEvent
       val methods = LinkedList<Method>().apply {
@@ -292,7 +290,7 @@ class JagTagCommand : Command(), SQLUtils {
           add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
         }
       }
-      return JagTag.newDefaultBuilder().addMethods(methods).build()
+      it.addMethods(methods).build()
     }
   }
 
@@ -341,28 +339,28 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   @Synchronized
-  override fun select(mode: SQLItemMode, vararg args: String?) {
-    when (mode) {
-      ALL -> {
-        val sql = "SELECT * FROM tags"
-        tagCache.clear()
-        with(connect().prepareStatement(sql).executeQuery()) {
-          while (next()) tagCache.add(Tag().set(
-            getString("tagKey"),
-            getString("tagValue"),
-            getString("ownerID"),
-            getString("guildID")
-          ))
-        }
+  override fun select(mode: SQLItemMode, vararg args: String?) = when (mode) {
+    ALL -> {
+      val sql = "SELECT * FROM tags"
+      tagCache.clear()
+      with(connect().prepareStatement(sql).executeQuery()) {
+        while (next()) tagCache.add(Tag().set(
+          getString("tagKey"),
+          getString("tagValue"),
+          getString("ownerID"),
+          getString("guildID")
+        ))
       }
-      LVALUE, GVALUE -> {
-        val sql = "SELECT tagValue FROM tags"
-        tagCache.clear()
-        with(connect().prepareStatement(sql).executeQuery()) {
-          while (next()) for (t in tags) if (t.ownerID == getString("tagValue")) tagCache.add(t)
-        }
+    }
+    LVALUE, GVALUE -> {
+      val sql = "SELECT tagValue FROM tags"
+      tagCache.clear()
+      with(connect().prepareStatement(sql).executeQuery()) {
+        while (next()) for (t in tags) if (t.ownerID == getString("tagValue")) tagCache.add(t)
       }
-      else -> return
+    }
+    else -> {
+      throw UnsupportedOperationException("Not supported.")
     }
   }
 
