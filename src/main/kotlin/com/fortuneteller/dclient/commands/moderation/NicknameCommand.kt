@@ -1,12 +1,9 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.commands.moderation
 
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.*
+import net.dv8tion.jda.api.Permission
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -40,21 +37,26 @@ import java.util.*
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) = Arrays.stream(JavadocPackages.values())
-    .map { j -> String.format(j.url, event.args) }.forEachOrdered { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use { response -> if (response.code() == 200) event.reply(formatted) }
-    }
+@SuppressWarnings("unused")
+class NicknameCommand : Command() {
+  override fun execute(event: CommandEvent) = with(event) {
+    val args = event.args.split("\\s+".toRegex(), 2)
+    val member = if (message.mentionedMembers.isEmpty()) guild.getMemberById(args[0])
+    else message.mentionedMembers[0]
+    member?.modifyNickname(args[1])?.queue()!!
+  }
 
   init {
-    name = "javadoc"
-    aliases = arrayOf("docs")
-    arguments = "**<package>** **<class>**"
-    help = "Gets the URL of Javadocs for JDK 13"
-    category = Categories.GADGETS.category
+    name = "nickname"
+    aliases = arrayOf("nick")
+    help = "Changes the nickname of a member."
+    arguments = "**<member>**"
+    botPermissions = arrayOf(Permission.NICKNAME_MANAGE)
+    userPermissions = arrayOf(Permission.NICKNAME_MANAGE)
+    category = Categories.MODERATION.category
   }
 }

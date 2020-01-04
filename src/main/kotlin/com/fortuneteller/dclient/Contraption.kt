@@ -70,18 +70,18 @@ import javax.security.auth.login.LoginException
  */
 
 class Contraption(private val token: String,
-                  private var prefix: String,
+                  private val prefix: String,
                   private val shards: Int,
                   private val commands: Collection<Command>,
                   private val listeners: Collection<Any>?) : Thread("Von Bolt") {
 
   companion object {
-    lateinit var instance: Contraption
-    lateinit var shardManager: ShardManager
-    lateinit var commandClient: CommandClient
-    lateinit var prefix: String
+    lateinit var instance: Contraption private set
+    lateinit var shardManager: ShardManager private set
+    lateinit var commandClient: CommandClient private set
+    lateinit var prefix: String private set
     const val ID: String = "175610330217447424"
-    const val esc = "\u001B"
+    const val ZWS = "\u001B"
     val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.3l"
   }
 
@@ -146,7 +146,7 @@ class Contraption(private val token: String,
   }
 
   private fun buildCommandClient() = CommandClientBuilder().let {
-    info("Building $esc[1;93mCommandClient$esc[0m.")
+    info("Building $ZWS[1;93mCommandClient$ZWS[0m.")
     commands.forEach { c -> it.addCommand(c) }
     commandClient = it
       .setOwnerId(ID)
@@ -188,43 +188,43 @@ class Contraption(private val token: String,
   override fun run() = AtomicBoolean(false).let { ex ->
     val pattern = Pattern.compile("([A-Z])\\w+")
     try {
-      info("Building $esc[1;93mShardManager$esc[0m.")
+      info("Building $ZWS[1;93mShardManager$ZWS[0m.")
       shardManager = buildShardManager()
       info("Running.")
-      info(if (shards > 1) "$esc[1;91m$shards$esc[0m shards active." else "$esc[1;91m$shards$esc[0m shard active.")
+      info(if (shards > 1) "$ZWS[1;91m$shards$ZWS[0m shards active." else "$ZWS[1;91m$shards$ZWS[0m shard active.")
       commands.forEach { c ->
         pattern.matcher(c.toString()).let { p ->
-          while (p.find()) info("$esc[1;93mCommand$esc[0m loaded: $esc[1;92m${p.group(0)}$esc[0m")
+          while (p.find()) info("$ZWS[1;93mCommand$ZWS[0m loaded: $ZWS[1;92m${p.group(0)}$ZWS[0m")
         }
       }
       if (listeners == null) return
       listeners.forEach { l ->
         pattern.matcher(l.toString()).let { p ->
-          while (p.find()) info("$esc[1;93mEventListener$esc[0m loaded: $esc[1;92m${p.group(0)}$esc[0m")
+          while (p.find()) info("$ZWS[1;93mEventListener$ZWS[0m loaded: $ZWS[1;92m${p.group(0)}$ZWS[0m")
         }
       }
     } catch (l: LoginException) {
       error("Invalid token.")
       ex.set(true)
     } catch (i: IllegalArgumentException) {
-      error("$esc[1;93mCommands$esc[0m/$esc[1;93mEventListeners$esc[0m loading failed!")
+      error("$ZWS[1;93mCommands$ZWS[0m/$ZWS[1;93mEventListeners$ZWS[0m loading failed!")
       ex.set(true)
     } catch (u: UnknownHostException) {
       ex.set(true)
-      error("Cannot connect to $esc[1;95mDiscord API$esc[0m/" +
-        "$esc[1;95mWebSocket$esc[0m, or $esc[1;94mCloudFlare DNS$esc[0m.")
+      error("Cannot connect to $ZWS[1;95mDiscord API$ZWS[0m/" +
+        "$ZWS[1;95mWebSocket$ZWS[0m, or $ZWS[1;94mCloudFlare DNS$ZWS[0m.")
     } finally {
       if (!ex.get()) {
-        info("$esc[1;93mContraption$esc[0m instance: " + toString())
+        info("$ZWS[1;93mContraption$ZWS[0m instance: " + toString())
         instance = this
-        prefix = instance.prefix
+        Companion.prefix = prefix
       } else {
         error("My disappointment is immeasurable, and my day is ruined.")
       }
     }
   }
 
-  override fun toString() = "type: $esc[1;93m${Thread::class.simpleName}$esc[0m name: $name"
+  override fun toString() = "type: $ZWS[1;93m${Thread::class.simpleName}$ZWS[0m name: $name"
 
   private class DefaultListener : ListenerAdapter() {
     override fun onReady(event: ReadyEvent) = info("Ready!")

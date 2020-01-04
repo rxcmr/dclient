@@ -46,6 +46,6 @@ class ShutdownListener : ListenerAdapter() {
   override fun onShutdown(event: ShutdownEvent) {
     info("Try again in my next life.")
     info("Shutdown with code: ${event.code}")
-    exitProcess(0xadde4)
+    exitProcess(99)
   }
 }

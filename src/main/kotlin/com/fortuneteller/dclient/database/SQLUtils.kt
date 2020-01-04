@@ -51,13 +51,13 @@ interface SQLUtils {
 
   fun createTable()
 
-  fun insert(mode: SQLItemMode, vararg args: String?)
+  fun insert(mode: SQLItemMode, vararg args: String)
 
-  fun select(mode: SQLItemMode, vararg args: String?)
+  fun select(mode: SQLItemMode, vararg args: String)
 
-  fun delete(mode: SQLItemMode, vararg args: String?)
+  fun delete(mode: SQLItemMode, vararg args: String)
 
-  fun update(mode: SQLItemMode, vararg args: String?)
+  fun update(mode: SQLItemMode, vararg args: String)
 
-  fun exists(mode: SQLItemMode, vararg args: String?): Boolean
+  fun exists(mode: SQLItemMode, vararg args: String): Boolean
 }

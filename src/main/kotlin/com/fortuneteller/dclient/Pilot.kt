@@ -38,38 +38,32 @@ import java.util.*
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class Pilot(private val token: String, private val prefix: String, private val shards: Int) : Runnable {
-  private var commands: Collection<Command>
-  private var listeners: Collection<Any>
+  private val commands = LinkedList<Command>().apply {
+    for (c in ClassGraph()
+      .blacklistPackages(
+        "com.fortuneteller.dclient.commands.utils",
+        "com.fortuneteller.dclient.commands.gadgets.utils",
+        "com.fortuneteller.dclient.commands.music.utils",
+        "com.fortuneteller.dclient.commands.music.children")
+      .whitelistPackages("com.fortuneteller.dclient.commands.*")
+      .scan()
+      .getSubclasses(Command::class.java.name)
+      .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
+  }
+
+  private val listeners = LinkedList<Any>().apply {
+    for (l in ClassGraph()
+      .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
+      .scan()
+      .getSubclasses(ListenerAdapter::class.java.name)
+      .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
+  }
 
   override fun run() = Contraption(token, prefix, shards, commands, listeners).start()
-
-  init {
-    commands = LinkedList<Command>().apply {
-      for (c in ClassGraph()
-        .blacklistPackages(
-          "com.fortuneteller.dclient.commands.utils",
-          "com.fortuneteller.dclient.commands.gadgets.utils",
-          "com.fortuneteller.dclient.commands.music.utils",
-          "com.fortuneteller.dclient.commands.music.children")
-        .whitelistPackages("com.fortuneteller.dclient.commands.*")
-        .scan()
-        .getSubclasses(Command::class.java.name)
-        .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
-    }
-
-    listeners = LinkedList<Any>().apply {
-      for (l in ClassGraph()
-        .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
-        .scan()
-        .getSubclasses(ListenerAdapter::class.java.name)
-        .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
-    }
-  }
 }
 
 fun main() = Pilot(EnvLoader.load("TOKEN"), "pl.", 1).run()

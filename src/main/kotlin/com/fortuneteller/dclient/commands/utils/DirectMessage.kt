@@ -1,7 +1,6 @@
 package com.fortuneteller.dclient.commands.utils
 
 import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.PrivateChannel
 import net.dv8tion.jda.api.entities.User
 
 /*
@@ -41,7 +40,7 @@ import net.dv8tion.jda.api.entities.User
 interface DirectMessage {
   companion object {
     fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
-      user.openPrivateChannel().queue { channel: PrivateChannel ->
+      user.openPrivateChannel().queue { channel ->
         if (content is MessageEmbed) {
           if (exceptionMessage == null) channel.sendMessage(content).queue()
           else channel.sendMessage("$content$exceptionMessage").queue()

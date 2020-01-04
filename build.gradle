@@ -6,7 +6,7 @@ plugins {
   id 'org.jetbrains.kotlin.jvm' version "1.3.61"
 }
 
-mainClassName = 'com.fortuneteller.dclient.Pilot'
+mainClassName = 'com.fortuneteller.dclient.PilotKt'
 group 'com.fortuneteller'
 version '1.9.3l'
 
@@ -15,11 +15,16 @@ sourceCompatibility = 13
 
 dependencies {
   // implementation group: "", name: "", version: ""
+  implementation group: "com.github.dv8fromtheworld", name: "JDA", version: "patch-ratelimits-SNAPSHOT"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-stdlib"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-stdlib-jdk8"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-reflect"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-stdlib-common"
-  implementation group: "net.dv8tion", name: "JDA", version: "4.1.0_88"
+  implementation group: "org.jetbrains.kotlin", name: "kotlin-script-runtime"
+  implementation group: "org.jetbrains.kotlin", name: "kotlin-script-util"
+  implementation group: "org.jetbrains.kotlin", name: "kotlin-compiler-embeddable"
+  implementation group: "org.jetbrains.kotlin", name: "kotlin-scripting-compiler"
+  //implementation group: "net.dv8tion", name: "JDA", version: "4.1.0_90"
   implementation group: "io.projectreactor", name: "reactor-core", version: "3.3.1.RELEASE"
   implementation group: "club.minnced", name: "jda-reactor", version: "1.0.0"
   implementation group: "org.jsoup", name: "jsoup", version: "1.12.1"

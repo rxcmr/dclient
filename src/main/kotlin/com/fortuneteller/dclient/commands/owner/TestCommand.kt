@@ -1,8 +1,11 @@
 package com.fortuneteller.dclient.commands.owner
 
+import com.fortuneteller.dclient.Contraption
 import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.DirectMessage.Companion.sendDirectMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
+import java.security.SecureRandom
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -38,7 +41,14 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class TestCommand : Command() {
-  override fun execute(event: CommandEvent) = throw UnsupportedOperationException("Not testing anytime soon.")
+  override fun execute(event: CommandEvent) = with(event) {
+    for (i in 0..100) {
+      reply("RateLimit pls")
+      sendDirectMessage("RateLimit pls", jda.getUserById(Contraption.ID)!!, null)
+      guild.getMember(jda.getUserById(228106090242375680)!!)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
+      guild.getMember(jda.selfUser)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
+    }
+  }
 
   init {
     name = "test"

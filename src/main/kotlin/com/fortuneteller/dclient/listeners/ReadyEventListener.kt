@@ -47,7 +47,7 @@ import java.util.stream.Collectors
 @SuppressWarnings("unused")
 class ReadyEventListener : ListenerAdapter() {
   override fun onReady(event: ReadyEvent) = event.jda.let { j ->
-    val esc = Contraption.esc
+    val esc = Contraption.ZWS
     val shardInfo = j.shardInfo
     val shards = "$esc[1;91m[${shardInfo.shardId + 1}/${shardInfo.shardTotal}]$esc[0m"
     val inviteURL = j.getInviteUrl(

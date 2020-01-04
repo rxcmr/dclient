@@ -66,182 +66,178 @@ class JagTagCommand : Command(), SQLUtils {
   private val tagCache = LinkedHashSet<Tag>()
 
   @Synchronized
-  public override fun execute(event: CommandEvent?) {
-    with(event!!) {
-      val args = args?.split("\\s+".toRegex())?.toTypedArray()
-      val authorID = author?.id
-      val guildID = guild?.id
-      val jagtag = buildParser(this)
-      channel.sendTyping().queue()
-      with(tags) {
-        try {
-          when (args!![0]) {
-            "global", "g" -> {
-              when (args[1]) {
-                "create", "new", "add" -> {
-                  if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
-                    throw CommandException("Be unique, these are reserved command parameters.")
-                  select(ALL)
-                  val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
-                  if (message.attachments.isNotEmpty()) {
-                    insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID)
-                  } else insert(GVALUE, args[2], tagValue, authorID)
-                  select(ALL)
-                  clear()
-                  addAll(tagCache)
-                }
-                "delete", "remove" -> {
-                  select(ALL)
-                  if (exists(GVALUE, args[2])) delete(LVALUE, args[2], authorID)
-                  else throw CommandException("Deleting something that does not exist.")
-                  select(ALL)
-                  clear()
-                  addAll(tagCache)
-                }
-                "edit", "modify" -> {
-                  select(ALL)
-                  val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
-                  update(GVALUE, args[2], tagValue, authorID)
-                  select(ALL)
-                  clear()
-                  addAll(tagCache)
-                }
-                "raw" -> stream().forEachOrdered { t ->
-                  val exists = exists(GVALUE, args[2])
-                  try {
-                    if (!exists) throw CommandException("Tag not found.")
-                  } catch (e: CommandException) {
-                    throw CommandException(e.message)
-                  } finally {
-                    if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply(t.tagValue)
-                  }
-                }
-                "cblkraw" -> stream().forEachOrdered { t ->
-                  val exists = exists(GVALUE, args[2])
-                  try {
-                    if (!exists) throw CommandException("Tag not found.")
-                  } catch (e: CommandException) {
-                    throw CommandException(e.message)
-                  } finally {
-                    if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply("```${t.tagValue}```")
-                  }
-                }
-                else -> stream().forEachOrdered { t ->
-                  val exists = exists(GVALUE, args[1])
-                  try {
-                    if (!exists) throw CommandException("Tag not found.")
-                  } catch (e: CommandException) {
-                    throw CommandException(e.message)
-                  } finally {
-                    if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag?.parse(t.tagValue))
-                  }
-                }
+  public override fun execute(event: CommandEvent): Unit = with(event) {
+    val args = args?.split("\\s+".toRegex())?.toTypedArray()
+    val authorID = author?.id!!
+    val guildID = guild?.id!!
+    val jagtag = buildParser(this)
+    channel.sendTyping().queue()
+    with(tags) {
+      try {
+        when (args!![0]) {
+          "global", "g" -> {
+            when (args[1]) {
+              "create", "new", "add" -> {
+                if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
+                  throw CommandException("Be unique, these are reserved command parameters.")
+                select(ALL)
+                val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
+                if (message.attachments.isNotEmpty()) {
+                  insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID)
+                } else insert(GVALUE, args[2], tagValue, authorID)
+                select(ALL)
+                clear()
+                addAll(tagCache)
               }
-            }
-            "create", "new", "add" -> {
-              if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
-              if (args[1].matches(
-                  "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
-              ) throw CommandException("Be unique, these are reserved command parameters.")
-              select(ALL)
-              val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-              if (message.attachments.isNotEmpty()) {
-                insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID, guildID)
-              } else insert(LVALUE, args[1], tagValue, authorID, guildID)
-              select(ALL)
-              clear()
-              addAll(tagCache)
-            }
-            "delete", "remove" -> {
-              if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
-              select(ALL)
-              if (exists(LVALUE, args[1], guildID)) delete(LVALUE, args[1], authorID, guildID)
-              else throw CommandException("Deleting something that does not exist.")
-              select(ALL)
-              clear()
-              addAll(tagCache)
-            }
-            "edit", "modify" -> {
-              if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
-              select(ALL)
-              val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-              update(LVALUE, args[1], tagValue, authorID, guildID)
-              select(ALL)
-              clear()
-              addAll(tagCache)
-            }
-            "raw" -> stream().forEachOrdered { t ->
-              if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
-              else {
-                val exists = exists(LVALUE, args[1], guildID)
+              "delete", "remove" -> {
+                select(ALL)
+                if (exists(GVALUE, args[2])) delete(LVALUE, args[2], authorID)
+                else throw CommandException("Deleting something that does not exist.")
+                select(ALL)
+                clear()
+                addAll(tagCache)
+              }
+              "edit", "modify" -> {
+                select(ALL)
+                val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
+                update(GVALUE, args[2], tagValue, authorID)
+                select(ALL)
+                clear()
+                addAll(tagCache)
+              }
+              "raw" -> stream().forEachOrdered { t ->
+                val exists = exists(GVALUE, args[2])
                 try {
                   if (!exists) throw CommandException("Tag not found.")
                 } catch (e: CommandException) {
                   throw CommandException(e.message)
                 } finally {
-                  if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(t.tagValue)
+                  if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply(t.tagValue)
                 }
               }
-            }
-            "cblkraw" -> stream().forEachOrdered { t ->
-              if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
-              else {
-                val exists = exists(LVALUE, args[1], guildID)
+              "cblkraw" -> stream().forEachOrdered { t ->
+                val exists = exists(GVALUE, args[2])
                 try {
                   if (!exists) throw CommandException("Tag not found.")
                 } catch (e: CommandException) {
                   throw CommandException(e.message)
                 } finally {
-                  if (t.tagKey == args[0] && t.guildID == guildID && exists) reply("```${t.tagValue}```")
+                  if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply("```${t.tagValue}```")
                 }
               }
-
-            }
-            "eval" -> {
-              reply("Type `!!stop` to exit.")
-              val id = channel.id
-              jda.addEventListener(
-                object : ListenerAdapter() {
-                  override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-                    event.let {
-                      if (it.author.isBot || it.author.isFake || it.channel.id != id) return
-                      it.channel.sendTyping().queue()
-                      val message = it.message.contentRaw.split("\\s+").toTypedArray()
-                      val arguments = message.joinToString(" ")
-                      val parser = buildParser(it)
-                      if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
-                      else it.channel.sendMessage(parser?.parse(arguments)!!).queue()
-                    }
-                  }
-                }
-              )
-            }
-            else -> stream().forEachOrdered { t ->
-              if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
-              else {
-                val exists = exists(LVALUE, args[0], guildID)
+              else -> stream().forEachOrdered { t ->
+                val exists = exists(GVALUE, args[1])
                 try {
                   if (!exists) throw CommandException("Tag not found.")
                 } catch (e: CommandException) {
                   throw CommandException(e.message)
                 } finally {
-                  if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag?.parse(t.tagValue))
+                  if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag?.parse(t.tagValue))
                 }
               }
             }
           }
-        } catch (s: SQLiteException) {
-          if (s.errorCode == 19) throw CommandException("Tag exists or missing parameters.")
-          else throw CommandException(s.message)
+          "create", "new", "add" -> {
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            if (args[1].matches(
+                "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
+            ) throw CommandException("Be unique, these are reserved command parameters.")
+            select(ALL)
+            val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
+            if (message.attachments.isNotEmpty()) {
+              insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID, guildID)
+            } else insert(LVALUE, args[1], tagValue, authorID, guildID)
+            select(ALL)
+            clear()
+            addAll(tagCache)
+          }
+          "delete", "remove" -> {
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            select(ALL)
+            if (exists(LVALUE, args[1], guildID)) delete(LVALUE, args[1], authorID, guildID)
+            else throw CommandException("Deleting something that does not exist.")
+            select(ALL)
+            clear()
+            addAll(tagCache)
+          }
+          "edit", "modify" -> {
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            select(ALL)
+            val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
+            update(LVALUE, args[1], tagValue, authorID, guildID)
+            select(ALL)
+            clear()
+            addAll(tagCache)
+          }
+          "raw" -> stream().forEachOrdered { t ->
+            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            else {
+              val exists = exists(LVALUE, args[1], guildID)
+              try {
+                if (!exists) throw CommandException("Tag not found.")
+              } catch (e: CommandException) {
+                throw CommandException(e.message)
+              } finally {
+                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(t.tagValue)
+              }
+            }
+          }
+          "cblkraw" -> stream().forEachOrdered { t ->
+            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            else {
+              val exists = exists(LVALUE, args[1], guildID)
+              try {
+                if (!exists) throw CommandException("Tag not found.")
+              } catch (e: CommandException) {
+                throw CommandException(e.message)
+              } finally {
+                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply("```${t.tagValue}```")
+              }
+            }
+
+          }
+          "eval" -> {
+            reply("Type `!!stop` to exit.")
+            val id = channel.id
+            jda.addEventListener(
+              object : ListenerAdapter() {
+                override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+                  event.let {
+                    if (it.author.isBot || it.author.isFake || it.channel.id != id) return
+                    it.channel.sendTyping().queue()
+                    val message = it.message.contentRaw.split("\\s+").toTypedArray()
+                    val arguments = message.joinToString(" ")
+                    if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
+                    else it.channel.sendMessage(buildParser(it)?.parse(arguments)!!).queue()
+                  }
+                }
+              }
+            )
+          }
+          else -> stream().forEachOrdered { t ->
+            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            else {
+              val exists = exists(LVALUE, args[0], guildID)
+              try {
+                if (!exists) throw CommandException("Tag not found.")
+              } catch (e: CommandException) {
+                throw CommandException(e.message)
+              } finally {
+                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag?.parse(t.tagValue))
+              }
+            }
+          }
         }
+      } catch (s: SQLiteException) {
+        if (s.errorCode == 19) throw CommandException("Tag exists or missing parameters.")
+        else throw CommandException(s.message)
       }
     }
-
   }
 
   private fun buildParser(event: Any) = JagTag.newDefaultBuilder()?.let {
-    if (event is CommandEvent) {
-      val methods = LinkedList<Method>().apply {
+    val methods = if (event is CommandEvent) {
+      LinkedList<Method>().apply {
         with(event) {
           with(author) {
             add(Method("author") { _ -> name })
@@ -262,10 +258,9 @@ class JagTagCommand : Command(), SQLUtils {
           add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
         }
       }
-      it.addMethods(methods).build()
     } else {
       event as GuildMessageReceivedEvent
-      val methods = LinkedList<Method>().apply {
+      LinkedList<Method>().apply {
         with(event) {
           with(author) {
             add(Method("author") { _ -> name })
@@ -290,11 +285,10 @@ class JagTagCommand : Command(), SQLUtils {
           add(Method("date") { _ -> SimpleDateFormat("MM-dd-yyyy").format(Date()) })
         }
       }
-      it.addMethods(methods).build()
     }
+    it.addMethods(methods).build()
   }
 
-  @Synchronized
   override fun createTable() {
     val sql = """
       CREATE TABLE IF NOT EXISTS tags (
@@ -307,39 +301,33 @@ class JagTagCommand : Command(), SQLUtils {
       );
       PRAGMA auto_vacuum = FULL;
       """
-
     connect().createStatement().execute(sql)
   }
 
-  @Synchronized
-  override fun insert(mode: SQLItemMode, vararg args: String?) {
+  override fun insert(mode: SQLItemMode, vararg args: String) {
     val sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)"
-    val preparedStatement = connect().prepareStatement(sql)
-    when (mode) {
-      LVALUE -> {
-        with(preparedStatement) {
+    with(connect().prepareStatement(sql)) {
+      when (mode) {
+        LVALUE -> {
           setString(1, args[0])
           setString(2, args[1])
           setString(3, args[2])
           setString(4, args[3])
           executeUpdate()
         }
-      }
-      GVALUE -> {
-        with(preparedStatement) {
+        GVALUE -> {
           setString(1, args[0])
           setString(2, args[1])
           setString(3, args[2])
           setString(4, "GLOBAL")
           executeUpdate()
         }
+        else -> return
       }
-      else -> return
     }
   }
 
-  @Synchronized
-  override fun select(mode: SQLItemMode, vararg args: String?) = when (mode) {
+  override fun select(mode: SQLItemMode, vararg args: String) = when (mode) {
     ALL -> {
       val sql = "SELECT * FROM tags"
       tagCache.clear()
@@ -364,8 +352,7 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  @Synchronized
-  override fun delete(mode: SQLItemMode, vararg args: String?) {
+  override fun delete(mode: SQLItemMode, vararg args: String) {
     val sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
     with(connect().prepareStatement(sql)) {
       when (mode) {
@@ -386,8 +373,7 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  @Synchronized
-  override fun update(mode: SQLItemMode, vararg args: String?) {
+  override fun update(mode: SQLItemMode, vararg args: String) {
     val sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
     with(connect().prepareStatement(sql)) {
       when (mode) {
@@ -410,8 +396,7 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  @Synchronized
-  override fun exists(mode: SQLItemMode, vararg args: String?): Boolean {
+  override fun exists(mode: SQLItemMode, vararg args: String): Boolean {
     val sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)"
     return with(connect().prepareStatement(sql)) {
       when (mode) {
@@ -438,7 +423,10 @@ class JagTagCommand : Command(), SQLUtils {
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    with(File(javaClass.classLoader.getResource("PilotDB.sqlite")!!.path)) {
+    val file = javaClass.classLoader.getResource("PilotDB.sqlite")?.file
+      ?.replace("(file:/C|/C)".toRegex(), "C")
+      ?.replace("/", "\\")!!
+    with(File(file)) {
       if (!exists()) {
         if (createNewFile()) {
           createDatabase()

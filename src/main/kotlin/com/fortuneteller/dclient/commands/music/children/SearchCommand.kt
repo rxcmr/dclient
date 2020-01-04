@@ -10,7 +10,6 @@ import com.jagrosh.jdautilities.command.CommandEvent
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import java.util.stream.Collectors
 
@@ -53,51 +52,30 @@ class SearchCommand : Command() {
     if (it.args.isEmpty()) throw CommandException("Search term cannot be empty!")
     val client = it.jda.httpClient
     if (useCount <= 80) {
-      val request = Request.Builder()
-        .url(String.format(
-          "https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&q=%s&key=%s",
-          it.args,
-          EnvLoader.load("YT_API_KEY")
-        )).build()
-      try {
-        client.newCall(request).execute().use { r ->
-          useCount++
-          if (!r.isSuccessful) {
-            throw CommandException("Request failed.")
-          } else {
-            var json = ""
-            BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
-              json = i.lines().map { l -> "$l\n" }
-                .collect(Collectors.joining())
-            }
-            val itemsArray = JSONObject(json).getJSONArray("items")
-            val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
-            TrackLoader.instance.loadAndPlay(it.textChannel, "https://www.youtube.com/watch?v=$videoID")
-          }
+      val request = Request.Builder().url("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&"
+        + "q=${it.args}&key=${EnvLoader.load("YT_API_KEY")}").build()
+      client.newCall(request).execute().use { r ->
+        useCount++
+        if (!r.isSuccessful) throw CommandException("Request failed.")
+        val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
+          i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
         }
-      } catch (e: IOException) {
-        throw CommandException(e.message)
+        val itemsArray = JSONObject(json).getJSONArray("items")
+        val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
+        TrackLoader.instance.loadAndPlay(it.textChannel, "https://www.youtube.com/watch?v=$videoID")
       }
     } else {
       PilotUtils.warn("API limit reached, using scraper...")
       val request = Request.Builder().url("http://youtube-scrape.herokuapp.com/api/search?q=${it.args}&page=1")
         .build()
-      try {
-        client.newCall(request).execute().use { r ->
-          if (!r.isSuccessful) {
-            throw CommandException("Request failed.")
-          }
-          var json = ""
-          BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
-            json = i.lines().map { l -> "$l\n" }
-              .collect(Collectors.joining())
-          }
-          val itemsArray = JSONObject(json).getJSONArray("results")
-          val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
-          TrackLoader.instance.loadAndPlay(it.textChannel, videoURL)
+      client.newCall(request).execute().use { r ->
+        if (!r.isSuccessful) throw CommandException("Request failed.")
+        val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
+          i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
         }
-      } catch (e: IOException) {
-        throw CommandException(e.message)
+        val itemsArray = JSONObject(json).getJSONArray("results")
+        val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
+        TrackLoader.instance.loadAndPlay(it.textChannel, videoURL)
       }
     }
   }

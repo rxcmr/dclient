@@ -1,4 +1,4 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.commands.moderation
 
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
@@ -58,6 +58,6 @@ class PurgeCommand : Command() {
     userPermissions = arrayOf(Permission.MESSAGE_MANAGE)
     cooldown = 5
     help = "Purges [1-100] messages."
-    category = Categories.GADGETS.category
+    category = Categories.MODERATION.category
   }
 }

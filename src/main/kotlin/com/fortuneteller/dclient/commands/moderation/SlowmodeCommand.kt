@@ -41,16 +41,12 @@ import net.dv8tion.jda.api.entities.TextChannel
  * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
  */
 class SlowmodeCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    try {
-      if (event.args.toInt() >= 0 && event.args.toInt() <= TextChannel.MAX_SLOWMODE) {
-        event.textChannel.manager.setSlowmode(event.args.toInt()).queue()
-      } else {
-        throw CommandException("Slow mode must not be negative or greater than " + TextChannel.MAX_SLOWMODE + ".")
-      }
-    } catch (e: NumberFormatException) {
-      throw CommandException("Not a valid integer.")
-    }
+  override fun execute(event: CommandEvent) = try {
+    if (event.args.toInt() >= 0 && event.args.toInt() <= TextChannel.MAX_SLOWMODE)
+      event.textChannel.manager.setSlowmode(event.args.toInt()).queue()
+    else throw CommandException("Slow mode must not be negative or greater than " + TextChannel.MAX_SLOWMODE + ".")
+  } catch (e: NumberFormatException) {
+    throw CommandException("Not a valid integer.")
   }
 
   init {

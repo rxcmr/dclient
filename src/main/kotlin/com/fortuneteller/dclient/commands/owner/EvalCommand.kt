@@ -46,15 +46,13 @@ import java.awt.Color
  */
 @SuppressWarnings("unused")
 class EvalCommand : Command() {
-  private val shell: GroovyShell
   private val imports: String
   private val embedBuilder: EmbedBuilder = EmbedBuilder()
-
 
   override fun execute(event: CommandEvent?) {
     val input = event?.args?.replace("(```[a-z]*)".toRegex(), "")
     try {
-      with(shell) {
+      with(GroovyShell()) {
         setProperty("args", event?.args)
         setProperty("event", event)
         setProperty("message", event?.message)
@@ -108,7 +106,6 @@ class EvalCommand : Command() {
     arguments = "**<code>**"
     hidden = true
     category = Categories.OWNER.category
-    shell = GroovyShell()
     imports = """
       import java.io.*
       import java.lang.*

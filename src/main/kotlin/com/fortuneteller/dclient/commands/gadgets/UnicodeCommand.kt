@@ -1,9 +1,10 @@
-package com.fortuneteller.dclient.commands.utils
+package com.fortuneteller.dclient.commands.gadgets
 
-import net.dv8tion.jda.api.requests.RestAction
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import java.util.*
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,18 +42,21 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-
-interface RestActionUtils {
-  suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
-    queue({ success -> it.resume(success) })
-    { failed -> if (failure == null) it.resumeWithException(failed) else failure.invoke(failed) }
+class UnicodeCommand : Command() {
+  override fun execute(event: CommandEvent) {
+    if (event.args?.length!! > 10) throw CommandException("Input too long.")
+    event.reply(StringJoiner("\n").apply {
+      for (i in event.args.indices)
+        this.add(event.args.toCharArray()[i].let {
+          "`${String.format("\\u%04x", it.toInt())}` ${Character.getName(it.toInt())} [$it]"
+        })
+    }.toString())
   }
 
-  suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
-    queue({ success -> it.resume(success) }) { _ -> it.resume(null) }
-  }
-
-  suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
-    queue({ _ -> it.resume(true) }) { _ -> it.resume(false) }
+  init {
+    name = "unicode"
+    help = "Unicode of each character of a string."
+    arguments = "**<chars>**"
+    category = Categories.GADGETS.category
   }
 }
