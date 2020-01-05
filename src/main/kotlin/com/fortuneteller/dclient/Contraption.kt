@@ -85,67 +85,59 @@ class Contraption(private val token: String,
     val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.3l"
   }
 
-  private val embedBuilder = EmbedBuilder()
-
-  private fun streamCommands(category: Command.Category) {
-    val commandInvocation = LinkedList<String>()
-    val commandInformation = LinkedList<String>()
-    val commandContent = DualLinkedHashBidiMap<String, String>()
-    commands.stream()
-      .filter { c -> c.category == category && (!c.isHidden || c.isOwnerCommand) }
-      .forEachOrdered { c ->
-        commandInvocation.add("`$prefix${c.name}`")
-        with(commandInformation) {
-          if (c.arguments == null && c.isGuildOnly) add("```GUILD ONLY \n - ${c.help}```")
-          else if (c.isGuildOnly) add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
-          else if (c.arguments != null) add("```- ${c.help}```")
-          else add("```Arguments: ${c.arguments}\n - ${c.help}```")
+  private fun buildCommandClient() = CommandClientBuilder().let {
+    fun buildHelpEmbed(author: User, args: String) = EmbedBuilder().let { e ->
+      fun categoryEmbed(category: Categories) {
+        fun streamCommands(category: Command.Category) {
+          val commandInvocation = LinkedList<String>()
+          val commandInformation = LinkedList<String>()
+          val commandContent = DualLinkedHashBidiMap<String, String>()
+          commands.stream()
+            .filter { c -> c.category == category && (!c.isHidden || c.isOwnerCommand) }
+            .forEachOrdered { c ->
+              commandInvocation.add("`$prefix${c.name}`")
+              with(commandInformation) {
+                if (c.arguments == null && c.isGuildOnly) add("```GUILD ONLY \n - ${c.help}```")
+                else if (c.isGuildOnly) add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
+                else if (c.arguments != null) add("```- ${c.help}```")
+                else add("```Arguments: ${c.arguments}\n - ${c.help}```")
+              }
+              val invokeIter = commandInvocation.iterator()
+              val infoIter = commandInformation.iterator()
+              while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
+            }
+          commandContent.forEach { (k, v) -> e.addField(k, v, false) }
         }
-        val invokeIter = commandInvocation.iterator()
-        val infoIter = commandInformation.iterator()
-        while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
+
+        fun addHeader(name: String, description: String) =
+          e.addField("**$name**", "**Description:** *$description* ", false)
+
+        addHeader(category.name, category.description)
+        streamCommands(category.category)
       }
-    commandContent.forEach { (k, v) -> embedBuilder.addField(k, v, false) }
-  }
 
-  private fun addHeader(name: String, description: String) = embedBuilder
-    .addField("**$name**", "**Description:** *$description* ", false)
-
-  private fun buildHelpEmbed(author: User, args: String) = embedBuilder.let {
-    val categories = EnumSet.allOf(Categories::class.java)
-    it.setDescription("```Prefix: $prefix```")
-    with(args) {
-      when {
-        equals(GADGETS.name, ignoreCase = true) -> {
-          addHeader(GADGETS.name, GADGETS.description)
-          streamCommands(GADGETS.category)
-        }
-        equals(MUSIC.name, ignoreCase = true) -> {
-          addHeader(MUSIC.name, MUSIC.description)
-          streamCommands(MUSIC.category)
-        }
-        equals(MODERATION.name, ignoreCase = true) -> {
-          addHeader(MODERATION.name, MODERATION.description)
-          streamCommands(MODERATION.category)
-        }
-        equals(OWNER.name, ignoreCase = true) -> {
-          addHeader(OWNER.name, OWNER.description)
-          streamCommands(OWNER.category)
-        }
-        else -> {
-          categories.forEach { c ->
-            it.addField(
-              "**Category: ${c.name}**",
-              "```py\n${prefix}help ${c.name.toLowerCase()}\n```",
-              false)
+      val categories = EnumSet.allOf(Categories::class.java)
+      e.setDescription("```Prefix: $prefix```")
+      with(args) {
+        when {
+          equals(GADGETS.name, ignoreCase = true) -> categoryEmbed(GADGETS)
+          equals(MUSIC.name, ignoreCase = true) -> categoryEmbed(MUSIC)
+          equals(MODERATION.name, ignoreCase = true) -> categoryEmbed(MODERATION)
+          equals(OWNER.name, ignoreCase = true) -> categoryEmbed(OWNER)
+          equals(STATS.name, ignoreCase = true) -> categoryEmbed(STATS)
+          else -> {
+            categories.forEach { c ->
+              e.addField(
+                "**Category: ${c.name}**",
+                "```py\n${prefix}help ${c.name.toLowerCase()}\n```",
+                false)
+            }
           }
         }
       }
+      e.setColor(0xd32ce6).setFooter("requested by: ${author.name}", author.avatarUrl).build()
     }
-    it.setColor(0xd32ce6).setFooter("requested by: ${author.name}", author.avatarUrl).build()
-  }
 
-  private fun buildCommandClient() = CommandClientBuilder().let {
     info("Building $ZWS[1;93mCommandClient$ZWS[0m.")
     commands.forEach { c -> it.addCommand(c) }
     commandClient = it
@@ -154,10 +146,8 @@ class Contraption(private val token: String,
       .setActivity(Activity.listening("events."))
       .setStatus(OnlineStatus.DO_NOT_DISTURB)
       .setListener(PilotCommandListener())
-      .setHelpConsumer { e ->
-        sendDirectMessage(buildHelpEmbed(e.author, e.args), e.author, null)
-        embedBuilder.clear()
-      }
+      .setHelpConsumer { e -> sendDirectMessage(buildHelpEmbed(e.author, e.args), e.author, null) }
+      .useHelpBuilder(false)
       .setShutdownAutomatically(true)
       .build()
     commandClient

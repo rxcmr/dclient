@@ -53,6 +53,7 @@ class Pilot(private val token: String, private val prefix: String, private val s
       .scan()
       .getSubclasses(Command::class.java.name)
       .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
+    Math.random()
   }
 
   private val listeners = LinkedList<Any>().apply {

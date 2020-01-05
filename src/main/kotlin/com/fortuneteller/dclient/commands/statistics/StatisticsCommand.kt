@@ -1,6 +1,9 @@
-package com.fortuneteller.dclient.commands.utils
+package com.fortuneteller.dclient.commands.statistics
 
-import com.jagrosh.jdautilities.command.Command.Category
+import com.fortuneteller.dclient.commands.utils.Categories
+import com.jagrosh.jdautilities.command.Command
+import com.jagrosh.jdautilities.command.CommandEvent
+import io.github.classgraph.ClassGraph
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -34,15 +37,32 @@ import com.jagrosh.jdautilities.command.Command.Category
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+open class StatisticsCommand : Command() {
+  open lateinit var URL: String
+  open lateinit var apiKey: String
 
-enum class Categories(val category: Category, val description: String) {
-  GADGETS(Category("Gadgets"), "Gadgets and fun!"),
-  MODERATION(Category("Moderation"), "Moderation utilities."),
-  MUSIC(Category("Music"), "Music related commands."),
-  OWNER(Category("Owner"), "Owner-only utilities."),
-  STATS(Category("Statistics."), "Game statistics.")
+  override fun execute(event: CommandEvent) {
+    event.reply("""
+      dota - DotA statistics
+    """.trimIndent())
+  }
+
+  init {
+    name = "statistics"
+    aliases = arrayOf("stats")
+    help = "Various statistics for games."
+    arguments = "**<game>** **<args>**"
+    children = ArrayList<Command>().let {
+      for (mc in ClassGraph()
+        .whitelistPackagesNonRecursive("com.fortuneteller.dclient.commands.statistics.children")
+        .scan()
+        .getSubclasses(Command::class.java.name)
+        .loadClasses(Command::class.java)) it.add(mc.getDeclaredConstructor().newInstance())
+      it.toTypedArray()
+    }
+    category = Categories.STATS.category
+  }
 }
