@@ -1,13 +1,9 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.commands.utils
 
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
-import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.*
+import net.dv8tion.jda.api.requests.RestAction
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -44,21 +40,22 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) = EnumSet.allOf(JavadocPackages::class.java)
-    .map { j -> String.format(j.url, event.args) }.forEach { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use { response ->
-        if (response.code() == 200) event.reply(formatted)
-        else throw CommandException("Invalid class name.")
+@Suppress("unused")
+interface AsyncRestUtils {
+  suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
+    queue({ s -> it.resume(s) }, { f ->
+      when (failure) {
+        null -> it.resumeWithException(f)
+        else -> failure.invoke(f)
       }
-    }
+    })
+  }
 
-  init {
-    name = "javadoc"
-    aliases = arrayOf("docs")
-    arguments = "**<package>** **<class>**"
-    help = "Gets the URL of Javadocs for JDK 13"
-    category = Categories.GADGETS.category
+  suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
+    queue({ s -> it.resume(s) }, { _ -> it.resume(null) })
+  }
+
+  suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
+    queue({ _ -> it.resume(true) }, { _ -> it.resume(false) })
   }
 }

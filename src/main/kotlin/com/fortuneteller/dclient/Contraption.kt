@@ -12,6 +12,7 @@ import com.fortuneteller.dclient.utils.UserAgentInterceptor
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandClient
 import com.jagrosh.jdautilities.command.CommandClientBuilder
+import io.github.classgraph.ClassGraph
 import net.dv8tion.jda.api.EmbedBuilder
 import net.dv8tion.jda.api.OnlineStatus
 import net.dv8tion.jda.api.entities.Activity
@@ -24,7 +25,10 @@ import net.dv8tion.jda.api.utils.ChunkingFilter
 import net.dv8tion.jda.api.utils.Compression
 import okhttp3.OkHttpClient.Builder
 import org.apache.commons.collections4.bidimap.DualLinkedHashBidiMap
+import java.io.File
 import java.net.UnknownHostException
+import java.time.Duration
+import java.time.Instant
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -68,7 +72,6 @@ import javax.security.auth.login.LoginException
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-
 class Contraption(private val token: String,
                   private val prefix: String,
                   private val shards: Int,
@@ -83,6 +86,30 @@ class Contraption(private val token: String,
     const val ID: String = "175610330217447424"
     const val ZWS = "\u001B"
     val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.3l"
+
+    fun generateClassGraph() {
+      val file = File("./graphs/dclient.dot")
+
+      fun generate() {
+        ClassGraph()
+          .whitelistPackages("com.fortuneteller.dclient")
+          .enableAllInfo()
+          .scan()
+          .allClasses
+          .generateGraphVizDotFile(File("graphs/dclient.dot"))
+      }
+
+      when (file.exists()) {
+        true -> generate()
+        false -> {
+          try {
+            file.parentFile.mkdirs()
+          } finally {
+            generate()
+          }
+        }
+      }
+    }
   }
 
   private fun buildCommandClient() = CommandClientBuilder().let {
@@ -120,11 +147,11 @@ class Contraption(private val token: String,
       e.setDescription("```Prefix: $prefix```")
       with(args) {
         when {
-          equals(GADGETS.name, ignoreCase = true) -> categoryEmbed(GADGETS)
-          equals(MUSIC.name, ignoreCase = true) -> categoryEmbed(MUSIC)
-          equals(MODERATION.name, ignoreCase = true) -> categoryEmbed(MODERATION)
-          equals(OWNER.name, ignoreCase = true) -> categoryEmbed(OWNER)
-          equals(STATS.name, ignoreCase = true) -> categoryEmbed(STATS)
+          equals(GADGETS.name, true) -> categoryEmbed(GADGETS)
+          equals(MUSIC.name, true) -> categoryEmbed(MUSIC)
+          equals(MODERATION.name, true) -> categoryEmbed(MODERATION)
+          equals(OWNER.name, true) -> categoryEmbed(OWNER)
+          equals(STATS.name, true) -> categoryEmbed(STATS)
           else -> {
             categories.forEach { c ->
               e.addField(
@@ -205,9 +232,10 @@ class Contraption(private val token: String,
         "$ZWS[1;95mWebSocket$ZWS[0m, or $ZWS[1;94mCloudFlare DNS$ZWS[0m.")
     } finally {
       if (!ex.get()) {
-        info("$ZWS[1;93mContraption$ZWS[0m instance: " + toString())
+        info("$ZWS[1;93mContraption$ZWS[0m instance: ${toString()}")
         instance = this
         Companion.prefix = prefix
+        info("Finished in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
       } else {
         error("My disappointment is immeasurable, and my day is ruined.")
       }

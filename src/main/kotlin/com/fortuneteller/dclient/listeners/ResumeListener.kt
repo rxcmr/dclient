@@ -1,13 +1,8 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.listeners
 
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
-import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.*
+import com.fortuneteller.dclient.utils.PilotUtils
+import net.dv8tion.jda.api.events.ResumedEvent
+import net.dv8tion.jda.api.hooks.ListenerAdapter
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -44,21 +39,7 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) = EnumSet.allOf(JavadocPackages::class.java)
-    .map { j -> String.format(j.url, event.args) }.forEach { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use { response ->
-        if (response.code() == 200) event.reply(formatted)
-        else throw CommandException("Invalid class name.")
-      }
-    }
-
-  init {
-    name = "javadoc"
-    aliases = arrayOf("docs")
-    arguments = "**<package>** **<class>**"
-    help = "Gets the URL of Javadocs for JDK 13"
-    category = Categories.GADGETS.category
-  }
+@SuppressWarnings("unused")
+class ResumeListener : ListenerAdapter() {
+  override fun onResume(event: ResumedEvent) = PilotUtils.info("Resumed session.")
 }

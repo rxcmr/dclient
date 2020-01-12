@@ -8,4 +8,4 @@ jdk:
 install: true
 
 script:
-  - gradle compileKotlin
+  - gradle compileKotlin && gradle compileTestKotlin

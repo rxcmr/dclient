@@ -1,6 +1,7 @@
 package com.fortuneteller.dclient.commands.statistics.children
 
 import com.fortuneteller.dclient.commands.statistics.StatisticsCommand
+import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
@@ -8,7 +9,9 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.time.Duration
 import java.util.stream.Collectors
+import kotlin.math.abs
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -50,8 +53,8 @@ class DotaCommand : StatisticsCommand() {
     val args = event.args.split("\\s+".toRegex())
     when (args[0]) {
       "matches" -> {
-        URL += "matches/${args[1]}"
-        val request = Request.Builder().url(URL).build()
+        url += "matches/${args[1]}"
+        val request = Request.Builder().url(url).build()
         event.jda.httpClient.newCall(request).execute().use {
           if (!it.isSuccessful) throw CommandException("Request failed.")
           else {
@@ -59,7 +62,13 @@ class DotaCommand : StatisticsCommand() {
               i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
             }
             val matchData = JSONObject(json)
-            EmbedBuilder()
+            val matchTime = Duration.ofSeconds(matchData.getInt("duration").toLong()).let { d ->
+              val sec = d.seconds
+              val absSec = abs(sec)
+              val time = String.format("%d:%02d:%02d", absSec / 3600, (absSec % 3600) / 60, absSec % 60)
+              if (sec < 0) "-$time" else time
+            }
+            val embed = EmbedBuilder()
               .setTitle("Match ID: ${matchData.getInt("match_id")}")
               .setDescription(when (matchData.getBoolean("radiant_win")) {
                 true -> "**Radiant Victory**"
@@ -67,7 +76,9 @@ class DotaCommand : StatisticsCommand() {
               })
               .addField("Score:", "Radiant: ${matchData.getInt("radiant_score")}," +
                 " Dire: ${matchData.getInt("dire_score")}", false)
+              .addField("Match Duration:", matchTime, false)
               .build()
+            event.reply(embed)
           }
         }
       }
@@ -75,6 +86,11 @@ class DotaCommand : StatisticsCommand() {
   }
 
   init {
-    URL = "https://api.opendota.com/api/"
+    name = "dota2"
+    url = "https://api.opendota.com/api/"
+    help = "Defense of the Ancients 2 statistics using OpenDota API."
+    arguments = "**<data>**"
+    category = Categories.STATS.category
+    hidden = true
   }
 }

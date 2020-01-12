@@ -1,8 +1,6 @@
 package com.fortuneteller.dclient.commands.utils
 
 import com.fortuneteller.dclient.Contraption
-import com.fortuneteller.dclient.commands.gadgets.JagTagCommand
-import com.fortuneteller.dclient.commands.moderation.SlowmodeCommand
 import com.fortuneteller.dclient.commands.music.children.LeaveCommand
 import com.fortuneteller.dclient.commands.music.children.PlayCommand
 import com.fortuneteller.dclient.commands.music.children.SearchCommand
@@ -49,25 +47,23 @@ import com.jagrosh.jdautilities.examples.command.ShutdownCommand
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PilotCommandListener : CommandListener {
-  override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) {
-    with(event) e@{
-      val owner = jda?.getUserById(Contraption.ID)!!
-      channel?.sendTyping()?.queue()
-      with(command) c@{
-        with(throwable) t@{
-          when (command) {
-            is PingCommand -> reply("Request didn't go through.")
-            is TestCommand -> reply("```kotlin\nTest complete.\nThrew:\n${this@t}t```")
-            is JagTagCommand, is SlowmodeCommand -> reply(message)
-            is PlayCommand -> SearchCommand().execute(this@e)
-            else -> {
-              this@e.message?.addReaction("\uD83D\uDE41")?.queue()
-              DirectMessage.sendDirectMessage("```java\n", owner, "${this@t}\n```")
-              reply(when (arguments) {
-                null -> "Something wrong happened..."
-                else -> "${Contraption.prefix}$name $arguments"
-              })
-            }
+  override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) = event.let { e ->
+    val owner = e.jda?.getUserById(Contraption.ID)!!
+    e.channel?.sendTyping()?.queue()
+    command.let { c ->
+      throwable.let { t ->
+        when (c) {
+          is PingCommand -> e.reply("Request didn't go through.")
+          is TestCommand -> e.reply("```kotlin\nTest complete.\nThrew:\n$t```")
+          is PlayCommand -> SearchCommand().execute(e)
+          else -> {
+            e.message?.addReaction("\uD83D\uDE41")?.queue()
+            DirectMessage.sendDirectMessage("```java\n", owner, "$t\n```")
+            e.reply(when (c.arguments) {
+              null -> "Something wrong happened..."
+              else -> "${Contraption.prefix}${c.name} ${c.arguments}"
+            })
+            e.reply(t.message)
           }
         }
       }

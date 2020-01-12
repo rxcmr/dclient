@@ -4,6 +4,9 @@ import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import io.github.classgraph.ClassGraph
+import java.util.*
+import java.util.stream.Collectors
+import kotlin.collections.ArrayList
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,25 +44,27 @@ import io.github.classgraph.ClassGraph
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 open class StatisticsCommand : Command() {
-  open lateinit var URL: String
+  open lateinit var url: String
   open lateinit var apiKey: String
 
   override fun execute(event: CommandEvent) {
     event.reply("""
-      dota - DotA statistics
+      dota2 - DotA2 statistics
     """.trimIndent())
   }
 
   init {
     name = "statistics"
     aliases = arrayOf("stats")
-    help = "Various statistics for games."
+    help = Arrays.stream(children).map { c ->
+      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
+    }.collect(Collectors.joining("", "Various statistics for games.", ""))
     arguments = "**<game>** **<args>**"
     children = ArrayList<Command>().let {
       for (mc in ClassGraph()
         .whitelistPackagesNonRecursive("com.fortuneteller.dclient.commands.statistics.children")
         .scan()
-        .getSubclasses(Command::class.java.name)
+        .getSubclasses(this::class.java.name)
         .loadClasses(Command::class.java)) it.add(mc.getDeclaredConstructor().newInstance())
       it.toTypedArray()
     }

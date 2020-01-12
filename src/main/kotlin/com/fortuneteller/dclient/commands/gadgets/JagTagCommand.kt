@@ -1,14 +1,13 @@
 package com.fortuneteller.dclient.commands.gadgets
 
+import com.fortuneteller.dclient.commands.gadgets.utils.JagTagTable
 import com.fortuneteller.dclient.commands.gadgets.utils.Tag
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.fortuneteller.dclient.database.SQLItemMode
 import com.fortuneteller.dclient.database.SQLItemMode.*
 import com.fortuneteller.dclient.database.SQLUtils
-import com.fortuneteller.dclient.database.SQLUtils.Companion.connect
-import com.fortuneteller.dclient.database.SQLUtils.Companion.createDatabase
-import com.fortuneteller.dclient.utils.PilotUtils
+import com.fortuneteller.dclient.database.SQLUtils.Companion.transact
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jdautilities.command.Command
@@ -17,8 +16,10 @@ import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import org.jetbrains.exposed.sql.*
 import org.sqlite.SQLiteException
-import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
 import java.util.*
@@ -250,7 +251,9 @@ class JagTagCommand : Command(), SQLUtils {
             add(Method("boostCount") { _ -> boostCount.toString() })
             add(Method("owner") { _ -> owner?.effectiveName })
             add(Method("ownerID") { _ -> ownerId })
-            add(Method("roles") { _ -> roles.stream().map(Role::getName).collect(Collectors.joining(", ")) })
+            add(Method("roles") { _ ->
+              roles.stream().map(Role::getName).collect(Collectors.joining(", "))
+            })
             add(Method("randMember") { _ -> members[SecureRandom().nextInt(members.size)].effectiveName })
             add(Method("randChannel") { _ -> channels[SecureRandom().nextInt(channels.size)].name })
           }
@@ -289,131 +292,88 @@ class JagTagCommand : Command(), SQLUtils {
     it.addMethods(methods).build()
   }
 
-  override fun createTable() {
-    val sql = """
-      CREATE TABLE IF NOT EXISTS tags (
-        tagKey TEXT NOT NULL,
-        tagValue TEXT NOT NULL,
-        ownerID TEXT NOT NULL,
-        guildID TEXT NOT NULL,
-        UNIQUE (tagKey, guildID) ON CONFLICT ABORT,
-        CHECK (length (tagKey) > 0 AND length (tagValue) > 0)
-      );
-      PRAGMA auto_vacuum = FULL;
-      """
-    connect().createStatement().execute(sql)
+  override fun createTable() = transact {
+    SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+    exec("PRAGMA auto_vacuum = FULL;")!!
   }
 
-  override fun insert(mode: SQLItemMode, vararg args: String) {
-    val sql = "INSERT INTO tags(tagKey, tagValue, ownerID, guildID) VALUES(?, ?, ?, ?)"
-    with(connect().prepareStatement(sql)) {
-      when (mode) {
-        LVALUE -> {
-          setString(1, args[0])
-          setString(2, args[1])
-          setString(3, args[2])
-          setString(4, args[3])
-          executeUpdate()
-        }
-        GVALUE -> {
-          setString(1, args[0])
-          setString(2, args[1])
-          setString(3, args[2])
-          setString(4, "GLOBAL")
-          executeUpdate()
-        }
-        else -> return
+  override fun insert(mode: SQLItemMode, vararg args: String) = transact {
+    when (mode) {
+      LVALUE -> JagTagTable.insert {
+        it[tagKey] = args[0]
+        it[tagValue] = args[1]
+        it[ownerID] = args[2]
+        it[guildID] = args[3]
       }
+      GVALUE -> JagTagTable.insert {
+        it[tagKey] = args[0]
+        it[tagValue] = args[1]
+        it[ownerID] = args[2]
+        it[guildID] = "GLOBAL"
+      }
+      else -> return@transact
     }
   }
 
-  override fun select(mode: SQLItemMode, vararg args: String) = when (mode) {
-    ALL -> {
-      val sql = "SELECT * FROM tags"
-      tagCache.clear()
-      with(connect().prepareStatement(sql).executeQuery()) {
-        while (next()) tagCache.add(Tag().set(
-          getString("tagKey"),
-          getString("tagValue"),
-          getString("ownerID"),
-          getString("guildID")
-        ))
-      }
-    }
-    LVALUE, GVALUE -> {
-      val sql = "SELECT tagValue FROM tags"
-      tagCache.clear()
-      with(connect().prepareStatement(sql).executeQuery()) {
-        while (next()) for (t in tags) if (t.ownerID == getString("tagValue")) tagCache.add(t)
-      }
-    }
-    else -> {
-      throw UnsupportedOperationException("Not supported.")
+  override fun select(mode: SQLItemMode, vararg args: String) = transact {
+    JagTagTable.selectAll().forEach {
+      tagCache.add(Tag().set(
+        it[JagTagTable.tagKey],
+        it[JagTagTable.tagValue],
+        it[JagTagTable.ownerID],
+        it[JagTagTable.guildID]
+      ))
     }
   }
 
-  override fun delete(mode: SQLItemMode, vararg args: String) {
-    val sql = "DELETE FROM tags WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
-    with(connect().prepareStatement(sql)) {
-      when (mode) {
-        LVALUE -> {
-          setString(1, args[0])
-          setString(2, args[1])
-          setString(3, args[2])
-          executeUpdate()
-        }
-        GVALUE -> {
-          setString(1, args[0])
-          setString(2, args[1])
-          setString(3, "GLOBAL")
-          executeUpdate()
-        }
-        else -> return
+  override fun delete(mode: SQLItemMode, vararg args: String) = transact {
+    when (mode) {
+      LVALUE -> JagTagTable.deleteWhere {
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.ownerID eq args[1]
+        JagTagTable.guildID eq args[2]
       }
+      GVALUE -> JagTagTable.deleteWhere {
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.ownerID eq args[1]
+        JagTagTable.guildID eq "GLOBAL"
+      }
+      else -> return@transact
     }
   }
 
-  override fun update(mode: SQLItemMode, vararg args: String) {
-    val sql = "UPDATE tags SET tagValue = ? WHERE tagKey = ? AND ownerID = ? AND guildID = ?"
-    with(connect().prepareStatement(sql)) {
-      when (mode) {
-        LVALUE -> {
-          setString(1, args[1])
-          setString(2, args[0])
-          setString(3, args[2])
-          setString(4, args[3])
-          executeUpdate()
-        }
-        GVALUE -> {
-          setString(1, args[1])
-          setString(2, args[0])
-          setString(3, args[2])
-          setString(4, "GLOBAL")
-          executeUpdate()
-        }
-        else -> return
+
+  override fun update(mode: SQLItemMode, vararg args: String) = transact {
+    when (mode) {
+      LVALUE -> JagTagTable.update({
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.ownerID eq args[2]
+        JagTagTable.guildID eq args[3]
+      }) {
+        it[tagValue] = args[1]
       }
+      GVALUE -> JagTagTable.update({
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.ownerID eq args[2]
+        JagTagTable.guildID eq "GLOBAL"
+      }) {
+        it[tagValue] = args[1]
+      }
+      else -> return@transact
     }
   }
 
-  override fun exists(mode: SQLItemMode, vararg args: String): Boolean {
-    val sql = "SELECT EXISTS(SELECT tagKey, guildID FROM tags WHERE tagKey = ? AND guildID = ?)"
-    return with(connect().prepareStatement(sql)) {
-      when (mode) {
-        LVALUE -> {
-          setString(1, args[0])
-          setString(2, args[1])
-          val resultSet = executeQuery()
-          resultSet.getInt(1) >= 1
-        }
-        GVALUE -> {
-          setString(1, args[0])
-          setString(2, "GLOBAL")
-          val resultSet = executeQuery()
-          resultSet.getInt(1) >= 1
-        }
-        else -> false
-      }
+  override fun exists(mode: SQLItemMode, vararg args: String) = transact {
+    when (mode) {
+      LVALUE -> JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.guildID eq args[1]
+      }.count() > 0
+      GVALUE -> JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
+        JagTagTable.tagKey eq args[0]
+        JagTagTable.guildID eq "GLOBAL"
+      }.count() > 0
+      else -> false
     }
   }
 
@@ -423,18 +383,15 @@ class JagTagCommand : Command(), SQLUtils {
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    val file = javaClass.classLoader.getResource("PilotDB.sqlite")?.file
-      ?.replace("(file:/C|/C)".toRegex(), "C")
-      ?.replace("/", "\\")!!
-    with(File(file)) {
-      if (!exists()) {
-        if (createNewFile()) {
-          createDatabase()
-          createTable()
-        } else PilotUtils.error("Unable to create a new database.")
-      } else {
-        select(ALL)
-        tags.addAll(tagCache)
+    val path = Path.of("./sqlite/PilotDB.sqlite")
+    if (Files.exists(path)) {
+      select(ALL)
+      tags.addAll(tagCache)
+    } else {
+      try {
+        Files.createDirectories(path)
+      } finally {
+        createTable()
       }
     }
   }

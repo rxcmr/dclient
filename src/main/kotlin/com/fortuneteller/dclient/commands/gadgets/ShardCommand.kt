@@ -35,8 +35,10 @@ import com.jagrosh.jdautilities.command.CommandEvent
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107icloud.com>
  */
 class ShardCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
@@ -45,7 +47,7 @@ class ShardCommand : Command() {
       reply("Shards active: $shardsRunning")
       reply("Shards total: $shardsTotal")
       reply("Reconnecting: $shardsQueued")
-      reply("We are on Shard " + jda.shardInfo.shardId)
+      reply("We are on Shard ${jda.shardInfo.shardId}")
     }
   }
 

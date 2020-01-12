@@ -1,13 +1,6 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.commands.gadgets.utils
 
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
-import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.*
+import org.jetbrains.exposed.sql.Table
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -44,21 +37,13 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) = EnumSet.allOf(JavadocPackages::class.java)
-    .map { j -> String.format(j.url, event.args) }.forEach { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use { response ->
-        if (response.code() == 200) event.reply(formatted)
-        else throw CommandException("Invalid class name.")
-      }
-    }
+object JagTagTable : Table("tags") {
+  val tagKey = varchar("tagKey", 30).check { it.isNotNull() }
+  val tagValue = varchar("tagValue", 200).check { it.isNotNull() }
+  val ownerID = varchar("ownerID", 50).check { it.isNotNull() }
+  val guildID = varchar("guildID", 50).check { it.isNotNull() }
 
   init {
-    name = "javadoc"
-    aliases = arrayOf("docs")
-    arguments = "**<package>** **<class>**"
-    help = "Gets the URL of Javadocs for JDK 13"
-    category = Categories.GADGETS.category
+    index(true, tagKey, guildID)
   }
 }

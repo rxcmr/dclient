@@ -4,6 +4,7 @@ import com.fortuneteller.dclient.utils.EnvLoader
 import com.jagrosh.jdautilities.command.Command
 import io.github.classgraph.ClassGraph
 import net.dv8tion.jda.api.hooks.ListenerAdapter
+import java.time.Instant
 import java.util.*
 
 /*
@@ -42,18 +43,22 @@ import java.util.*
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class Pilot(private val token: String, private val prefix: String, private val shards: Int) : Runnable {
+  companion object {
+    val initTime: Instant = Instant.now()
+  }
+
   private val commands = LinkedList<Command>().apply {
     for (c in ClassGraph()
       .blacklistPackages(
         "com.fortuneteller.dclient.commands.utils",
         "com.fortuneteller.dclient.commands.gadgets.utils",
         "com.fortuneteller.dclient.commands.music.utils",
-        "com.fortuneteller.dclient.commands.music.children")
+        "com.fortuneteller.dclient.commands.music.children",
+        "com.fortuneteller.dclient.commands.statistics.children")
       .whitelistPackages("com.fortuneteller.dclient.commands.*")
       .scan()
       .getSubclasses(Command::class.java.name)
       .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
-    Math.random()
   }
 
   private val listeners = LinkedList<Any>().apply {

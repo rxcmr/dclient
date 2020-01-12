@@ -29,3 +29,6 @@ src/main/resources/PilotDB.sqlite
 .gitconfig
 /src/main/resources/PilotDB.sqlite
 src/test/
+sqlite
+graphs
+

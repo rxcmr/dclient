@@ -34,11 +34,9 @@ import com.jagrosh.jdautilities.command.Command.Category
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-
 enum class Categories(val category: Category, val description: String) {
   GADGETS(Category("Gadgets"), "Gadgets and fun!"),
   MODERATION(Category("Moderation"), "Moderation utilities."),

@@ -1,8 +1,9 @@
 package com.fortuneteller.dclient.database
 
-import com.fortuneteller.dclient.utils.PilotUtils.info
-import org.sqlite.jdbc4.JDBC4Connection
-import java.sql.DriverManager
+import org.jetbrains.exposed.sql.Database
+import org.jetbrains.exposed.sql.Transaction
+import org.jetbrains.exposed.sql.transactions.transaction
+import java.sql.Connection
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,23 +42,17 @@ import java.sql.DriverManager
  */
 interface SQLUtils {
   companion object {
-    fun connect() =
-      this::class.java.classLoader.getResource("PilotDB.sqlite")?.path?.substring(1).let {
-        DriverManager.getConnection("jdbc:sqlite:$it") as JDBC4Connection
-      }
-
-    fun createDatabase() = info(connect().metaData.driverName)
+    fun <T> transact(statement: Transaction.() -> T) = transaction(
+      Connection.TRANSACTION_SERIALIZABLE,
+      3,
+      Database.connect("jdbc:sqlite:sqlite/PilotDB.sqlite", "org.sqlite.JDBC"),
+      statement)
   }
 
   fun createTable()
-
   fun insert(mode: SQLItemMode, vararg args: String)
-
   fun select(mode: SQLItemMode, vararg args: String)
-
   fun delete(mode: SQLItemMode, vararg args: String)
-
   fun update(mode: SQLItemMode, vararg args: String)
-
   fun exists(mode: SQLItemMode, vararg args: String): Boolean
 }
