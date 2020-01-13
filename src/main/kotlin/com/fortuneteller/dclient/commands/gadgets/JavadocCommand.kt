@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.commands.gadgets
 import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import okhttp3.OkHttpClient
@@ -50,7 +51,7 @@ class JavadocCommand : Command() {
       val request = Request.Builder().url(formatted).head().build()
       OkHttpClient().newCall(request).execute().use { response ->
         if (response.code() == 200) event.reply(formatted)
-        else throw CommandException("Invalid class name.")
+        else throw CommandException(ExMessage.INVALID_CLASS)
       }
     }
 

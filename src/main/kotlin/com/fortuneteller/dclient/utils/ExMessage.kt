@@ -1,9 +1,6 @@
-package com.fortuneteller.dclient.database
+package com.fortuneteller.dclient.utils
 
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.Transaction
-import org.jetbrains.exposed.sql.transactions.transaction
-import java.sql.Connection
+import net.dv8tion.jda.api.entities.TextChannel
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -40,19 +37,21 @@ import java.sql.Connection
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-interface SQLUtils {
-  companion object {
-    fun <T> transact(statement: Transaction.() -> T) = transaction(
-      Connection.TRANSACTION_SERIALIZABLE,
-      3,
-      Database.connect("jdbc:sqlite:sqlite/PilotDB.sqlite", "org.sqlite.JDBC"),
-      statement)
-  }
-
-  fun createTable()
-  fun insert(mode: SQLItemMode, vararg args: String)
-  fun select(mode: SQLItemMode, vararg args: String)
-  fun delete(mode: SQLItemMode, vararg args: String)
-  fun update(mode: SQLItemMode, vararg args: String)
-  fun exists(mode: SQLItemMode, vararg args: String): Boolean
+enum class ExMessage(val msg: String) {
+  JT_KEY_EMPTY("Name is empty!"),
+  JT_VAL_EMPTY("Content is empty!"),
+  JT_NOT_FOUND("Tag not found."),
+  JT_RESERVED("Cannot use reserved command parameters."),
+  JT_DELETE_NOTHING("Deleting something that doesn't exist."),
+  JT_GLOBAL("Use the global parameter."),
+  JT_EXISTS_OR_MISSING("Tag exists or missing parameters."),
+  M_PAUSED("Playback is currently paused."),
+  M_EMPTY_URL("URL cannot be empty!"),
+  M_NOT_PAUSED("Playback is not paused."),
+  M_EMPTY_SEARCH("Search term cannot be empty!"),
+  HTTP_FAILED("Request failed."),
+  SLOWMODE_DURATION("Slow mode must not be negative or greater than ${TextChannel.MAX_SLOWMODE}."),
+  INVALID_CLASS("Invalid class name."),
+  INVALID_INTEGER("Not a valid integer."),
+  INPUT_TOO_LONG("Input too long.")
 }

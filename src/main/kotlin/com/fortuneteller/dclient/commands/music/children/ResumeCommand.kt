@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.commands.music.children
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
@@ -45,7 +46,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 
 class ResumeCommand : Command() {
   override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
-    if (getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException("Playback is not paused.")
+    if (getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException(ExMessage.M_NOT_PAUSED)
     else pause(event.guild, false)
   }
 

@@ -1,5 +1,7 @@
 package com.fortuneteller.dclient.commands.utils
 
+import com.fortuneteller.dclient.utils.ExMessage
+
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
@@ -38,5 +40,6 @@ package com.fortuneteller.dclient.commands.utils
 class CommandException : RuntimeException {
   constructor() : super()
   constructor(message: String?) : super(message)
+  constructor(err: ExMessage) : super(err.msg)
   constructor(message: String?, cause: Throwable) : super(message, cause)
 }

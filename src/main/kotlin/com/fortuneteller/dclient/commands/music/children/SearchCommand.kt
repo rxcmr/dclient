@@ -4,6 +4,7 @@ import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.fortuneteller.dclient.utils.EnvLoader
+import com.fortuneteller.dclient.utils.ExMessage
 import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -49,14 +50,14 @@ import java.util.stream.Collectors
 class SearchCommand : Command() {
   private var useCount = 0
   public override fun execute(event: CommandEvent) = event.let {
-    if (it.args.isEmpty()) throw CommandException("Search term cannot be empty!")
+    if (it.args.isEmpty()) throw CommandException(ExMessage.M_EMPTY_SEARCH)
     val client = it.jda.httpClient
     if (useCount <= 80) {
       val request = Request.Builder().url("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&"
         + "q=${it.args}&key=${EnvLoader.load("YT_API_KEY")}").build()
       client.newCall(request).execute().use { r ->
         useCount++
-        if (!r.isSuccessful) throw CommandException("Request failed.")
+        if (!r.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
         val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
           i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
         }
@@ -69,7 +70,7 @@ class SearchCommand : Command() {
       val request = Request.Builder().url("http://youtube-scrape.herokuapp.com/api/search?q=${it.args}&page=1")
         .build()
       client.newCall(request).execute().use { r ->
-        if (!r.isSuccessful) throw CommandException("Request failed.")
+        if (!r.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
         val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
           i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
         }

@@ -8,6 +8,7 @@ import com.fortuneteller.dclient.database.SQLItemMode
 import com.fortuneteller.dclient.database.SQLItemMode.*
 import com.fortuneteller.dclient.database.SQLUtils
 import com.fortuneteller.dclient.database.SQLUtils.Companion.transact
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jdautilities.command.Command
@@ -66,7 +67,6 @@ class JagTagCommand : Command(), SQLUtils {
   private val tags = LinkedHashSet<Tag>()
   private val tagCache = LinkedHashSet<Tag>()
 
-  @Synchronized
   public override fun execute(event: CommandEvent): Unit = with(event) {
     val args = args?.split("\\s+".toRegex())?.toTypedArray()
     val authorID = author?.id!!
@@ -76,161 +76,121 @@ class JagTagCommand : Command(), SQLUtils {
     with(tags) {
       try {
         when (args!![0]) {
-          "global", "g" -> {
-            when (args[1]) {
-              "create", "new", "add" -> {
-                if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
-                  throw CommandException("Be unique, these are reserved command parameters.")
-                select(ALL)
-                val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
-                if (message.attachments.isNotEmpty()) {
-                  insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID)
-                } else insert(GVALUE, args[2], tagValue, authorID)
-                select(ALL)
-                clear()
-                addAll(tagCache)
-              }
-              "delete", "remove" -> {
-                select(ALL)
-                if (exists(GVALUE, args[2])) delete(LVALUE, args[2], authorID)
-                else throw CommandException("Deleting something that does not exist.")
-                select(ALL)
-                clear()
-                addAll(tagCache)
-              }
-              "edit", "modify" -> {
-                select(ALL)
-                val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
-                update(GVALUE, args[2], tagValue, authorID)
-                select(ALL)
-                clear()
-                addAll(tagCache)
-              }
-              "raw" -> stream().forEachOrdered { t ->
-                val exists = exists(GVALUE, args[2])
-                try {
-                  if (!exists) throw CommandException("Tag not found.")
-                } catch (e: CommandException) {
-                  throw CommandException(e.message)
-                } finally {
-                  if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply(t.tagValue)
-                }
-              }
-              "cblkraw" -> stream().forEachOrdered { t ->
-                val exists = exists(GVALUE, args[2])
-                try {
-                  if (!exists) throw CommandException("Tag not found.")
-                } catch (e: CommandException) {
-                  throw CommandException(e.message)
-                } finally {
-                  if (t.tagKey == args[2] && t.guildID == "GLOBAL" && exists) reply("```${t.tagValue}```")
-                }
-              }
-              else -> stream().forEachOrdered { t ->
-                val exists = exists(GVALUE, args[1])
-                try {
-                  if (!exists) throw CommandException("Tag not found.")
-                } catch (e: CommandException) {
-                  throw CommandException(e.message)
-                } finally {
-                  if (t.tagKey == args[1] && t.guildID == "GLOBAL" && exists) reply(jagtag?.parse(t.tagValue))
-                }
-              }
+          "global", "g" -> when (args[1]) {
+            "create", "new", "add" -> {
+              if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
+                throw CommandException(ExMessage.JT_RESERVED)
+              select(ALL)
+              val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
+              if (message.attachments.isNotEmpty())
+                insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID)
+              else insert(GVALUE, args[2], tagValue, authorID)
+              select(ALL)
+              clear()
+              this += tagCache
+            }
+            "delete", "remove" -> {
+              select(ALL)
+              if (exists(GVALUE, args[2])) delete(LVALUE, args[2], authorID)
+              else throw CommandException(ExMessage.JT_DELETE_NOTHING)
+              select(ALL)
+              clear()
+              this += tagCache
+            }
+            "edit", "modify" -> {
+              select(ALL)
+              val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
+              update(GVALUE, args[2], tagValue, authorID)
+              select(ALL)
+              clear()
+              this += tagCache
+            }
+            "raw" -> stream().forEachOrdered { t ->
+              if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[2] && t.guildID == "GLOBAL") reply(t.tagValue)
+            }
+            "cblkraw" -> stream().forEachOrdered { t ->
+              if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[2] && t.guildID == "GLOBAL") reply("```${t.tagValue}```")
+            }
+            else -> stream().forEachOrdered { t ->
+              if (!exists(GVALUE, args[1])) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[1] && t.guildID == "GLOBAL") reply(jagtag?.parse(t.tagValue))
             }
           }
           "create", "new", "add" -> {
-            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
             if (args[1].matches(
                 "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
-            ) throw CommandException("Be unique, these are reserved command parameters.")
+            ) throw CommandException(ExMessage.JT_RESERVED)
             select(ALL)
             val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
-            if (message.attachments.isNotEmpty()) {
+            if (message.attachments.isNotEmpty())
               insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID, guildID)
-            } else insert(LVALUE, args[1], tagValue, authorID, guildID)
+            else insert(LVALUE, args[1], tagValue, authorID, guildID)
             select(ALL)
             clear()
-            addAll(tagCache)
+            this += tagCache
           }
           "delete", "remove" -> {
-            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
             select(ALL)
             if (exists(LVALUE, args[1], guildID)) delete(LVALUE, args[1], authorID, guildID)
-            else throw CommandException("Deleting something that does not exist.")
+            else throw CommandException(ExMessage.JT_DELETE_NOTHING)
             select(ALL)
             clear()
-            addAll(tagCache)
+            this += tagCache
           }
           "edit", "modify" -> {
-            if (isFromType(ChannelType.PRIVATE)) throw CommandException("Use the global parameter.")
+            if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
             select(ALL)
             val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
             update(LVALUE, args[1], tagValue, authorID, guildID)
             select(ALL)
             clear()
-            addAll(tagCache)
+            this += tagCache
           }
           "raw" -> stream().forEachOrdered { t ->
-            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            if (channelType == ChannelType.PRIVATE) throw CommandException(ExMessage.JT_GLOBAL)
             else {
-              val exists = exists(LVALUE, args[1], guildID)
-              try {
-                if (!exists) throw CommandException("Tag not found.")
-              } catch (e: CommandException) {
-                throw CommandException(e.message)
-              } finally {
-                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(t.tagValue)
-              }
+              if (!exists(LVALUE, args[1], guildID)) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[0] && t.guildID == guildID) reply(t.tagValue)
             }
           }
           "cblkraw" -> stream().forEachOrdered { t ->
-            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            if (channelType == ChannelType.PRIVATE) throw CommandException(ExMessage.JT_GLOBAL)
             else {
-              val exists = exists(LVALUE, args[1], guildID)
-              try {
-                if (!exists) throw CommandException("Tag not found.")
-              } catch (e: CommandException) {
-                throw CommandException(e.message)
-              } finally {
-                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply("```${t.tagValue}```")
-              }
+              if (!exists(LVALUE, args[1], guildID)) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[0] && t.guildID == guildID) reply("```${t.tagValue}```")
             }
 
           }
           "eval" -> {
             reply("Type `!!stop` to exit.")
             val id = channel.id
-            jda.addEventListener(
-              object : ListenerAdapter() {
-                override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
-                  event.let {
-                    if (it.author.isBot || it.author.isFake || it.channel.id != id) return
-                    it.channel.sendTyping().queue()
-                    val message = it.message.contentRaw.split("\\s+").toTypedArray()
-                    val arguments = message.joinToString(" ")
-                    if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
-                    else it.channel.sendMessage(buildParser(it)?.parse(arguments)!!).queue()
-                  }
+            jda.addEventListener(object : ListenerAdapter() {
+              override fun onGuildMessageReceived(event: GuildMessageReceivedEvent) {
+                event.let {
+                  if (it.author.isBot || it.author.isFake || it.channel.id != id) return
+                  it.channel.sendTyping().queue()
+                  val message = it.message.contentRaw.split("\\s+").toTypedArray()
+                  val arguments = message.joinToString(" ")
+                  if (message[0].equals("!!stop", ignoreCase = true)) jda.removeEventListener(this)
+                  else it.channel.sendMessage(buildParser(it)?.parse(arguments)!!).queue()
                 }
               }
-            )
+            })
           }
           else -> stream().forEachOrdered { t ->
-            if (channelType == ChannelType.PRIVATE) throw CommandException("Use the global parameter.")
+            if (channelType == ChannelType.PRIVATE) throw CommandException(ExMessage.JT_GLOBAL)
             else {
-              val exists = exists(LVALUE, args[0], guildID)
-              try {
-                if (!exists) throw CommandException("Tag not found.")
-              } catch (e: CommandException) {
-                throw CommandException(e.message)
-              } finally {
-                if (t.tagKey == args[0] && t.guildID == guildID && exists) reply(jagtag?.parse(t.tagValue))
-              }
+              if (!exists(LVALUE, args[0], guildID)) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[0] && t.guildID == guildID) reply(jagtag?.parse(t.tagValue))
             }
           }
         }
       } catch (s: SQLiteException) {
-        if (s.errorCode == 19) throw CommandException("Tag exists or missing parameters.")
+        if (s.errorCode == 19) throw CommandException(ExMessage.JT_EXISTS_OR_MISSING)
         else throw CommandException(s.message)
       }
     }
@@ -293,21 +253,22 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   override fun createTable() = transact {
+    //language=SQLite
+    exec("PRAGMA auto_vacuum = FULL")
     SchemaUtils.createMissingTablesAndColumns(JagTagTable)
-    exec("PRAGMA auto_vacuum = FULL;")!!
   }
 
   override fun insert(mode: SQLItemMode, vararg args: String) = transact {
     when (mode) {
       LVALUE -> JagTagTable.insert {
-        it[tagKey] = args[0]
-        it[tagValue] = args[1]
+        it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
+        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
         it[ownerID] = args[2]
         it[guildID] = args[3]
       }
       GVALUE -> JagTagTable.insert {
-        it[tagKey] = args[0]
-        it[tagValue] = args[1]
+        it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
+        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
         it[ownerID] = args[2]
         it[guildID] = "GLOBAL"
       }
@@ -317,12 +278,12 @@ class JagTagCommand : Command(), SQLUtils {
 
   override fun select(mode: SQLItemMode, vararg args: String) = transact {
     JagTagTable.selectAll().forEach {
-      tagCache.add(Tag().set(
+      tagCache += Tag().set(
         it[JagTagTable.tagKey],
         it[JagTagTable.tagValue],
         it[JagTagTable.ownerID],
         it[JagTagTable.guildID]
-      ))
+      )
     }
   }
 
@@ -350,14 +311,14 @@ class JagTagCommand : Command(), SQLUtils {
         JagTagTable.ownerID eq args[2]
         JagTagTable.guildID eq args[3]
       }) {
-        it[tagValue] = args[1]
+        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
       }
       GVALUE -> JagTagTable.update({
         JagTagTable.tagKey eq args[0]
         JagTagTable.ownerID eq args[2]
         JagTagTable.guildID eq "GLOBAL"
       }) {
-        it[tagValue] = args[1]
+        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
       }
       else -> return@transact
     }
@@ -383,14 +344,12 @@ class JagTagCommand : Command(), SQLUtils {
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    val path = Path.of("./sqlite/PilotDB.sqlite")
-    if (Files.exists(path)) {
-      select(ALL)
-      tags.addAll(tagCache)
-    } else {
-      try {
-        Files.createDirectories(path)
-      } finally {
+    Path.of("./sqlite/PilotDB.sqlite").let {
+      if (Files.exists(it)) {
+        select(ALL)
+        tags += tagCache
+      } else {
+        Files.createDirectories(it.parent)
         createTable()
       }
     }

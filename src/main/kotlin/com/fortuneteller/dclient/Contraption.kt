@@ -85,7 +85,7 @@ class Contraption(private val token: String,
     lateinit var prefix: String private set
     const val ID: String = "175610330217447424"
     const val ZWS = "\u001B"
-    val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.3l"
+    val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.4l"
 
     fun generateClassGraph() {
       val file = File("./graphs/dclient.dot")

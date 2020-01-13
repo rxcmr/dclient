@@ -47,7 +47,7 @@ import java.util.stream.Collectors
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
+@Suppress("unused")
 class ReadyListener : ListenerAdapter() {
   override fun onReady(event: ReadyEvent) = event.jda.let { j ->
     val zws = Contraption.ZWS

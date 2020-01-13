@@ -2,6 +2,7 @@ package com.fortuneteller.dclient.commands.moderation
 
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
@@ -44,9 +45,9 @@ class SlowmodeCommand : Command() {
   override fun execute(event: CommandEvent) = try {
     if (event.args.toInt() >= 0 && event.args.toInt() <= TextChannel.MAX_SLOWMODE)
       event.textChannel.manager.setSlowmode(event.args.toInt()).queue()
-    else throw CommandException("Slow mode must not be negative or greater than " + TextChannel.MAX_SLOWMODE + ".")
+    else throw CommandException(ExMessage.SLOWMODE_DURATION)
   } catch (e: NumberFormatException) {
-    throw CommandException("Not a valid integer.")
+    throw CommandException(ExMessage.INVALID_INTEGER)
   }
 
   init {

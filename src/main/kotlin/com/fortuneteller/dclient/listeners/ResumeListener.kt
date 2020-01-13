@@ -39,7 +39,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
+@Suppress("unused")
 class ResumeListener : ListenerAdapter() {
   override fun onResume(event: ResumedEvent) = PilotUtils.info("Resumed session.")
 }

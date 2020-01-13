@@ -40,6 +40,7 @@ import java.lang.StackWalker.getInstance
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@Suppress("unused")
 object PilotUtils {
   private val logger = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass)
 

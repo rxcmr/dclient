@@ -40,7 +40,7 @@ import kotlin.system.exitProcess
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-@SuppressWarnings("unused")
+@Suppress("unused")
 class ShutdownListener : ListenerAdapter() {
   override fun onShutdown(event: ShutdownEvent) {
     info("Try again in my next life.")

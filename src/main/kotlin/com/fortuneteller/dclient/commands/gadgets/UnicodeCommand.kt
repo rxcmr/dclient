@@ -2,6 +2,7 @@ package com.fortuneteller.dclient.commands.gadgets
 
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import java.util.*
@@ -44,7 +45,7 @@ import java.util.*
  */
 class UnicodeCommand : Command() {
   override fun execute(event: CommandEvent) {
-    if (event.args?.length!! > 10) throw CommandException("Input too long.")
+    if (event.args?.length!! > 10) throw CommandException(ExMessage.INPUT_TOO_LONG)
     event.reply(StringJoiner("\n").apply {
       for (i in event.args.indices)
         this.add(event.args.toCharArray()[i].let {

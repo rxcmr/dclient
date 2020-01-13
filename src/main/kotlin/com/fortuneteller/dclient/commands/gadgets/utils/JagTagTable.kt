@@ -38,10 +38,10 @@ import org.jetbrains.exposed.sql.Table
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 object JagTagTable : Table("tags") {
-  val tagKey = varchar("tagKey", 30).check { it.isNotNull() }
-  val tagValue = varchar("tagValue", 200).check { it.isNotNull() }
-  val ownerID = varchar("ownerID", 50).check { it.isNotNull() }
-  val guildID = varchar("guildID", 50).check { it.isNotNull() }
+  val tagKey = text("tagKey").check { it.isNotNull() }
+  val tagValue = text("tagValue").check { it.isNotNull() }
+  val ownerID = text("ownerID").check { it.isNotNull() }
+  val guildID = text("guildID").check { it.isNotNull() }
 
   init {
     index(true, tagKey, guildID)

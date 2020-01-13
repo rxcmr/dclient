@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.commands.statistics.children
 import com.fortuneteller.dclient.commands.statistics.StatisticsCommand
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import okhttp3.Request
@@ -56,7 +57,7 @@ class DotaCommand : StatisticsCommand() {
         url += "matches/${args[1]}"
         val request = Request.Builder().url(url).build()
         event.jda.httpClient.newCall(request).execute().use {
-          if (!it.isSuccessful) throw CommandException("Request failed.")
+          if (!it.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
           else {
             val json = BufferedReader(InputStreamReader(it.body()?.byteStream()!!)).use { i ->
               i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
