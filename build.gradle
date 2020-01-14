@@ -27,7 +27,7 @@ dependencies {
   implementation group: "org.jetbrains.kotlin", name: "kotlin-script-util"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-compiler-embeddable"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-scripting-compiler"
-  implementation group: "net.dv8tion", name: "JDA", version: "4.1.0_96"
+  implementation group: "net.dv8tion", name: "JDA", version: "4.1.0_97"
   implementation group: "io.projectreactor", name: "reactor-core", version: "3.3.1.RELEASE"
   implementation group: "club.minnced", name: "jda-reactor", version: "1.0.0"
   implementation group: "org.jsoup", name: "jsoup", version: "1.12.1"
