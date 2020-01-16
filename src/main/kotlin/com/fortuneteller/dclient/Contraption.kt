@@ -221,7 +221,7 @@ class Contraption(private val token: String,
         }
       }
     } catch (l: LoginException) {
-      error("Invalid token.")
+      error("Invalid token or time out.")
       ex.set(true)
     } catch (i: IllegalArgumentException) {
       error("$ZWS[1;93mCommands$ZWS[0m/$ZWS[1;93mEventListeners$ZWS[0m loading failed!")
@@ -231,13 +231,14 @@ class Contraption(private val token: String,
       error("Cannot connect to $ZWS[1;95mDiscord API$ZWS[0m/" +
         "$ZWS[1;95mWebSocket$ZWS[0m, or $ZWS[1;94mCloudFlare DNS$ZWS[0m.")
     } finally {
-      if (!ex.get()) {
-        info("$ZWS[1;93mContraption$ZWS[0m instance: ${toString()}")
-        instance = this
-        Companion.prefix = prefix
-        info("Finished in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
-      } else {
-        error("My disappointment is immeasurable, and my day is ruined.")
+      when (!ex.get()) {
+        true -> {
+          info("$ZWS[1;93mContraption$ZWS[0m instance: ${toString()}")
+          instance = this
+          Companion.prefix = prefix
+          info("Finished initializing in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
+        }
+        false -> error("My disappointment is immeasurable, and my day is ruined.")
       }
     }
   }

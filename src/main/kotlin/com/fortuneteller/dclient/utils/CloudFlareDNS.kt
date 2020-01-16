@@ -48,9 +48,9 @@ class CloudFlareDNS : Dns {
 
   init {
     try {
-      lookup("1.1.1.1")
+      lookup(EnvLoader.load("CF"))
     } catch (e: UnknownHostException) {
-      lookup("1.0.0.1")
+      lookup(EnvLoader.load("CF_ALT"))
     }
   }
 }

@@ -18,6 +18,7 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.sqlite.SQLiteException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -63,19 +64,20 @@ import kotlin.collections.LinkedHashSet
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@Suppress("unused")
 class JagTagCommand : Command(), SQLUtils {
   private val tags = LinkedHashSet<Tag>()
   private val tagCache = LinkedHashSet<Tag>()
 
   public override fun execute(event: CommandEvent): Unit = with(event) {
-    val args = args?.split("\\s+".toRegex())?.toTypedArray()
+    val args = args?.split("\\s+".toRegex())?.toTypedArray()!!
     val authorID = author?.id!!
     val guildID = guild?.id!!
     val jagtag = buildParser(this)
     channel.sendTyping().queue()
     with(tags) {
       try {
-        when (args!![0]) {
+        when (args[0]) {
           "global", "g" -> when (args[1]) {
             "create", "new", "add" -> {
               if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
@@ -258,21 +260,12 @@ class JagTagCommand : Command(), SQLUtils {
     SchemaUtils.createMissingTablesAndColumns(JagTagTable)
   }
 
-  override fun insert(mode: SQLItemMode, vararg args: String) = transact {
-    when (mode) {
-      LVALUE -> JagTagTable.insert {
-        it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
-        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
-        it[ownerID] = args[2]
-        it[guildID] = args[3]
-      }
-      GVALUE -> JagTagTable.insert {
-        it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
-        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
-        it[ownerID] = args[2]
-        it[guildID] = "GLOBAL"
-      }
-      else -> return@transact
+  override fun insert(mode: SQLItemMode, vararg args: String): Unit = transact {
+    JagTagTable.insert {
+      it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
+      it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
+      it[ownerID] = args[2]
+      it[guildID] = if (mode == GVALUE) "GLOBAL" else args[3]
     }
   }
 
@@ -287,55 +280,27 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  override fun delete(mode: SQLItemMode, vararg args: String) = transact {
-    when (mode) {
-      LVALUE -> JagTagTable.deleteWhere {
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.ownerID eq args[1]
-        JagTagTable.guildID eq args[2]
-      }
-      GVALUE -> JagTagTable.deleteWhere {
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.ownerID eq args[1]
-        JagTagTable.guildID eq "GLOBAL"
-      }
-      else -> return@transact
-    }
+  override fun delete(mode: SQLItemMode, vararg args: String): Unit = transact {
+    JagTagTable.tagKey eq args[0]
+    JagTagTable.ownerID eq args[1]
+    JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[2]
   }
 
-
-  override fun update(mode: SQLItemMode, vararg args: String) = transact {
-    when (mode) {
-      LVALUE -> JagTagTable.update({
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.ownerID eq args[2]
-        JagTagTable.guildID eq args[3]
-      }) {
-        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
-      }
-      GVALUE -> JagTagTable.update({
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.ownerID eq args[2]
-        JagTagTable.guildID eq "GLOBAL"
-      }) {
-        it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
-      }
-      else -> return@transact
+  override fun update(mode: SQLItemMode, vararg args: String): Unit = transact {
+    JagTagTable.update({
+      JagTagTable.tagKey eq args[0]
+      JagTagTable.ownerID eq args[2]
+      JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[3]
+    }) {
+      it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
     }
   }
 
   override fun exists(mode: SQLItemMode, vararg args: String) = transact {
-    when (mode) {
-      LVALUE -> JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.guildID eq args[1]
-      }.count() > 0
-      GVALUE -> JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
-        JagTagTable.tagKey eq args[0]
-        JagTagTable.guildID eq "GLOBAL"
-      }.count() > 0
-      else -> false
-    }
+    JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
+      JagTagTable.tagKey eq args[0]
+      JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[1]
+    }.count() > 0
   }
 
   init {
