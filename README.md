@@ -10,7 +10,7 @@ Requirements:
 
 ```kotlin
 fun main() {
-  Pilot("token", "pl.", 1)
+  Pilot("token", "pl.", 1).start()
 }
 ```
 

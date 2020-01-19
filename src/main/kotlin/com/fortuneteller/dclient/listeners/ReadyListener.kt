@@ -2,6 +2,10 @@ package com.fortuneteller.dclient.listeners
 
 import com.fortuneteller.dclient.Contraption
 import com.fortuneteller.dclient.Pilot
+import com.fortuneteller.dclient.utils.Colors.GREEN_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.PURPLE_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.RED_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.RESET
 import com.fortuneteller.dclient.utils.PilotUtils.gc
 import com.fortuneteller.dclient.utils.PilotUtils.info
 import net.dv8tion.jda.api.JDAInfo
@@ -50,9 +54,8 @@ import java.util.stream.Collectors
 @Suppress("unused")
 class ReadyListener : ListenerAdapter() {
   override fun onReady(event: ReadyEvent) = event.jda.let { j ->
-    val zws = Contraption.ZWS
     val shardInfo = j.shardInfo
-    val shards = "$zws[1;91m[${shardInfo.shardId + 1}/${shardInfo.shardTotal}]$zws[0m"
+    val shards = "$RED_BOLD_BRIGHT[${shardInfo.shardId + 1}/${shardInfo.shardTotal}]$RESET"
     val inviteURL = j.getInviteUrl(
       Permission.BAN_MEMBERS,
       Permission.KICK_MEMBERS,
@@ -62,16 +65,16 @@ class ReadyListener : ListenerAdapter() {
     )
     val guilds = j.guilds.stream().map { obj -> obj.name }.collect(Collectors.joining(", "))
     j.restPing.queue { api ->
-      info("|$zws[1;92m       R U N N I N G        $zws[0m| Status: $zws[1;92m${j.status}$zws[0m")
+      info("|$GREEN_BOLD_BRIGHT      R U N N I N G        $RESET| Status: $GREEN_BOLD_BRIGHT${j.status}$RESET")
       info("|                            | Logged in as: ${j.selfUser.asTag}")
-      info("|$zws[1;95m       ██╗██████╗  █████╗   $zws[0m| Guilds available: ${event.guildAvailableCount}")
-      info("|$zws[1;95m       ██║██╔══██╗██╔══██╗  $zws[0m| Owner ID: ${Contraption.ID}")
-      info("|$zws[1;95m  ██   ██║██║  ██║██╔══██║  $zws[0m| Guilds: $guilds")
-      info("|$zws[1;95m  ╚█████╔╝██████╔╝██║  ██║  $zws[0m| Shard ID: ${shardInfo.shardId}")
-      info("|$zws[1;95m   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  $zws[0m| Invite URL: $inviteURL")
+      info("|$PURPLE_BOLD_BRIGHT       ██╗██████╗  █████╗   $RESET| Guilds available: ${event.guildAvailableCount}")
+      info("|$PURPLE_BOLD_BRIGHT       ██║██╔══██╗██╔══██╗  $RESET| Owner ID: ${Contraption.ID}")
+      info("|$PURPLE_BOLD_BRIGHT  ██   ██║██║  ██║██╔══██║  $RESET| Guilds: $guilds")
+      info("|$PURPLE_BOLD_BRIGHT  ╚█████╔╝██████╔╝██║  ██║  $RESET| Shard ID: ${shardInfo.shardId}")
+      info("|$PURPLE_BOLD_BRIGHT   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  $RESET| Invite URL: $inviteURL")
       info("|                            | Account type: ${j.accountType}")
-      info("|$zws[1;92m    [version   ${JDAInfo.VERSION}]    $zws[0m| WebSocket Ping: ${j.gatewayPing}")
-      info("|$zws[1;92m    [dcl version ${Contraption.VERSION}]    $zws[0m| API Ping: $api")
+      info("|$GREEN_BOLD_BRIGHT    [version   ${JDAInfo.VERSION}]    $RESET| WebSocket Ping: ${j.gatewayPing}")
+      info("|$GREEN_BOLD_BRIGHT    [dcl version ${Contraption.VERSION}]    $RESET| API Ping: $api")
       info("|                            | Shards: $shards")
       info("Finished ready in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
     }

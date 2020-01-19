@@ -5,6 +5,12 @@ import com.fortuneteller.dclient.commands.utils.Categories.*
 import com.fortuneteller.dclient.commands.utils.DirectMessage.Companion.sendDirectMessage
 import com.fortuneteller.dclient.commands.utils.PilotCommandListener
 import com.fortuneteller.dclient.utils.CloudFlareDNS
+import com.fortuneteller.dclient.utils.Colors.BLUE_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.GREEN_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.PURPLE_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.RED_BOLD_BRIGHT
+import com.fortuneteller.dclient.utils.Colors.RESET
+import com.fortuneteller.dclient.utils.Colors.YELLOW_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.PilotThreadFactory
 import com.fortuneteller.dclient.utils.PilotUtils.error
 import com.fortuneteller.dclient.utils.PilotUtils.info
@@ -35,6 +41,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 import javax.security.auth.login.LoginException
+import kotlin.system.exitProcess
 
 /*
  * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -84,7 +91,6 @@ class Contraption(private val token: String,
     lateinit var commandClient: CommandClient private set
     lateinit var prefix: String private set
     const val ID: String = "175610330217447424"
-    const val ZWS = "\u001B"
     val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.4l"
 
     fun generateClassGraph() {
@@ -102,11 +108,8 @@ class Contraption(private val token: String,
       when (file.exists()) {
         true -> generate()
         false -> {
-          try {
-            file.parentFile.mkdirs()
-          } finally {
-            generate()
-          }
+          file.parentFile.mkdirs()
+          generate()
         }
       }
     }
@@ -114,6 +117,13 @@ class Contraption(private val token: String,
 
   private fun buildCommandClient() = CommandClientBuilder().let {
     fun buildHelpEmbed(author: User, args: String) = EmbedBuilder().let { e ->
+      fun addCommandInformation(c: Command, l: LinkedList<String>) {
+        if (c.arguments == null && c.isGuildOnly) l.add("```GUILD ONLY \n - ${c.help}```")
+        else if (c.isGuildOnly) l.add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
+        else if (c.arguments != null) l.add("```- ${c.help}```")
+        else l.add("```Arguments: ${c.arguments}\n - ${c.help}```")
+      }
+
       fun categoryEmbed(category: Categories) {
         fun streamCommands(category: Command.Category) {
           val commandInvocation = LinkedList<String>()
@@ -123,12 +133,7 @@ class Contraption(private val token: String,
             .filter { c -> c.category == category && (!c.isHidden || c.isOwnerCommand) }
             .forEachOrdered { c ->
               commandInvocation.add("`$prefix${c.name}`")
-              with(commandInformation) {
-                if (c.arguments == null && c.isGuildOnly) add("```GUILD ONLY \n - ${c.help}```")
-                else if (c.isGuildOnly) add("```GUILD ONLY %n Arguments: ${c.arguments}\n - ${c.help}```")
-                else if (c.arguments != null) add("```- ${c.help}```")
-                else add("```Arguments: ${c.arguments}\n - ${c.help}```")
-              }
+              addCommandInformation(c, commandInformation)
               val invokeIter = commandInvocation.iterator()
               val infoIter = commandInformation.iterator()
               while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
@@ -165,7 +170,7 @@ class Contraption(private val token: String,
       e.setColor(0xd32ce6).setFooter("requested by: ${author.name}", author.avatarUrl).build()
     }
 
-    info("Building $ZWS[1;93mCommandClient$ZWS[0m.")
+    info("Building ${YELLOW_BOLD_BRIGHT}CommandClient${RESET}")
     commands.forEach { c -> it.addCommand(c) }
     commandClient = it
       .setOwnerId(ID)
@@ -181,7 +186,7 @@ class Contraption(private val token: String,
   }
 
   private fun buildShardManager() = PilotThreadFactory("Bolt Guard").let {
-    shardManager = DefaultShardManagerBuilder()
+    DefaultShardManagerBuilder()
       .setShardsTotal(shards)
       .setToken(token)
       .addEventListeners(buildCommandClient())
@@ -199,41 +204,54 @@ class Contraption(private val token: String,
       .setChunkingFilter(ChunkingFilter.NONE)
       .addEventListeners(listeners ?: listOf<Any>(DefaultListener()))
       .build()
-    shardManager
+  }
+
+  private fun retryPrompt(): Unit = Scanner(System.`in`).use {
+    info("Retry connection? [y/n]: ")
+    when (it.next()) {
+      "y" -> run()
+      "n" -> exitProcess(-9)
+      else -> exitProcess(-9)
+    }
   }
 
   override fun run() = AtomicBoolean(false).let { ex ->
     val pattern = Pattern.compile("([A-Z])\\w+")
     try {
-      info("Building $ZWS[1;93mShardManager$ZWS[0m.")
+      info("Building ${YELLOW_BOLD_BRIGHT}ShardManager$RESET")
       shardManager = buildShardManager()
       info("Running.")
-      info(if (shards > 1) "$ZWS[1;91m$shards$ZWS[0m shards active." else "$ZWS[1;91m$shards$ZWS[0m shard active.")
+      info(if (shards > 1) "$RED_BOLD_BRIGHT$shards$RESET shards active."
+      else "$RED_BOLD_BRIGHT$shards$RESET shard active.")
       commands.forEach { c ->
         pattern.matcher(c.toString()).let { p ->
-          while (p.find()) info("$ZWS[1;93mCommand$ZWS[0m loaded: $ZWS[1;92m${p.group(0)}$ZWS[0m")
+          while (p.find())
+            info("${YELLOW_BOLD_BRIGHT}Command$RESET loaded: $GREEN_BOLD_BRIGHT${p.group(0)}$RESET")
         }
       }
       if (listeners == null) return
       listeners.forEach { l ->
         pattern.matcher(l.toString()).let { p ->
-          while (p.find()) info("$ZWS[1;93mEventListener$ZWS[0m loaded: $ZWS[1;92m${p.group(0)}$ZWS[0m")
+          while (p.find())
+            info("${YELLOW_BOLD_BRIGHT}EventListener$RESET loaded: $GREEN_BOLD_BRIGHT${p.group(0)}$RESET")
         }
       }
     } catch (l: LoginException) {
       error("Invalid token or time out.")
       ex.set(true)
+      retryPrompt()
     } catch (i: IllegalArgumentException) {
-      error("$ZWS[1;93mCommands$ZWS[0m/$ZWS[1;93mEventListeners$ZWS[0m loading failed!")
+      error("${YELLOW_BOLD_BRIGHT}Commands$RESET/${YELLOW_BOLD_BRIGHT}EventListeners$RESET loading failed!")
       ex.set(true)
     } catch (u: UnknownHostException) {
       ex.set(true)
-      error("Cannot connect to $ZWS[1;95mDiscord API$ZWS[0m/" +
-        "$ZWS[1;95mWebSocket$ZWS[0m, or $ZWS[1;94mCloudFlare DNS$ZWS[0m.")
+      error("Cannot connect to ${PURPLE_BOLD_BRIGHT}Discord API$RESET/" +
+        "${PURPLE_BOLD_BRIGHT}WebSocket$RESET, or ${BLUE_BOLD_BRIGHT}CloudFlare DNS$RESET.")
+      retryPrompt()
     } finally {
       when (!ex.get()) {
         true -> {
-          info("$ZWS[1;93mContraption$ZWS[0m instance: ${toString()}")
+          info("${YELLOW_BOLD_BRIGHT}Contraption$RESET instance: ${toString()}")
           instance = this
           Companion.prefix = prefix
           info("Finished initializing in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
@@ -243,7 +261,7 @@ class Contraption(private val token: String,
     }
   }
 
-  override fun toString() = "type: $ZWS[1;93m${Thread::class.simpleName}$ZWS[0m name: $name"
+  override fun toString() = "type: $YELLOW_BOLD_BRIGHT${Thread::class.simpleName}$RESET name: $name"
 
   private class DefaultListener : ListenerAdapter() {
     override fun onReady(event: ReadyEvent) = info("Ready!")
