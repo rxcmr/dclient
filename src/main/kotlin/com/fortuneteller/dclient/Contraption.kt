@@ -170,7 +170,7 @@ class Contraption(private val token: String,
       e.setColor(0xd32ce6).setFooter("requested by: ${author.name}", author.avatarUrl).build()
     }
 
-    info("Building ${YELLOW_BOLD_BRIGHT}CommandClient${RESET}")
+    info("Building ${YELLOW_BOLD_BRIGHT}CommandClient$RESET")
     commands.forEach { c -> it.addCommand(c) }
     commandClient = it
       .setOwnerId(ID)

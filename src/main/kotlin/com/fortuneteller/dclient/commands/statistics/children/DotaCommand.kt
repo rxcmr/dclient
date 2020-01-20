@@ -1,6 +1,7 @@
 package com.fortuneteller.dclient.commands.statistics.children
 
 import com.fortuneteller.dclient.commands.statistics.StatisticsCommand
+import com.fortuneteller.dclient.commands.statistics.utils.DotaStats
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.fortuneteller.dclient.utils.ExMessage
@@ -49,6 +50,7 @@ import kotlin.math.abs
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@Suppress("unused")
 class DotaCommand : StatisticsCommand() {
   override fun execute(event: CommandEvent) {
     val args = event.args.split("\\s+".toRegex())
@@ -77,12 +79,61 @@ class DotaCommand : StatisticsCommand() {
               })
               .addField("Score:", "Radiant: ${matchData.getInt("radiant_score")}," +
                 " Dire: ${matchData.getInt("dire_score")}", false)
+              .addField("Actual Player Count:", "${matchData.getInt("human_players")}", false)
               .addField("Match Duration:", matchTime, false)
+              .addField("Game Mode:", DotaStats.getGameMode(matchData.getInt("game_mode")), false)
+              .addField("Lobby Type:", DotaStats.getLobbyType(matchData.getInt("lobby_type")), false)
+              .addField("Skill Bracket:", DotaStats.getSkill(matchData.getInt("skill")), false)
               .build()
             event.reply(embed)
           }
         }
       }
+      "players" -> {
+        url += "players/${args[1]}"
+        val request = Request.Builder().url(url).build()
+        event.jda.httpClient.newCall(request).execute().use {
+          if (!it.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
+          else {
+            val json = BufferedReader(InputStreamReader(it.body()?.byteStream()!!)).use { i ->
+              i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
+            }
+            val playerData = JSONObject(json)
+            val embed = EmbedBuilder()
+              .addField("Account ID:", "${playerData.getInt("account_id")}", false)
+              .addField("Persona Name:", playerData.getString("personaname"), false)
+              .addField("Name:", playerData.getString("name"), false)
+              .addField("Dota Plus:",
+                if (playerData.getBoolean("plus")) "Subscribed" else "Not Subscribed", false)
+              .addField("Steam ID:", playerData.getString("steamid"), false)
+              .addField("Profile URL:", playerData.getString("playerurl"), false)
+              .addField("Last login date:", playerData.getString("last_login"), false)
+              .addField("Country Code:", playerData.getString("loccountrycode"), false)
+
+            url += "wl"
+            val wlRequest = Request.Builder().url(url).build()
+            event.jda.httpClient.newCall(wlRequest).execute().use { wit ->
+              if (!wit.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
+              else {
+                val wlJson = BufferedReader(InputStreamReader(wit.body()?.byteStream()!!)).use { i ->
+                  i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
+                }
+
+                val wlStats = JSONObject(wlJson)
+                val win = wlStats.getInt("win")
+                val lose = wlStats.getInt("lose")
+
+                embed
+                  .addField("Win/Lose:", "$win/$lose", false)
+                  .addField("Win rate:", "${(win / (win + lose)) * 100}%", false)
+              }
+            }
+
+            event.reply(embed.build())
+          }
+        }
+      }
+      else -> throw CommandException()
     }
   }
 
