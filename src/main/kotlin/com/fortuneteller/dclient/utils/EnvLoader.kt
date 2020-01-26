@@ -3,7 +3,7 @@ package com.fortuneteller.dclient.utils
 import io.github.cdimascio.dotenv.Dotenv
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ import io.github.cdimascio.dotenv.Dotenv
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -34,11 +34,8 @@ import io.github.cdimascio.dotenv.Dotenv
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 
-object EnvLoader {
-  fun load(env: String) = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()[env] ?: ""
-}
+fun loadEnv(env: String) = Dotenv.configure().ignoreIfMalformed().ignoreIfMissing().load()[env] ?: ""

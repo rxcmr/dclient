@@ -29,7 +29,7 @@ import java.util.stream.Collectors
 import kotlin.collections.LinkedHashSet
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import kotlin.collections.LinkedHashSet
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -59,7 +59,6 @@ import kotlin.collections.LinkedHashSet
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
@@ -114,6 +113,11 @@ class JagTagCommand : Command(), SQLUtils {
             "cblkraw" -> stream().forEachOrdered { t ->
               if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
               else if (t.tagKey == args[2] && t.guildID == "GLOBAL") reply("```${t.tagValue}```")
+            }
+            "info", "i" -> stream().forEachOrdered { t ->
+              if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
+              else if (t.tagKey == args[2]) reply("Owned by: **${jda.getUserById(t.ownerID)?.asTag}** (${t.ownerID})" +
+                " in guild **${jda.getGuildById(t.guildID)?.name}** (${t.guildID})")
             }
             else -> stream().forEachOrdered { t ->
               if (!exists(GVALUE, args[1])) throw CommandException(ExMessage.JT_NOT_FOUND)
@@ -182,6 +186,11 @@ class JagTagCommand : Command(), SQLUtils {
                 }
               }
             })
+          }
+          "info", "i" -> stream().forEachOrdered { t ->
+            if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
+            else if (t.tagKey == args[2]) reply("Owned by: **${jda.getUserById(t.ownerID)?.asTag}** (${t.ownerID})" +
+              " in guild **${jda.getGuildById(t.guildID)?.name}** (${t.guildID})")
           }
           else -> stream().forEachOrdered { t ->
             if (channelType == ChannelType.PRIVATE) throw CommandException(ExMessage.JT_GLOBAL)

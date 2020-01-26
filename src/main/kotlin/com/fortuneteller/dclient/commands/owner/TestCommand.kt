@@ -1,14 +1,13 @@
 package com.fortuneteller.dclient.commands.owner
 
-import com.fortuneteller.dclient.Contraption
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.DirectMessage.Companion.sendDirectMessage
+import com.fortuneteller.dclient.commands.utils.replyToOwner
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import java.security.SecureRandom
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +22,7 @@ import java.security.SecureRandom
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -37,14 +36,16 @@ import java.security.SecureRandom
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class TestCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
     for (i in 0..100) {
       reply("RateLimit pls")
-      sendDirectMessage("RateLimit pls", jda.getUserById(Contraption.ID)!!, null)
+      replyToOwner("RateLimit pls")
       guild.getMember(jda.getUserById(228106090242375680)!!)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
       guild.getMember(jda.selfUser)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
     }

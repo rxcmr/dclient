@@ -2,10 +2,12 @@ package com.fortuneteller.dclient.listeners
 
 import com.fortuneteller.dclient.Contraption
 import com.fortuneteller.dclient.Pilot
+import com.fortuneteller.dclient.utils.Colors.BLUE_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.Colors.GREEN_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.Colors.PURPLE_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.Colors.RED_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.Colors.RESET
+import com.fortuneteller.dclient.utils.Colors.YELLOW_BOLD_BRIGHT
 import com.fortuneteller.dclient.utils.PilotUtils.gc
 import com.fortuneteller.dclient.utils.PilotUtils.info
 import net.dv8tion.jda.api.JDAInfo
@@ -17,7 +19,7 @@ import java.time.Instant
 import java.util.stream.Collectors
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +34,7 @@ import java.util.stream.Collectors
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -63,20 +65,31 @@ class ReadyListener : ListenerAdapter() {
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     )
-    val guilds = j.guilds.stream().map { obj -> obj.name }.collect(Collectors.joining(", "))
+    val guilds = j.guilds.stream().map { g -> g.name }.collect(Collectors.joining(", "))
     j.restPing.queue { api ->
-      info("|$GREEN_BOLD_BRIGHT      R U N N I N G        $RESET| Status: $GREEN_BOLD_BRIGHT${j.status}$RESET")
-      info("|                            | Logged in as: ${j.selfUser.asTag}")
+      info("|$GREEN_BOLD_BRIGHT        R U N N I N G       $RESET| Status: $GREEN_BOLD_BRIGHT${j.status}$RESET")
+      info("|                            | Logged in as: $BLUE_BOLD_BRIGHT${j.selfUser.asTag}$RESET")
       info("|$PURPLE_BOLD_BRIGHT       ██╗██████╗  █████╗   $RESET| Guilds available: ${event.guildAvailableCount}")
       info("|$PURPLE_BOLD_BRIGHT       ██║██╔══██╗██╔══██╗  $RESET| Owner ID: ${Contraption.ID}")
       info("|$PURPLE_BOLD_BRIGHT  ██   ██║██║  ██║██╔══██║  $RESET| Guilds: $guilds")
       info("|$PURPLE_BOLD_BRIGHT  ╚█████╔╝██████╔╝██║  ██║  $RESET| Shard ID: ${shardInfo.shardId}")
       info("|$PURPLE_BOLD_BRIGHT   ╚════╝ ╚═════╝ ╚═╝  ╚═╝  $RESET| Invite URL: $inviteURL")
       info("|                            | Account type: ${j.accountType}")
-      info("|$GREEN_BOLD_BRIGHT    [version   ${JDAInfo.VERSION}]    $RESET| WebSocket Ping: ${j.gatewayPing}")
-      info("|$GREEN_BOLD_BRIGHT    [dcl version ${Contraption.VERSION}]    $RESET| API Ping: $api")
+      info("|$GREEN_BOLD_BRIGHT    [version  ${JDAInfo.VERSION}]    $RESET| " +
+        "WebSocket Ping: ${ when {
+          j.gatewayPing <= 125 -> "$GREEN_BOLD_BRIGHT${j.gatewayPing}$RESET"
+          j.gatewayPing <= 325 -> "$YELLOW_BOLD_BRIGHT${j.gatewayPing}$RESET"
+          else -> "$RED_BOLD_BRIGHT$api$RESET"
+        }}")
+      info("|$GREEN_BOLD_BRIGHT    [dcl version ${Contraption.VERSION}]    $RESET| " +
+        "API Ping: ${ when {
+          api <= 125 -> "$GREEN_BOLD_BRIGHT$api$RESET"
+          api <= 325 -> "$YELLOW_BOLD_BRIGHT$api$RESET"
+          else -> "$RED_BOLD_BRIGHT$api$RESET"
+        }}")
       info("|                            | Shards: $shards")
-      info("Finished ready in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
+      info("Finished ready for Shard ${shardInfo.shardId} in " +
+        "${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
     }
     gc()
   }

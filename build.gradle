@@ -27,6 +27,8 @@ targetCompatibility = 11
 sourceCompatibility = 11
 
 dependencies {
+  implementation group: "no.tornado", name: "tornadofx", version: "1.7.19"
+  implementation group: "com.intellij", name: "openapi", version: "7.0.3"
   implementation group: "org.jetbrains.exposed", name: "exposed-core", version: "0.20.3"
   implementation group: "org.jetbrains.exposed", name: "exposed-jdbc", version: "0.20.3"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-stdlib"
@@ -36,9 +38,9 @@ dependencies {
   implementation group: "org.jetbrains.kotlin", name: "kotlin-script-runtime"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-script-util"
   implementation group: "org.jetbrains.kotlin", name: "kotlin-compiler-embeddable"
-  implementation group: "org.jetbrains.kotlin", name: "kotlin-scripting-compiler"
-  implementation group: "net.dv8tion", name: "JDA", version: "4.1.0_100"
-  implementation group: "io.projectreactor", name: "reactor-core", version: "3.3.1.RELEASE"
+  implementation group: "org.jetbrains.kotlin", name: "kotlin-scripting-compiler-embeddable"
+  implementation group: "net.dv8tion", name: "JDA", version: "4.1.1_101"
+  implementation group: "io.projectreactor", name: "reactor-core", version: "3.3.2.RELEASE"
   implementation group: "club.minnced", name: "jda-reactor", version: "1.0.0"
   implementation group: "org.jsoup", name: "jsoup", version: "1.12.1"
   implementation group: "io.github.cdimascio", name: "java-dotenv", version: "5.1.3"

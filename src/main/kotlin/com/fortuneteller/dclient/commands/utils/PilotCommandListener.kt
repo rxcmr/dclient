@@ -12,7 +12,7 @@ import com.jagrosh.jdautilities.examples.command.PingCommand
 import com.jagrosh.jdautilities.examples.command.ShutdownCommand
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import com.jagrosh.jdautilities.examples.command.ShutdownCommand
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -48,7 +48,6 @@ import com.jagrosh.jdautilities.examples.command.ShutdownCommand
  */
 class PilotCommandListener : CommandListener {
   override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) = event.let { e ->
-    val owner = e.jda?.getUserById(Contraption.ID)!!
     e.channel?.sendTyping()?.queue()
     command.let { c ->
       throwable.let { t ->
@@ -58,7 +57,7 @@ class PilotCommandListener : CommandListener {
           is PlayCommand -> SearchCommand().execute(e)
           else -> {
             e.message?.addReaction("\uD83D\uDE41")?.queue()
-            DirectMessage.sendDirectMessage("```java\n", owner, "$t\n```")
+            e.replyToOwner("```java\n$t\n```")
             e.reply(when (c.arguments) {
               null -> "Something wrong happened..."
               else -> "${Contraption.prefix}${c.name} ${c.arguments}"
@@ -70,21 +69,18 @@ class PilotCommandListener : CommandListener {
     }
   }
 
-  override fun onCompletedCommand(event: CommandEvent, command: Command?) {
+  override fun onCompletedCommand(event: CommandEvent, command: Command) {
     if (command is ShutdownCommand) return
     event.message?.addReaction("\uD83D\uDE42")?.queue()
   }
 
   override fun onTerminatedCommand(event: CommandEvent, command: Command) {
     if (command is LeaveCommand) return
-    val owner = event.jda?.getUserById(Contraption.ID)
     event.message?.addReaction("\uD83E\uDD2C")?.queue()
     event.channel?.sendTyping()?.queue()
     event.reply("Unexpected behavior. Try again.")
-    DirectMessage.sendDirectMessage(
-      "Unexpected behavior. Triggered by: ",
-      owner!!,
-      "${event.author.name} in ${event.guild.name} in ${event.channel.name}"
-    )
+    event.replyToOwner("Unexpected behavior.\n" +
+      "Triggered by: ${event.author.name} in ${event.guild.name} in ${event.channel.name}\n" +
+      "Input: ${event.message}")
   }
 }

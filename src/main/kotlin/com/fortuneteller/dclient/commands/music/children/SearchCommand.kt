@@ -3,9 +3,9 @@ package com.fortuneteller.dclient.commands.music.children
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.EnvLoader
 import com.fortuneteller.dclient.utils.ExMessage
 import com.fortuneteller.dclient.utils.PilotUtils
+import com.fortuneteller.dclient.utils.loadEnv
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import okhttp3.Request
@@ -15,7 +15,7 @@ import java.io.InputStreamReader
 import java.util.stream.Collectors
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import java.util.stream.Collectors
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -44,8 +44,10 @@ import java.util.stream.Collectors
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class SearchCommand : Command() {
   private var useCount = 0
@@ -54,7 +56,7 @@ class SearchCommand : Command() {
     val client = it.jda.httpClient
     if (useCount <= 80) {
       val request = Request.Builder().url("https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=25&"
-        + "q=${it.args}&key=${EnvLoader.load("YT_API_KEY")}").build()
+        + "q=${it.args}&key=${loadEnv("YT_API_KEY")}").build()
       client.newCall(request).execute().use { r ->
         useCount++
         if (!r.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)

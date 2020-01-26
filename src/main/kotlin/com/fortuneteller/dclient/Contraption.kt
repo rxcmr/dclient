@@ -2,7 +2,6 @@ package com.fortuneteller.dclient
 
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.Categories.*
-import com.fortuneteller.dclient.commands.utils.DirectMessage.Companion.sendDirectMessage
 import com.fortuneteller.dclient.commands.utils.PilotCommandListener
 import com.fortuneteller.dclient.utils.CloudFlareDNS
 import com.fortuneteller.dclient.utils.Colors.BLUE_BOLD_BRIGHT
@@ -44,7 +43,7 @@ import javax.security.auth.login.LoginException
 import kotlin.system.exitProcess
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +58,7 @@ import kotlin.system.exitProcess
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -75,7 +74,6 @@ import kotlin.system.exitProcess
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
@@ -83,7 +81,7 @@ class Contraption(private val token: String,
                   private val prefix: String,
                   private val shards: Int,
                   private val commands: Collection<Command>,
-                  private val listeners: Collection<Any>?) : Thread("Von Bolt") {
+                  private val listeners: Collection<Any>?) {
 
   companion object {
     lateinit var instance: Contraption private set
@@ -178,7 +176,8 @@ class Contraption(private val token: String,
       .setActivity(Activity.listening("events."))
       .setStatus(OnlineStatus.DO_NOT_DISTURB)
       .setListener(PilotCommandListener())
-      .setHelpConsumer { e -> sendDirectMessage(buildHelpEmbed(e.author, e.args), e.author, null) }
+      .setHelpConsumer { e -> e.replyInDm(buildHelpEmbed(e.author, e.args))
+      }
       .useHelpBuilder(false)
       .setShutdownAutomatically(true)
       .build()
@@ -209,13 +208,13 @@ class Contraption(private val token: String,
   private fun retryPrompt(): Unit = Scanner(System.`in`).use {
     info("Retry connection? [y/n]: ")
     when (it.next()) {
-      "y" -> run()
+      "y" -> launch()
       "n" -> exitProcess(-9)
       else -> exitProcess(-9)
     }
   }
 
-  override fun run() = AtomicBoolean(false).let { ex ->
+  fun launch() = AtomicBoolean(false).let { ex ->
     val pattern = Pattern.compile("([A-Z])\\w+")
     try {
       info("Building ${YELLOW_BOLD_BRIGHT}ShardManager$RESET")
@@ -239,7 +238,6 @@ class Contraption(private val token: String,
     } catch (l: LoginException) {
       error("Invalid token or time out.")
       ex.set(true)
-      retryPrompt()
     } catch (i: IllegalArgumentException) {
       error("${YELLOW_BOLD_BRIGHT}Commands$RESET/${YELLOW_BOLD_BRIGHT}EventListeners$RESET loading failed!")
       ex.set(true)
@@ -247,21 +245,20 @@ class Contraption(private val token: String,
       ex.set(true)
       error("Cannot connect to ${PURPLE_BOLD_BRIGHT}Discord API$RESET/" +
         "${PURPLE_BOLD_BRIGHT}WebSocket$RESET, or ${BLUE_BOLD_BRIGHT}CloudFlare DNS$RESET.")
-      retryPrompt()
     } finally {
       when (!ex.get()) {
         true -> {
-          info("${YELLOW_BOLD_BRIGHT}Contraption$RESET instance: ${toString()}")
           instance = this
           Companion.prefix = prefix
           info("Finished initializing in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
         }
-        false -> error("My disappointment is immeasurable, and my day is ruined.")
+        false -> {
+          error("My disappointment is immeasurable, and my day is ruined.")
+          retryPrompt()
+        }
       }
     }
   }
-
-  override fun toString() = "type: $YELLOW_BOLD_BRIGHT${Thread::class.simpleName}$RESET name: $name"
 
   private class DefaultListener : ListenerAdapter() {
     override fun onReady(event: ReadyEvent) = info("Ready!")

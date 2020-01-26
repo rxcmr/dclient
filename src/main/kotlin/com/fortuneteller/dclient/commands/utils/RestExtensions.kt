@@ -1,10 +1,12 @@
 package com.fortuneteller.dclient.commands.utils
 
-import net.dv8tion.jda.api.entities.MessageEmbed
-import net.dv8tion.jda.api.entities.User
+import net.dv8tion.jda.api.requests.RestAction
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +21,7 @@ import net.dv8tion.jda.api.entities.User
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -38,20 +40,22 @@ import net.dv8tion.jda.api.entities.User
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-interface DirectMessage {
-  companion object {
-    fun sendDirectMessage(content: Any, user: User, exceptionMessage: String?) {
-      user.openPrivateChannel().queue { channel ->
-        if (content is MessageEmbed) {
-          if (exceptionMessage == null) channel.sendMessage(content).queue()
-          else channel.sendMessage("$content$exceptionMessage").queue()
-        } else if (exceptionMessage == null) channel.sendMessage(content.toString()).queue()
-        else channel.sendMessage("$content$exceptionMessage").queue()
-      }
+@Suppress("unused")
+suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
+  queue({ s -> it.resume(s) }, { f ->
+    when (failure) {
+      null -> it.resumeWithException(f)
+      else -> failure.invoke(f)
     }
-  }
+  })
+}
 
-  fun customMessage(user: User, vararg content: Any) {
-    throw UnsupportedOperationException("Override this function!")
-  }
+@Suppress("unused")
+suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
+  queue({ s -> it.resume(s) }, { _ -> it.resume(null) })
+}
+
+@Suppress("unused")
+suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
+  queue({ _ -> it.resume(true) }, { _ -> it.resume(false) })
 }

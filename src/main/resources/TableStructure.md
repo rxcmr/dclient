@@ -21,11 +21,11 @@ but they can't be both non-unique.
 
 #### Representation
 
-| tagKey | tagValue | ownerID | guildID |
-| :--- | :--- | :--- | :--- |
-| jagtag | https://github.com/jagrosh/JagTag | 175610330217447424 | GLOBAL |
-| JDA | https://github.com/DV8FromTheWorld/JDA | 175610330217447424 | GLOBAL |
-| whoami | {author} | 175610330217447424 | GLOBAL |
+| tagKey | tagValue                               | ownerID            | guildID |
+|:-------|:---------------------------------------|:-------------------|:--------|
+| JDA    | https://github.com/DV8FromTheWorld/JDA | 175610330217447424 | GLOBAL  |
+| jagtag | https://github.com/jagrosh/JagTag      | 175610330217447424 | GLOBAL  |
+| whoami | {author}                               | 175610330217447424 | GLOBAL  |
 
 #### Query
 

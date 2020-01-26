@@ -1,12 +1,11 @@
 package com.fortuneteller.dclient.commands.utils
 
-import net.dv8tion.jda.api.requests.RestAction
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import com.fortuneteller.dclient.Contraption.Companion.ID
+import com.jagrosh.jdautilities.command.CommandEvent
+import net.dv8tion.jda.api.entities.MessageEmbed
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +20,7 @@ import kotlin.coroutines.suspendCoroutine
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -40,22 +39,12 @@ import kotlin.coroutines.suspendCoroutine
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+
+fun CommandEvent.replyToOwner(message: String) = event.jda.getUserById(ID)?.openPrivateChannel()?.queue {
+  it.sendMessage(message)
+}!!
+
 @Suppress("unused")
-interface AsyncRestUtils {
-  suspend fun <T> RestAction<T>.await(failure: ((Throwable) -> Unit)? = null) = suspendCoroutine<T> {
-    queue({ s -> it.resume(s) }, { f ->
-      when (failure) {
-        null -> it.resumeWithException(f)
-        else -> failure.invoke(f)
-      }
-    })
-  }
-
-  suspend fun <T> RestAction<T>.awaitOrNull() = suspendCoroutine<T?> {
-    queue({ s -> it.resume(s) }, { _ -> it.resume(null) })
-  }
-
-  suspend fun <T> RestAction<T>.awaitBool() = suspendCoroutine<Boolean> {
-    queue({ _ -> it.resume(true) }, { _ -> it.resume(false) })
-  }
-}
+fun CommandEvent.replyToOwner(embed: MessageEmbed) = event.jda.getUserById(ID)?.openPrivateChannel()?.queue {
+  it.sendMessage(embed)
+}!!

@@ -6,7 +6,7 @@ import net.dv8tion.jda.api.audio.AudioSendHandler
 import java.nio.ByteBuffer
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.nio.ByteBuffer
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -38,7 +38,7 @@ import java.nio.ByteBuffer
  */
 
 /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class AudioPlayerSendHandler(private val player: AudioPlayer) : AudioSendHandler {
   private val buffer: ByteBuffer = ByteBuffer.allocate(1024)

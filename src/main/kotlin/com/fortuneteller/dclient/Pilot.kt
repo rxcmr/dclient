@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient
 
-import com.fortuneteller.dclient.utils.EnvLoader
+import com.fortuneteller.dclient.utils.loadEnv
 import com.jagrosh.jdautilities.command.Command
 import io.github.classgraph.ClassGraph
 import net.dv8tion.jda.api.hooks.ListenerAdapter
@@ -8,7 +8,7 @@ import java.time.Instant
 import java.util.*
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import java.util.*
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -54,10 +54,11 @@ class Pilot(private val token: String, private val prefix: String, private val s
         "com.fortuneteller.dclient.commands.gadgets.utils",
         "com.fortuneteller.dclient.commands.music.utils",
         "com.fortuneteller.dclient.commands.music.children",
-        "com.fortuneteller.dclient.commands.statistics.children")
+        "com.fortuneteller.dclient.commands.statistics.children",
+        "com.fortuneteller.dclient.commands.owner.children")
       .whitelistPackages("com.fortuneteller.dclient.commands.*")
       .scan()
-      .getSubclasses(Command::class.java.name)
+      .getSubclasses(Command::class.qualifiedName)
       .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
   }
 
@@ -65,11 +66,12 @@ class Pilot(private val token: String, private val prefix: String, private val s
     for (l in ClassGraph()
       .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
       .scan()
-      .getSubclasses(ListenerAdapter::class.java.name)
+      .getSubclasses(ListenerAdapter::class.qualifiedName)
       .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
   }
 
-  override fun run() = Contraption(token, prefix, shards, commands, listeners).start()
+  override fun run() = Contraption(token, prefix, shards, commands, listeners).launch()
+
 }
 
-fun main() = Pilot(EnvLoader.load("TOKEN"), "pl.", 1).run()
+fun main() = Pilot(loadEnv("TOKEN"), "pl.", 1).run()

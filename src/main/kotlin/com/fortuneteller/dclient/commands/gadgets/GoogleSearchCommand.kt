@@ -2,12 +2,12 @@ package com.fortuneteller.dclient.commands.gadgets
 
 import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.utils.EnvLoader
+import com.fortuneteller.dclient.utils.loadEnv
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -36,16 +36,18 @@ import com.jagrosh.jdautilities.command.CommandEvent
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class GoogleSearchCommand : Command() {
-  override fun execute(event: CommandEvent) = with(EnvLoader) {
-    event.channel.sendTyping().queue()
+  override fun execute(event: CommandEvent) = with(event) {
+    channel.sendTyping().queue()
     val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
-    GoogleSearchHandler.init(load("API_KEY"))
-    val results = GoogleSearchHandler.performSearch(load("ENGINE_ID"), query, event.jda.httpClient)
-    event.reply(results[0].suggestedResult)
+    GoogleSearchHandler.init(loadEnv("API_KEY"))
+    val results = GoogleSearchHandler.performSearch(loadEnv("ENGINE_ID"), query, event.jda.httpClient)
+    reply(results[0].suggestedResult)
   }
 
   init {

@@ -34,11 +34,9 @@ import java.util.concurrent.ThreadFactory
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-
 class PilotThreadFactory(private val name: String) : ThreadFactory {
   private var threadCount = 0
   

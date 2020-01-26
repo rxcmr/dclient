@@ -39,8 +39,10 @@ import java.util.stream.Collectors
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */ /**
- * @author rxcmr <lythe1107></lythe1107>@gmail.com> or <lythe1107></lythe1107>@icloud.com>
+ */
+
+/**
+ * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
   private val queue: Queue<AudioTrack>

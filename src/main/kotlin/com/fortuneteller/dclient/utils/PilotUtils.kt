@@ -5,7 +5,7 @@ import java.lang.StackWalker.Option.RETAIN_CLASS_REFERENCE
 import java.lang.StackWalker.getInstance
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.lang.StackWalker.getInstance
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -45,17 +45,11 @@ object PilotUtils {
   private val logger = getLogger(getInstance(RETAIN_CLASS_REFERENCE).callerClass)
 
   fun info(m: String) = logger.info(m)
-
   fun warn(m: String) = logger.warn(m)
-
   fun error(m: String) = logger.error(m)
-
-  fun error(m: String, e: Exception) = logger.error(m, e)
-
+  fun error(m: String, t: Throwable) = logger.error(m, t)
   fun debug(m: String) = logger.debug(m)
-
   fun trace(m: String) = logger.trace(m)
-
   fun gc() {
     warn("Garbage collection happening soon...")
     System.gc()
