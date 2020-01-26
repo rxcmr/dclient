@@ -1,5 +1,7 @@
 package com.fortuneteller.dclient.database
 
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -42,10 +44,21 @@ import java.sql.Connection
  */
 interface SQLUtils {
   companion object {
-    fun <T> transact(statement: Transaction.() -> T) = transaction(
+    fun <T> transact(db: String, statement: Transaction.() -> T) = transaction(
       Connection.TRANSACTION_SERIALIZABLE,
       3,
-      Database.connect("jdbc:sqlite:sqlite/PilotDB.sqlite", "org.sqlite.JDBC"),
+      Database.connect(
+        when (db) {
+          "sqlite" -> "jdbc:sqlite:sqlite/PilotDB.sqlite"
+          "postgresql" -> "jdbc:postgresql://localhost/pilotdb?user=dclient"
+          else -> throw CommandException(ExMessage.INVALID_DB)
+        },
+        when (db) {
+          "sqlite" -> "org.sqlite.JDBC"
+          "postgresql" -> "org.postgresql.Driver"
+          else -> throw CommandException(ExMessage.INVALID_DB)
+        }
+      ),
       statement)
   }
 

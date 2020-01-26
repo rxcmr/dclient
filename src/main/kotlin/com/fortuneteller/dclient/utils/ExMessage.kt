@@ -53,5 +53,6 @@ enum class ExMessage(val msg: String) {
   SLOWMODE_DURATION("Slow mode must not be negative or greater than ${TextChannel.MAX_SLOWMODE}."),
   INVALID_CLASS("Invalid class name."),
   INVALID_INTEGER("Not a valid integer."),
-  INPUT_TOO_LONG("Input too long.")
+  INPUT_TOO_LONG("Input too long."),
+  INVALID_DB("Invalid database name.")
 }

@@ -9,6 +9,7 @@ import com.fortuneteller.dclient.database.SQLItemMode.*
 import com.fortuneteller.dclient.database.SQLUtils
 import com.fortuneteller.dclient.database.SQLUtils.Companion.transact
 import com.fortuneteller.dclient.utils.ExMessage
+import com.fortuneteller.dclient.utils.PilotUtils
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jdautilities.command.Command
@@ -27,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.collections.LinkedHashSet
+import kotlin.properties.Delegates
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -67,6 +69,8 @@ import kotlin.collections.LinkedHashSet
 class JagTagCommand : Command(), SQLUtils {
   private val tags = LinkedHashSet<Tag>()
   private val tagCache = LinkedHashSet<Tag>()
+  private var db: String
+  private var postgresUsed by Delegates.notNull<Boolean>()
 
   public override fun execute(event: CommandEvent): Unit = with(event) {
     val args = args?.split("\\s+".toRegex())?.toTypedArray()!!
@@ -263,13 +267,13 @@ class JagTagCommand : Command(), SQLUtils {
     it.addMethods(methods).build()
   }
 
-  override fun createTable() = transact {
+  override fun createTable() = transact(db) {
     //language=SQLite
-    exec("PRAGMA auto_vacuum = FULL")
+    if (!postgresUsed) exec("PRAGMA auto_vacuum = FULL")
     SchemaUtils.createMissingTablesAndColumns(JagTagTable)
   }
 
-  override fun insert(mode: SQLItemMode, vararg args: String): Unit = transact {
+  override fun insert(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
     JagTagTable.insert {
       it[tagKey] = if (args[0].isEmpty()) throw CommandException(ExMessage.JT_KEY_EMPTY) else args[0]
       it[tagValue] = if (args[1].isEmpty()) throw CommandException(ExMessage.JT_VAL_EMPTY) else args[1]
@@ -278,7 +282,7 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  override fun select(mode: SQLItemMode, vararg args: String) = transact {
+  override fun select(mode: SQLItemMode, vararg args: String) = transact(db) {
     JagTagTable.selectAll().forEach {
       tagCache += Tag().set(
         it[JagTagTable.tagKey],
@@ -289,13 +293,13 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  override fun delete(mode: SQLItemMode, vararg args: String): Unit = transact {
+  override fun delete(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
     JagTagTable.tagKey eq args[0]
     JagTagTable.ownerID eq args[1]
     JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[2]
   }
 
-  override fun update(mode: SQLItemMode, vararg args: String): Unit = transact {
+  override fun update(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
     JagTagTable.update({
       JagTagTable.tagKey eq args[0]
       JagTagTable.ownerID eq args[2]
@@ -305,7 +309,7 @@ class JagTagCommand : Command(), SQLUtils {
     }
   }
 
-  override fun exists(mode: SQLItemMode, vararg args: String) = transact {
+  override fun exists(mode: SQLItemMode, vararg args: String) = transact(db) {
     JagTagTable.slice(JagTagTable.tagKey, JagTagTable.guildID).select {
       JagTagTable.tagKey eq args[0]
       JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[1]
@@ -313,19 +317,23 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   init {
+    PilotUtils.info("Select database [postgresql/sqlite]: ")
+    postgresUsed = Scanner(System.`in`).next() == "postgresql"
+    db = when (postgresUsed) {
+      true -> "postgresql"
+      false -> "sqlite"
+    }
     name = "jagtag"
     aliases = arrayOf("tag", "t")
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    Path.of("./sqlite/PilotDB.sqlite").let {
+    if (!postgresUsed) Path.of("./sqlite/PilotDB.sqlite").let {
       if (Files.exists(it)) {
         select(ALL)
         tags += tagCache
-      } else {
-        Files.createDirectories(it.parent)
-        createTable()
-      }
+      } else Files.createDirectories(it.parent)
     }
+    createTable()
   }
 }
