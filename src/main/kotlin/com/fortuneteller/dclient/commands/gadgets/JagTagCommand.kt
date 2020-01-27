@@ -28,7 +28,6 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.stream.Collectors
 import kotlin.collections.LinkedHashSet
-import kotlin.properties.Delegates
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -70,7 +69,6 @@ class JagTagCommand : Command(), SQLUtils {
   private val tags = LinkedHashSet<Tag>()
   private val tagCache = LinkedHashSet<Tag>()
   private var db: String
-  private var postgresUsed by Delegates.notNull<Boolean>()
 
   public override fun execute(event: CommandEvent): Unit = with(event) {
     val args = args?.split("\\s+".toRegex())?.toTypedArray()!!
@@ -83,32 +81,23 @@ class JagTagCommand : Command(), SQLUtils {
         when (args[0]) {
           "global", "g" -> when (args[1]) {
             "create", "new", "add" -> {
+              clearAndSelect()
               if (args[2].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex()))
                 throw CommandException(ExMessage.JT_RESERVED)
-              select(ALL)
               val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
               if (message.attachments.isNotEmpty())
                 insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID)
               else insert(GVALUE, args[2], tagValue, authorID)
-              select(ALL)
-              clear()
-              this += tagCache
             }
             "delete", "remove" -> {
-              select(ALL)
+              clearAndSelect()
               if (exists(GVALUE, args[2])) delete(LVALUE, args[2], authorID)
               else throw CommandException(ExMessage.JT_DELETE_NOTHING)
-              select(ALL)
-              clear()
-              this += tagCache
             }
             "edit", "modify" -> {
-              select(ALL)
+              clearAndSelect()
               val tagValue = Arrays.stream(args).skip(3).collect(Collectors.joining(" "))
               update(GVALUE, args[2], tagValue, authorID)
-              select(ALL)
-              clear()
-              this += tagCache
             }
             "raw" -> stream().forEachOrdered { t ->
               if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
@@ -129,36 +118,27 @@ class JagTagCommand : Command(), SQLUtils {
             }
           }
           "create", "new", "add" -> {
+            clearAndSelect()
             if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
             if (args[1].matches(
                 "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
             ) throw CommandException(ExMessage.JT_RESERVED)
-            select(ALL)
             val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
             if (message.attachments.isNotEmpty())
               insert(LVALUE, "${message.attachments[0].proxyUrl} $tagValue", authorID, guildID)
             else insert(LVALUE, args[1], tagValue, authorID, guildID)
-            select(ALL)
-            clear()
-            this += tagCache
           }
           "delete", "remove" -> {
+            clearAndSelect()
             if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
-            select(ALL)
             if (exists(LVALUE, args[1], guildID)) delete(LVALUE, args[1], authorID, guildID)
             else throw CommandException(ExMessage.JT_DELETE_NOTHING)
-            select(ALL)
-            clear()
-            this += tagCache
           }
           "edit", "modify" -> {
+            clearAndSelect()
             if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
-            select(ALL)
             val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
             update(LVALUE, args[1], tagValue, authorID, guildID)
-            select(ALL)
-            clear()
-            this += tagCache
           }
           "raw" -> stream().forEachOrdered { t ->
             if (channelType == ChannelType.PRIVATE) throw CommandException(ExMessage.JT_GLOBAL)
@@ -192,8 +172,8 @@ class JagTagCommand : Command(), SQLUtils {
             })
           }
           "info", "i" -> stream().forEachOrdered { t ->
-            if (!exists(GVALUE, args[2])) throw CommandException(ExMessage.JT_NOT_FOUND)
-            else if (t.tagKey == args[2]) reply("Owned by: **${jda.getUserById(t.ownerID)?.asTag}** (${t.ownerID})" +
+            if (!exists(LVALUE, args[1], guildID)) throw CommandException(ExMessage.JT_NOT_FOUND)
+            else if (t.tagKey == args[1]) reply("Owned by: **${jda.getUserById(t.ownerID)?.asTag}** (${t.ownerID})" +
               " in guild **${jda.getGuildById(t.guildID)?.name}** (${t.guildID})")
           }
           else -> stream().forEachOrdered { t ->
@@ -267,10 +247,36 @@ class JagTagCommand : Command(), SQLUtils {
     it.addMethods(methods).build()
   }
 
+  private fun clearAndSelect() {
+    tags.clear()
+    tagCache.clear()
+    select(ALL)
+    tags += tagCache
+    tagCache.clear()
+  }
+
   override fun createTable() = transact(db) {
-    //language=SQLite
-    if (!postgresUsed) exec("PRAGMA auto_vacuum = FULL")
-    SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+    try {
+      when (this@JagTagCommand.db) {
+        "sqlite" -> {
+          //language=SQLite
+          exec("PRAGMA auto_vacuum = FULL")
+          //language=SQLite
+          exec("SELECT name FROM sqlite_master WHERE type='table' AND name='tags'") { rs ->
+            if (!rs.next()) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+          }!!
+        }
+        "postgresql" -> {
+          //language=PostgreSQL
+          exec("SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'tags')") { rs ->
+            while (rs.next()) if (!rs.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+          }!!
+        }
+        else -> throw CommandException(ExMessage.INVALID_DB)
+      }
+    } finally {
+      clearAndSelect()
+    }
   }
 
   override fun insert(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
@@ -317,18 +323,14 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   init {
-    PilotUtils.info("Select database [postgresql/sqlite]: ")
-    postgresUsed = Scanner(System.`in`).next() == "postgresql"
-    db = when (postgresUsed) {
-      true -> "postgresql"
-      false -> "sqlite"
-    }
+    PilotUtils.info("Reached database initialization stage. Select database [postgresql/sqlite]: ")
+    db = Scanner(System.`in`).nextLine()
     name = "jagtag"
     aliases = arrayOf("tag", "t")
     category = Categories.GADGETS.category
     arguments = "**<modifier>** **<name>** **<content>**"
     help = "JagTag like in Spectra"
-    if (!postgresUsed) Path.of("./sqlite/PilotDB.sqlite").let {
+    if (db == "sqlite") Path.of("./sqlite/PilotDB.sqlite").let {
       if (Files.exists(it)) {
         select(ALL)
         tags += tagCache

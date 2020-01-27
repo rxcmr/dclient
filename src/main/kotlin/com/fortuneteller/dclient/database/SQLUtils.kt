@@ -45,12 +45,12 @@ import java.sql.Connection
 interface SQLUtils {
   companion object {
     fun <T> transact(db: String, statement: Transaction.() -> T) = transaction(
-      Connection.TRANSACTION_SERIALIZABLE,
+      if (db == "sqlite") Connection.TRANSACTION_SERIALIZABLE else Connection.TRANSACTION_READ_UNCOMMITTED,
       3,
       Database.connect(
         when (db) {
           "sqlite" -> "jdbc:sqlite:sqlite/PilotDB.sqlite"
-          "postgresql" -> "jdbc:postgresql://localhost/pilotdb?user=dclient"
+          "postgresql" -> "jdbc:postgresql://localhost/pilotdb"
           else -> throw CommandException(ExMessage.INVALID_DB)
         },
         when (db) {
@@ -58,7 +58,7 @@ interface SQLUtils {
           "postgresql" -> "org.postgresql.Driver"
           else -> throw CommandException(ExMessage.INVALID_DB)
         }
-      ),
+        , "dclient"),
       statement)
   }
 
