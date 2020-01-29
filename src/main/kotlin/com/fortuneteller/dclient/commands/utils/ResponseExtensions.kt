@@ -1,14 +1,9 @@
-package com.fortuneteller.dclient.commands.gadgets
+package com.fortuneteller.dclient.commands.utils
 
-import com.fortuneteller.dclient.commands.gadgets.utils.JavadocPackages
-import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.ExMessage
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.util.*
+import okhttp3.Response
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.stream.Collectors
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -45,21 +40,7 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class JavadocCommand : Command() {
-  override fun execute(event: CommandEvent) = EnumSet.allOf(JavadocPackages::class.java)
-    .map { j -> String.format(j.url, event.args) }.forEach { formatted ->
-      val request = Request.Builder().url(formatted).head().build()
-      OkHttpClient().newCall(request).execute().use {
-        if (it.code() == 200) event.reply(formatted)
-        else throw CommandException(ExMessage.INVALID_CLASS)
-      }
-    }
 
-  init {
-    name = "javadoc"
-    aliases = arrayOf("docs")
-    arguments = "**<package>** **<class>**"
-    help = "Gets the URL of Javadocs for JDK 13"
-    category = Categories.GADGETS.category
-  }
+fun Response.getJSONResponse(): String = BufferedReader(InputStreamReader(this.body()?.byteStream()!!)).use { i ->
+  i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
 }

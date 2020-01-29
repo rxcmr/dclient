@@ -9,7 +9,7 @@ import com.fortuneteller.dclient.database.SQLItemMode.*
 import com.fortuneteller.dclient.database.SQLUtils
 import com.fortuneteller.dclient.database.SQLUtils.Companion.transact
 import com.fortuneteller.dclient.utils.ExMessage
-import com.fortuneteller.dclient.utils.PilotUtils
+import com.fortuneteller.dclient.utils.loadEnv
 import com.jagrosh.jagtag.JagTag
 import com.jagrosh.jagtag.Method
 import com.jagrosh.jdautilities.command.Command
@@ -19,7 +19,6 @@ import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.sqlite.SQLiteException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -68,7 +67,7 @@ import kotlin.collections.LinkedHashSet
 class JagTagCommand : Command(), SQLUtils {
   private val tags = LinkedHashSet<Tag>()
   private val tagCache = LinkedHashSet<Tag>()
-  private var db: String
+  private val db = loadEnv("DB")
 
   public override fun execute(event: CommandEvent): Unit = with(event) {
     val args = args?.split("\\s+".toRegex())?.toTypedArray()!!
@@ -262,14 +261,16 @@ class JagTagCommand : Command(), SQLUtils {
           //language=SQLite
           exec("PRAGMA auto_vacuum = FULL")
           //language=SQLite
-          exec("SELECT name FROM sqlite_master WHERE type='table' AND name='tags'") { rs ->
-            if (!rs.next()) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+          exec("SELECT EXISTS(SELECT name FROM sqlite_master WHERE type='table' AND name='tags')") {
+            while (it.next())
+              if (!it.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
           }!!
         }
         "postgresql" -> {
           //language=PostgreSQL
-          exec("SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'tags')") { rs ->
-            while (rs.next()) if (!rs.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
+          exec("SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'tags')") {
+            while (it.next())
+              if (!it.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
           }!!
         }
         else -> throw CommandException(ExMessage.INVALID_DB)
@@ -300,9 +301,11 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   override fun delete(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
-    JagTagTable.tagKey eq args[0]
-    JagTagTable.ownerID eq args[1]
-    JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[2]
+    JagTagTable.deleteWhere {
+      JagTagTable.tagKey eq args[0]
+      JagTagTable.ownerID eq args[1]
+      JagTagTable.guildID eq if (mode == GVALUE) "GLOBAL" else args[2]
+    }
   }
 
   override fun update(mode: SQLItemMode, vararg args: String): Unit = transact(db) {
@@ -323,8 +326,6 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   init {
-    PilotUtils.info("Reached database initialization stage. Select database [postgresql/sqlite]: ")
-    db = Scanner(System.`in`).nextLine()
     name = "jagtag"
     aliases = arrayOf("tag", "t")
     category = Categories.GADGETS.category

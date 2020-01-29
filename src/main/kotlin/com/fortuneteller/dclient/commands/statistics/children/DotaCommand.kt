@@ -4,15 +4,14 @@ import com.fortuneteller.dclient.commands.statistics.StatisticsCommand
 import com.fortuneteller.dclient.commands.statistics.utils.DotaStats
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.commands.utils.getJSONResponse
 import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.EmbedBuilder
 import okhttp3.Request
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.time.Duration
-import java.util.stream.Collectors
+import java.util.*
 import kotlin.math.abs
 
 /*
@@ -61,9 +60,7 @@ class DotaCommand : StatisticsCommand() {
         event.jda.httpClient.newCall(request).execute().use {
           if (!it.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
           else {
-            val json = BufferedReader(InputStreamReader(it.body()?.byteStream()!!)).use { i ->
-              i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-            }
+            val json = it.getJSONResponse()
             val matchData = JSONObject(json)
             val matchTime = Duration.ofSeconds(matchData.getInt("duration").toLong()).let { d ->
               val sec = d.seconds
@@ -95,9 +92,7 @@ class DotaCommand : StatisticsCommand() {
         event.jda.httpClient.newCall(request).execute().use {
           if (!it.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
           else {
-            val json = BufferedReader(InputStreamReader(it.body()?.byteStream()!!)).use { i ->
-              i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-            }
+            val json = Scanner(it.body()?.string()!!).nextLine()
             val playerData = JSONObject(json)
             val embed = EmbedBuilder()
               .addField("Account ID:", "${playerData.getInt("account_id")}", false)
@@ -115,10 +110,7 @@ class DotaCommand : StatisticsCommand() {
             event.jda.httpClient.newCall(wlRequest).execute().use { wit ->
               if (!wit.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
               else {
-                val wlJson = BufferedReader(InputStreamReader(wit.body()?.byteStream()!!)).use { i ->
-                  i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-                }
-
+                val wlJson = wit.getJSONResponse()
                 val wlStats = JSONObject(wlJson)
                 val win = wlStats.getInt("win")
                 val lose = wlStats.getInt("lose")

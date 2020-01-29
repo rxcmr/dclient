@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.commands.music.children
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.commands.utils.getJSONResponse
 import com.fortuneteller.dclient.utils.ExMessage
 import com.fortuneteller.dclient.utils.PilotUtils
 import com.fortuneteller.dclient.utils.loadEnv
@@ -12,6 +13,7 @@ import okhttp3.Request
 import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.util.*
 import java.util.stream.Collectors
 
 /*
@@ -60,9 +62,7 @@ class SearchCommand : Command() {
       client.newCall(request).execute().use { r ->
         useCount++
         if (!r.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
-        val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
-          i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-        }
+        val json = r.getJSONResponse()
         val itemsArray = JSONObject(json).getJSONArray("items")
         val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
         TrackLoader.instance.loadAndPlay(it.textChannel, "https://www.youtube.com/watch?v=$videoID")
@@ -73,9 +73,7 @@ class SearchCommand : Command() {
         .build()
       client.newCall(request).execute().use { r ->
         if (!r.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
-        val json = BufferedReader(InputStreamReader(r.body()?.byteStream()!!)).use { i ->
-          i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-        }
+        val json = Scanner(r.body()?.string()!!).nextLine()
         val itemsArray = JSONObject(json).getJSONArray("results")
         val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
         TrackLoader.instance.loadAndPlay(it.textChannel, videoURL)

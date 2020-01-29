@@ -1,13 +1,14 @@
 package com.fortuneteller.dclient.commands.gadgets.utils
 
 import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchResult.Companion.fromGoogle
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.commands.utils.getJSONResponse
+import com.fortuneteller.dclient.utils.ExMessage
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.apache.http.impl.execchain.RequestAbortedException
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
 import java.net.URL
 import java.security.SecureRandom
 import java.time.LocalDateTime
@@ -89,23 +90,13 @@ object GoogleSearchHandler {
     }
   }
 
-  @Synchronized
-  private fun performRequest(request: Request, okHttpClient: OkHttpClient): List<GoogleSearchResult> {
-    return try {
-      val response = okHttpClient.newCall(request).execute()
-      response.use { r ->
-        if (!r.isSuccessful) throw RequestAbortedException("Failed to get search results.")
-        apiUsageCounter++
-        val json: String
-        val reader = BufferedReader(InputStreamReader(Objects.requireNonNull(r.body())!!.byteStream()))
-        json = reader.use { input -> input.lines().map { line: String -> line + "\n" }.collect(Collectors.joining()) }
-        val jsonResults = JSONObject(json).getJSONArray("items")
-        IntStream.range(0, jsonResults.length()).mapToObj { i -> fromGoogle(jsonResults.getJSONObject(i)) }
-          .collect(Collectors.toCollection { LinkedList<GoogleSearchResult>() })
-      }
-    } catch (e: IOException) {
-      LinkedList()
-    }
+  private fun performRequest(request: Request, okHttpClient: OkHttpClient) = okHttpClient.newCall(request).execute().use {
+    if (!it.isSuccessful) throw CommandException(ExMessage.HTTP_FAILED)
+    apiUsageCounter++
+    val json = it.getJSONResponse()
+    val jsonResults = JSONObject(json).getJSONArray("items")
+    IntStream.range(0, jsonResults.length()).mapToObj { i -> fromGoogle(jsonResults.getJSONObject(i)) }
+      .collect(Collectors.toCollection { LinkedList<GoogleSearchResult>() })
   }
 
   fun randomName(randomLength: Int): String {
