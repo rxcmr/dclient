@@ -2,12 +2,8 @@ package com.fortuneteller.dclient.commands.music.children
 
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import java.net.MalformedURLException
-import java.net.URL
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -44,22 +40,12 @@ import java.net.URL
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class PlayCommand : Command() {
-  override fun execute(event: CommandEvent) = with(event) {
-    if (args.isEmpty()) throw CommandException(ExMessage.M_EMPTY_URL)
-    try {
-      URL(args)
-    } catch (e: MalformedURLException) {
-      throw CommandException()
-    }
-    TrackLoader.instance.loadAndPlay(textChannel, member, args)
-  }
+class StopCommand : Command() {
+  override fun execute(event: CommandEvent) = TrackLoader.instance.stopTrack(event.textChannel)
 
   init {
-    name = "play"
-    aliases = arrayOf("p")
-    arguments = "**<URL>**"
-    help = "Plays a track from URL."
+    name = "stop"
+    help = "Stops current track."
     category = Categories.MUSIC.category
     hidden = true
   }

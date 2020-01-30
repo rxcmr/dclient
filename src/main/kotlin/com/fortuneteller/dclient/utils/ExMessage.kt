@@ -54,5 +54,6 @@ enum class ExMessage(val msg: String) {
   INVALID_CLASS("Invalid class name."),
   INVALID_INTEGER("Not a valid integer."),
   INPUT_TOO_LONG("Input too long."),
-  INVALID_DB("Invalid database name.")
+  INVALID_DB("Invalid database name."),
+  MUSIC_ONGOING("Currently connected to a voice channel. (pl.m leave?)")
 }

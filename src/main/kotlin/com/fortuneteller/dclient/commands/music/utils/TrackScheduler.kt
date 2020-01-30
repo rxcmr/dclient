@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.stream.Collectors
 
 /*
- * Copyright 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
+ * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.stream.Collectors
  * limitations under the License.
  *
  * dclient, a JDA Discord bot
- *      Copyright (C) 2019 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
+ *      Copyright (C) 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published
@@ -46,22 +46,30 @@ import java.util.stream.Collectors
  */
 class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
   private val queue: Queue<AudioTrack>
+  var repeat = false
 
   val trackList: List<String>
     get() {
       val queueSize = AtomicInteger(queue.size)
-      return if (queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
-          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty()) listOf("No tracks left in the queue.")
-      else queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
-        .collect(Collectors.toCollection { LinkedList<String>() })
+      return when {
+        queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
+          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty() -> listOf("No tracks left in the queue.")
+        else -> queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
+          .collect(Collectors.toCollection { @Suppress("RemoveExplicitTypeArguments") LinkedList<String>() })
+      }
     }
 
   fun queue(track: AudioTrack) = !player.startTrack(track, true) && queue.offer(track)
 
   fun nextTrack() = player.startTrack(queue.poll(), false)
 
-  override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) = with(reason) {
-    if (mayStartNext) nextTrack()
+  fun shuffle() = (queue as MutableList<*>).shuffle()
+
+  override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) = reason.let {
+    if (it.mayStartNext) {
+      if (repeat) player.startTrack(track.makeClone(), false)
+      else nextTrack()
+    }
   }
 
   init {

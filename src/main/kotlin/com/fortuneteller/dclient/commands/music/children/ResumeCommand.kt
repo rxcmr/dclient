@@ -44,7 +44,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  */
 class ResumeCommand : Command() {
   override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
-    if (getGuildAudioPlayer(event.guild).player.isPaused) throw CommandException(ExMessage.M_NOT_PAUSED)
+    if (getGuildMusicManager(event.guild).player.isPaused) throw CommandException(ExMessage.M_NOT_PAUSED)
     else pause(event.guild, false)
   }
 

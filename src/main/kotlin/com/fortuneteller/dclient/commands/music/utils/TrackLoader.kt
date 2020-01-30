@@ -1,5 +1,7 @@
 package com.fortuneteller.dclient.commands.music.utils
 
+import com.fortuneteller.dclient.commands.utils.CommandException
+import com.fortuneteller.dclient.utils.ExMessage
 import com.sedmelluq.discord.lavaplayer.player.AudioLoadResultHandler
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager
@@ -15,6 +17,7 @@ import com.sedmelluq.discord.lavaplayer.tools.FriendlyException
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import net.dv8tion.jda.api.entities.Guild
+import net.dv8tion.jda.api.entities.Member
 import net.dv8tion.jda.api.entities.TextChannel
 import net.dv8tion.jda.api.managers.AudioManager
 import org.apache.http.client.config.CookieSpecs
@@ -61,12 +64,22 @@ class TrackLoader {
   private val playerManager: AudioPlayerManager
   private val musicManagers: MutableMap<Long, GuildMusicManager>
 
-  fun loadAndPlay(channel: TextChannel, trackURL: String): Unit = with(channel) {
-    val musicManager = getGuildAudioPlayer(guild)
+  companion object {
+    val instance = TrackLoader()
+
+    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) =
+      if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) audioManager.guild
+        .voiceChannels.stream().filter { vc -> vc.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
+        .ifPresent { channel -> audioManager.openAudioConnection(channel) }
+      else throw CommandException(ExMessage.MUSIC_ONGOING)
+  }
+
+  fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {
+    val musicManager = getGuildMusicManager(guild)
     playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
       override fun trackLoaded(track: AudioTrack) {
         sendMessage("Adding to queue: **${track.info.title}**").queue()
-        play(guild, musicManager, track)
+        play(guild, member, musicManager, track)
       }
 
       override fun playlistLoaded(playlist: AudioPlaylist) {
@@ -74,7 +87,7 @@ class TrackLoader {
         if (firstTrack == null) firstTrack = playlist.tracks[0]
         sendMessage(
           "Adding to queue: **${firstTrack?.info?.title}** *(first track of playlist ${playlist.name})*").queue()
-        play(guild, musicManager, firstTrack)
+        play(guild, member, musicManager, firstTrack)
       }
 
       override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
@@ -85,29 +98,34 @@ class TrackLoader {
   }
 
   fun displayQueue(channel: TextChannel): String {
-    val musicManager = getGuildAudioPlayer(channel.guild)
-    return java.lang.String.join("\n", musicManager.scheduler.trackList)
+    val musicManager = getGuildMusicManager(channel.guild)
+    return musicManager.scheduler.trackList.joinToString("\n")
   }
 
-  private fun play(guild: Guild, musicManager: GuildMusicManager, track: AudioTrack?) {
-    connectToFirstVoiceChannel(guild.audioManager)
-    musicManager.scheduler.queue(track!!)
+  private fun play(guild: Guild, member: Member, musicManager: GuildMusicManager, track: AudioTrack) {
+    connectToVoiceChannel(member, guild.audioManager)
+    musicManager.scheduler.queue(track)
   }
 
   fun pause(guild: Guild, paused: Boolean) {
-    getGuildAudioPlayer(guild).player.isPaused = paused
+    getGuildMusicManager(guild).player.isPaused = paused
   }
 
+  fun repeatTrack(channel: TextChannel) {
+    getGuildMusicManager(channel.guild).scheduler.repeat = !getGuildMusicManager(channel.guild).scheduler.repeat
+  }
+
+  fun stopTrack(channel: TextChannel) = getGuildMusicManager(channel.guild).player.stopTrack()
+
+  fun shuffleTracks(channel: TextChannel) = getGuildMusicManager(channel.guild).scheduler.shuffle()
+
   fun skipTrack(channel: TextChannel) {
-    val musicManager = getGuildAudioPlayer(channel.guild)
-    musicManager.scheduler.nextTrack()
+    getGuildMusicManager(channel.guild).scheduler.nextTrack()
     channel.sendMessage("Skipped.").queue()
   }
 
-  @Synchronized
-  fun getGuildAudioPlayer(guild: Guild): GuildMusicManager {
-    val guildId = guild.id.toLong()
-    val musicManager = musicManagers.computeIfAbsent(guildId) { GuildMusicManager(playerManager) }
+  fun getGuildMusicManager(guild: Guild): GuildMusicManager {
+    val musicManager = musicManagers.computeIfAbsent(guild.id.toLong()) { GuildMusicManager(playerManager) }
     guild.audioManager.sendingHandler = musicManager.sendHandler
     return musicManager
   }
@@ -115,9 +133,7 @@ class TrackLoader {
   @Contract("_ -> param1")
   private fun registerSourceManagers(manager: AudioPlayerManager) = with(manager) {
     YoutubeAudioSourceManager().let {
-      it.configureRequests { config ->
-        RequestConfig.copy(config).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
-      }
+      it.configureRequests { cfg -> RequestConfig.copy(cfg).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
       registerSourceManager(it)
     }
     registerSourceManager(SoundCloudAudioSourceManager.createDefault())
@@ -128,16 +144,6 @@ class TrackLoader {
     registerSourceManager(LocalAudioSourceManager())
     registerSourceManager(HttpAudioSourceManager())
     this
-  }
-
-  companion object {
-    val instance = TrackLoader()
-
-    private fun connectToFirstVoiceChannel(audioManager: AudioManager) {
-      if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) audioManager.guild
-        .voiceChannels.stream().filter { obj -> Objects.nonNull(obj) }.findFirst()
-        .ifPresent { channel -> audioManager.openAudioConnection(channel) }
-    }
   }
 
   init {
