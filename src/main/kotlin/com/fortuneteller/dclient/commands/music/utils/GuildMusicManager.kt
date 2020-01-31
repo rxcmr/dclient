@@ -41,8 +41,7 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 class GuildMusicManager(manager: AudioPlayerManager) {
   val player: AudioPlayer = manager.createPlayer()
   val scheduler: TrackScheduler
-  val sendHandler: AudioPlayerSendHandler
-    get() = AudioPlayerSendHandler(player)
+  val sendHandler: AudioPlayerSendHandler get() = AudioPlayerSendHandler(player)
 
   init {
     scheduler = TrackScheduler(player)

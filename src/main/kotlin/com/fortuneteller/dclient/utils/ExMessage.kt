@@ -49,11 +49,12 @@ enum class ExMessage(val msg: String) {
   M_EMPTY_URL("URL cannot be empty!"),
   M_NOT_PAUSED("Playback is not paused."),
   M_EMPTY_SEARCH("Search term cannot be empty!"),
+  M_ONGOING("Currently connected to a voice channel. (pl.m leave?)"),
+  M_NOT_JOINED("Connect to a voice channel."),
   HTTP_FAILED("Request failed."),
   SLOWMODE_DURATION("Slow mode must not be negative or greater than ${TextChannel.MAX_SLOWMODE}."),
   INVALID_CLASS("Invalid class name."),
   INVALID_INTEGER("Not a valid integer."),
   INPUT_TOO_LONG("Input too long."),
-  INVALID_DB("Invalid database name."),
-  MUSIC_ONGOING("Currently connected to a voice channel. (pl.m leave?)")
+  INVALID_DB("Invalid database name.")
 }

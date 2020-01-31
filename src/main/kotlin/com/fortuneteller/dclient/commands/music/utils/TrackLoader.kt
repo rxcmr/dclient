@@ -67,11 +67,17 @@ class TrackLoader {
   companion object {
     val instance = TrackLoader()
 
-    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) =
-      if (!audioManager.isConnected && !audioManager.isAttemptingToConnect) audioManager.guild
-        .voiceChannels.stream().filter { vc -> vc.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
-        .ifPresent { channel -> audioManager.openAudioConnection(channel) }
-      else throw CommandException(ExMessage.MUSIC_ONGOING)
+    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) {
+      when {
+        !audioManager.isConnected && !audioManager.isAttemptingToConnect -> audioManager.guild
+          .voiceChannels.stream().filter { vc -> vc.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
+          .ifPresent { channel -> audioManager.openAudioConnection(channel) }
+        audioManager.guild.voiceChannels.stream().noneMatch { vc ->
+          vc.members.stream()
+            .anyMatch { m -> m.id == member.id }
+        } -> throw CommandException(ExMessage.M_NOT_JOINED)
+      }
+    }
   }
 
   fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {
@@ -131,11 +137,10 @@ class TrackLoader {
   }
 
   @Contract("_ -> param1")
-  private fun registerSourceManagers(manager: AudioPlayerManager) = with(manager) {
-    YoutubeAudioSourceManager().let {
-      it.configureRequests { cfg -> RequestConfig.copy(cfg).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
-      registerSourceManager(it)
-    }
+  private fun registerSourceManagers(manager: AudioPlayerManager) = manager.apply {
+    registerSourceManager(YoutubeAudioSourceManager().apply {
+      configureRequests { cfg -> RequestConfig.copy(cfg).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
+    })
     registerSourceManager(SoundCloudAudioSourceManager.createDefault())
     registerSourceManager(TwitchStreamAudioSourceManager())
     registerSourceManager(BandcampAudioSourceManager())
@@ -143,7 +148,6 @@ class TrackLoader {
     registerSourceManager(BeamAudioSourceManager())
     registerSourceManager(LocalAudioSourceManager())
     registerSourceManager(HttpAudioSourceManager())
-    this
   }
 
   init {

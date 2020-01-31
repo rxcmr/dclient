@@ -47,7 +47,7 @@ class UnicodeCommand : Command() {
     if (event.args?.length!! > 10) throw CommandException(ExMessage.INPUT_TOO_LONG)
     event.reply(StringJoiner("\n").apply {
       for (i in event.args.indices)
-        this.add(event.args.toCharArray()[i].let {
+        add(event.args.toCharArray()[i].let {
           "`${String.format("\\u%04x", it.toInt())}` ${Character.getName(it.toInt())} [$it]"
         })
     }.toString())

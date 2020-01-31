@@ -54,6 +54,9 @@ class MusicCommand : Command() {
       search - search YouTube and play
       pause - pauses track
       resume - resumes track
+      stop - stops track
+      repeat - repeats track
+      shuffle - shuffles track list
     """.trimIndent())
   }
 

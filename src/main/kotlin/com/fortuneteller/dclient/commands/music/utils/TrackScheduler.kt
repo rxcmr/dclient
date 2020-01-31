@@ -5,8 +5,7 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import java.util.*
-import java.util.concurrent.LinkedTransferQueue
-import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.stream.Collectors
 
 /*
@@ -50,11 +49,11 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
 
   val trackList: List<String>
     get() {
-      val queueSize = AtomicInteger(queue.size)
+      var queueSize = queue.size
       return when {
-        queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
+        queue.stream().map { t -> "`${queueSize++} -> ${t.info.title}`" }
           .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty() -> listOf("No tracks left in the queue.")
-        else -> queue.stream().map { t: AudioTrack -> "`${queueSize.getAndDecrement()} - ${t.info.title}`" }
+        else -> queue.stream().map { t -> "`${queueSize++} -> ${t.info.title}`" }
           .collect(Collectors.toCollection { @Suppress("RemoveExplicitTypeArguments") LinkedList<String>() })
       }
     }
@@ -73,6 +72,6 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
   }
 
   init {
-    queue = LinkedTransferQueue()
+    queue = LinkedBlockingQueue()
   }
 }

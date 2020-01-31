@@ -46,9 +46,9 @@ class AudioPlayerSendHandler(private val player: AudioPlayer) : AudioSendHandler
 
   override fun canProvide() = player.provide(frame)
 
-  override fun provide20MsAudio(): ByteBuffer {
-    buffer.flip()
-    return buffer
+  override fun provide20MsAudio() = buffer.apply {
+    flip()
+    buffer
   }
 
   override fun isOpus() = true
