@@ -2,8 +2,6 @@ package com.fortuneteller.dclient.commands.music.children
 
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
@@ -43,10 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PauseCommand : Command() {
-  override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
-    if (event.guild.musicManager.player.isPaused) throw CommandException(ExMessage.M_PAUSED)
-    else pause(event.guild, true)
-  }
+  override fun execute(event: CommandEvent) = TrackLoader.instance.pause(event.textChannel)
 
   init {
     name = "pause"

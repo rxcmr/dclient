@@ -78,11 +78,9 @@ class TrackLoader {
     }
   }
 
-  val Guild.musicManager: GuildMusicManager
-    get() {
-      val musicManager = musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(playerManager) }
-      audioManager.sendingHandler = musicManager.sendHandler
-      return musicManager
+  private val Guild.musicManager: GuildMusicManager
+    get() = musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(playerManager) }.apply {
+      audioManager.sendingHandler = sendHandler
     }
 
   fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {
@@ -109,16 +107,17 @@ class TrackLoader {
     })
   }
 
-  fun displayQueue(channel: TextChannel) = channel.guild.musicManager.scheduler.trackList.joinToString("\n")
-
+  fun displayQueue(channel: TextChannel) =
+    channel.guild.musicManager.scheduler.trackList.joinToString("\n")
 
   private fun play(guild: Guild, member: Member, musicManager: GuildMusicManager, track: AudioTrack) {
     connectToVoiceChannel(member, guild.audioManager)
     musicManager.scheduler.queue(track)
   }
 
-  fun pause(guild: Guild, paused: Boolean) {
-    guild.musicManager.player.isPaused = paused
+  fun pause(channel: TextChannel) = channel.guild.musicManager.player.isPaused.let {
+    channel.guild.musicManager.player.isPaused = !it
+    channel.sendMessage(if (it) "Playback paused." else "Playback resumed.").queue()
   }
 
   fun repeatTrack(channel: TextChannel) {

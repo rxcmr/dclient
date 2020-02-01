@@ -45,7 +45,6 @@ enum class ExMessage(val msg: String) {
   JT_DELETE_NOTHING("Deleting something that doesn't exist."),
   JT_GLOBAL("Use the global parameter."),
   JT_EXISTS_OR_MISSING("Tag exists or missing parameters."),
-  M_PAUSED("Playback is currently paused."),
   M_EMPTY_URL("URL cannot be empty!"),
   M_NOT_PAUSED("Playback is not paused."),
   M_EMPTY_SEARCH("Search term cannot be empty!"),
