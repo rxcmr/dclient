@@ -41,16 +41,11 @@ import java.nio.ByteBuffer
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class AudioPlayerSendHandler(private val player: AudioPlayer) : AudioSendHandler {
-  private val buffer: ByteBuffer = ByteBuffer.allocate(1024)
-  private val frame: MutableAudioFrame = MutableAudioFrame()
+  private val buffer = ByteBuffer.allocate(2048)
+  private val frame = MutableAudioFrame()
 
   override fun canProvide() = player.provide(frame)
-
-  override fun provide20MsAudio() = buffer.apply {
-    flip()
-    buffer
-  }
-
+  override fun provide20MsAudio() = ByteBuffer.wrap(frame.data)!!
   override fun isOpus() = true
 
   init {

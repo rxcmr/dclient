@@ -72,10 +72,8 @@ class TrackLoader {
         !audioManager.isConnected && !audioManager.isAttemptingToConnect -> audioManager.guild
           .voiceChannels.stream().filter { vc -> vc.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
           .ifPresent { channel -> audioManager.openAudioConnection(channel) }
-        audioManager.guild.voiceChannels.stream().noneMatch { vc ->
-          vc.members.stream()
-            .anyMatch { m -> m.id == member.id }
-        } -> throw CommandException(ExMessage.M_NOT_JOINED)
+        audioManager.guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } }
+        -> throw CommandException(ExMessage.M_NOT_JOINED)
       }
     }
   }
@@ -84,22 +82,23 @@ class TrackLoader {
     val musicManager = getGuildMusicManager(guild)
     playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
       override fun trackLoaded(track: AudioTrack) {
-        sendMessage("Adding to queue: **${track.info.title}**").queue()
+        sendMessage("Adding track to queue: **${track.info.title}**").queue()
         play(guild, member, musicManager, track)
       }
 
       override fun playlistLoaded(playlist: AudioPlaylist) {
-        var firstTrack = playlist.selectedTrack
-        if (firstTrack == null) firstTrack = playlist.tracks[0]
-        sendMessage(
-          "Adding to queue: **${firstTrack?.info?.title}** *(first track of playlist ${playlist.name})*").queue()
-        play(guild, member, musicManager, firstTrack)
+        sendMessage("Adding playlist to queue: **${playlist.name}**").queue()
+        when {
+          playlist.tracks.size == 1 || playlist.isSearchResult ->
+            trackLoaded(playlist.selectedTrack ?: playlist.tracks[0])
+          playlist.selectedTrack != null -> trackLoaded(playlist.selectedTrack)
+          else -> playlist.tracks.forEach { if (it == null) return else trackLoaded(it) }
+        }
       }
 
       override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
 
-      override fun loadFailed(exception: FriendlyException) = sendMessage(
-        "Could not play: ${exception.message}").queue()
+      override fun loadFailed(e: FriendlyException) = sendMessage("Could not play: ${e.message}").queue()
     })
   }
 
@@ -122,7 +121,6 @@ class TrackLoader {
   }
 
   fun stopTrack(channel: TextChannel) = getGuildMusicManager(channel.guild).player.stopTrack()
-
   fun shuffleTracks(channel: TextChannel) = getGuildMusicManager(channel.guild).scheduler.shuffle()
 
   fun skipTrack(channel: TextChannel) {

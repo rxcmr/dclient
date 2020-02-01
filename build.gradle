@@ -27,6 +27,7 @@ targetCompatibility = 11
 sourceCompatibility = 11
 
 dependencies {
+  implementation group: "com.github.FredBoat", name: "Lavalink-Client", version: "master-SNAPSHOT"
   implementation group: "org.postgresql", name: "postgresql", version: "42.2.9"
   implementation group: "no.tornado", name: "tornadofx", version: "1.7.19"
   implementation group: "com.intellij", name: "openapi", version: "7.0.3"

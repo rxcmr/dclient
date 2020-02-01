@@ -5,8 +5,8 @@ import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
 import java.util.*
-import java.util.concurrent.LinkedBlockingQueue
-import java.util.stream.Collectors
+import java.util.concurrent.TimeUnit
+import kotlin.collections.ArrayList
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -49,29 +49,42 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
 
   val trackList: List<String>
     get() {
-      var queueSize = queue.size
-      return when {
-        queue.stream().map { t -> "`${queueSize++} -> ${t.info.title}`" }
-          .collect(Collectors.toCollection { LinkedList<String>() }).isEmpty() -> listOf("No tracks left in the queue.")
-        else -> queue.stream().map { t -> "`${queueSize++} -> ${t.info.title}`" }
-          .collect(Collectors.toCollection { @Suppress("RemoveExplicitTypeArguments") LinkedList<String>() })
+      return when (queue.isEmpty()) {
+        true -> {
+          when (player.playingTrack != null) {
+            true -> listOf("`Now playing: ${player.playingTrack.info.title}`")
+            false -> listOf("`No tracks left in the queue.`")
+          }
+        }
+        false -> ArrayList<String>().apply {
+          add("`Now playing: ${player.playingTrack.info.title}`")
+          queue.toList().let {
+            it.forEach { t ->
+              add("`${it.indexOf(t) + 1} -> ${t.info.title} -> " +
+                "${TimeUnit.MILLISECONDS.toMinutes(t.duration)}:" +
+                "${TimeUnit.MILLISECONDS.toSeconds(t.duration) % TimeUnit.MINUTES.toSeconds(1)}`")
+            }
+          }
+        }
       }
     }
 
-  fun queue(track: AudioTrack) = !player.startTrack(track, true) && queue.offer(track)
+  fun queue(track: AudioTrack) {
+    if (player.playingTrack != null) queue.offer(track)
+    else player.playTrack(track)
+  }
 
-  fun nextTrack() = player.startTrack(queue.poll(), false)
-
+  fun nextTrack() = player.playTrack(queue.poll())
   fun shuffle() = (queue as MutableList<*>).shuffle()
 
   override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) = reason.let {
     if (it.mayStartNext) {
-      if (repeat) player.startTrack(track.makeClone(), false)
+      if (repeat) player.playTrack(track.makeClone())
       else nextTrack()
     }
   }
 
   init {
-    queue = LinkedBlockingQueue()
+    queue = LinkedList()
   }
 }
