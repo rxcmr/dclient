@@ -44,7 +44,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  */
 class PauseCommand : Command() {
   override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
-    if (getGuildMusicManager(event.guild).player.isPaused) throw CommandException(ExMessage.M_PAUSED)
+    if (event.guild.musicManager.player.isPaused) throw CommandException(ExMessage.M_PAUSED)
     else pause(event.guild, true)
   }
 

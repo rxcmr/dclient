@@ -2,8 +2,6 @@ package com.fortuneteller.dclient.commands.music.children
 
 import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.CommandException
-import com.fortuneteller.dclient.utils.ExMessage
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 
@@ -42,16 +40,13 @@ import com.jagrosh.jdautilities.command.CommandEvent
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class ResumeCommand : Command() {
-  override fun execute(event: CommandEvent) = with(TrackLoader.instance) {
-    if (!event.guild.musicManager.player.isPaused) throw CommandException(ExMessage.M_NOT_PAUSED)
-    else pause(event.guild, false)
-  }
+class ResetCommand : Command() {
+  override fun execute(event: CommandEvent) = TrackLoader.instance.reset(event.textChannel)
 
   init {
-    name = "resume"
-    aliases = arrayOf("r")
-    help = "Resumes playback of paused track."
+    name = "reset"
+    arguments = "**<option>**"
+    help = "Resets a part of the playing process."
     category = Categories.MUSIC.category
     hidden = true
   }

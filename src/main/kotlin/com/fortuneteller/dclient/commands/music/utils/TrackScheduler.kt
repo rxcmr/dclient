@@ -74,6 +74,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
     else player.playTrack(track)
   }
 
+  fun clearQueue() = queue.clear()
   fun nextTrack() = player.playTrack(queue.poll())
   fun shuffle() = (queue as MutableList<*>).shuffle()
 

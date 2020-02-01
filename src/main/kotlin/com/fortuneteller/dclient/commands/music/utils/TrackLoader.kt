@@ -78,8 +78,15 @@ class TrackLoader {
     }
   }
 
+  val Guild.musicManager: GuildMusicManager
+    get() {
+      val musicManager = musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(playerManager) }
+      audioManager.sendingHandler = musicManager.sendHandler
+      return musicManager
+    }
+
   fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {
-    val musicManager = getGuildMusicManager(guild)
+    val musicManager = guild.musicManager
     playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
       override fun trackLoaded(track: AudioTrack) {
         sendMessage("Adding track to queue: **${track.info.title}**").queue()
@@ -102,10 +109,8 @@ class TrackLoader {
     })
   }
 
-  fun displayQueue(channel: TextChannel): String {
-    val musicManager = getGuildMusicManager(channel.guild)
-    return musicManager.scheduler.trackList.joinToString("\n")
-  }
+  fun displayQueue(channel: TextChannel) = channel.guild.musicManager.scheduler.trackList.joinToString("\n")
+
 
   private fun play(guild: Guild, member: Member, musicManager: GuildMusicManager, track: AudioTrack) {
     connectToVoiceChannel(member, guild.audioManager)
@@ -113,25 +118,36 @@ class TrackLoader {
   }
 
   fun pause(guild: Guild, paused: Boolean) {
-    getGuildMusicManager(guild).player.isPaused = paused
+    guild.musicManager.player.isPaused = paused
   }
 
   fun repeatTrack(channel: TextChannel) {
-    getGuildMusicManager(channel.guild).scheduler.repeat = !getGuildMusicManager(channel.guild).scheduler.repeat
+    channel.guild.musicManager.scheduler.repeat = !channel.guild.musicManager.scheduler.repeat
   }
 
-  fun stopTrack(channel: TextChannel) = getGuildMusicManager(channel.guild).player.stopTrack()
-  fun shuffleTracks(channel: TextChannel) = getGuildMusicManager(channel.guild).scheduler.shuffle()
+  fun stopTrack(channel: TextChannel) = channel.guild.musicManager.let {
+    it.player.stopTrack()
+    it.scheduler.clearQueue()
+  }
+
+  fun reset(channel: TextChannel) {
+    synchronized(musicManagers) {
+      channel.guild.musicManager.let {
+        it.scheduler.clearQueue()
+        it.player.destroy()
+        channel.guild.audioManager.sendingHandler = null
+        musicManagers.remove(channel.guild.idLong)
+      }
+      channel.guild.audioManager.sendingHandler = channel.guild.musicManager.sendHandler
+      channel.sendMessage("Player reset.")
+    }
+  }
+
+  fun shuffleTracks(channel: TextChannel) = channel.guild.musicManager.scheduler.shuffle()
 
   fun skipTrack(channel: TextChannel) {
-    getGuildMusicManager(channel.guild).scheduler.nextTrack()
+    channel.guild.musicManager.scheduler.nextTrack()
     channel.sendMessage("Skipped.").queue()
-  }
-
-  fun getGuildMusicManager(guild: Guild): GuildMusicManager {
-    val musicManager = musicManagers.computeIfAbsent(guild.id.toLong()) { GuildMusicManager(playerManager) }
-    guild.audioManager.sendingHandler = musicManager.sendHandler
-    return musicManager
   }
 
   @Contract("_ -> param1")

@@ -49,6 +49,7 @@ class MusicCommand : Command() {
   override fun execute(event: CommandEvent) {
     event.reply("""
       play - plays URL
+      queue - shows tracks queued
       skip - skips track
       leave - leave VC
       search - search YouTube and play
@@ -57,6 +58,7 @@ class MusicCommand : Command() {
       stop - stops track
       repeat - repeats track
       shuffle - shuffles track list
+      reset - resets player
     """.trimIndent())
   }
 
