@@ -73,8 +73,8 @@ class MusicCommand : Command() {
         .loadClasses(Command::class.java)) it.add(mc.getDeclaredConstructor().newInstance())
       it.toTypedArray()
     }
-    help = Arrays.stream(children).map { c ->
-      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
+    help = Arrays.stream(children).map {
+      "\n   - ${if (it.arguments != null) "${it.arguments} " else ""}${it.help}"
     }.collect(Collectors.joining("", "General music commands.", ""))
     arguments = "**<command>**"
     botPermissions = arrayOf(

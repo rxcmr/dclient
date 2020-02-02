@@ -54,7 +54,7 @@ class LoadCommand : Command() {
           .blacklistPackages("com.fortuneteller.dclient.commands.utils")
           .scan()
           .getSubclasses(Command::class.java.name)
-          .filter { c -> c.simpleName == event.args }
+          .filter { it.simpleName == event.args }
           .loadClasses(Command::class.java)[0].getDeclaredConstructor().newInstance()
         commandClient.addCommand(command, commandClient.commands.size - 1)
       } else if (event.args.contains("Listener")) {
@@ -62,7 +62,7 @@ class LoadCommand : Command() {
           .whitelistPackages("com.fortuneteller.dcl.listeners")
           .scan()
           .getSubclasses(ListenerAdapter::class.java.name)
-          .filter { c -> c.simpleName == event.args }
+          .filter { it.simpleName == event.args }
           .loadClasses(ListenerAdapter::class.java)[0].getDeclaredConstructor().newInstance()
         shardManager.addEventListener(listener)
       }

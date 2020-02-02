@@ -170,14 +170,12 @@ class Contraption(private val token: String,
 
     info("Building ${YELLOW_BOLD_BRIGHT}CommandClient$RESET")
     commands.forEach { c -> it.addCommand(c) }
-    commandClient = it
-      .setOwnerId(ID)
+    commandClient = it.setOwnerId(ID)
       .setPrefix(prefix)
       .setActivity(Activity.listening("events."))
       .setStatus(OnlineStatus.DO_NOT_DISTURB)
       .setListener(PilotCommandListener())
-      .setHelpConsumer { e -> e.replyInDm(buildHelpEmbed(e.author, e.args))
-      }
+      .setHelpConsumer { e -> e.replyInDm(buildHelpEmbed(e.author, e.args)) }
       .useHelpBuilder(false)
       .setShutdownAutomatically(true)
       .build()
@@ -201,11 +199,12 @@ class Contraption(private val token: String,
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
       .setChunkingFilter(ChunkingFilter.NONE)
-      .addEventListeners(listeners ?: listOf<Any>(DefaultListener()))
+      .addEventListeners(listeners ?: listOf<Any>(DefaultListener))
       .build()
   }
 
   private fun retryPrompt(): Unit = Scanner(System.`in`).use {
+    error("My disappointment is immeasurable, and my day is ruined.")
     info("Retry connection? [y/n]: ")
     when (it.next()) {
       "y" -> launch()
@@ -252,15 +251,12 @@ class Contraption(private val token: String,
           Companion.prefix = prefix
           info("Finished initializing in ${Duration.between(Pilot.initTime, Instant.now()).toMillis()} ms")
         }
-        false -> {
-          error("My disappointment is immeasurable, and my day is ruined.")
-          retryPrompt()
-        }
+        false -> retryPrompt()
       }
     }
   }
 
-  private class DefaultListener : ListenerAdapter() {
+  object DefaultListener : ListenerAdapter() {
     override fun onReady(event: ReadyEvent) = info("Ready!")
   }
 

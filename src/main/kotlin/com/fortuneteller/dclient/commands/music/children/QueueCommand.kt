@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.musicManager
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -41,7 +41,8 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class QueueCommand : Command() {
-  override fun execute(event: CommandEvent) = event.reply(TrackLoader.instance.displayQueue(event.textChannel))
+  override fun execute(event: CommandEvent) =
+    event.reply(event.guild.musicManager.scheduler.trackList.joinToString("\n"))
 
   init {
     name = "queue"

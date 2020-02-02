@@ -1,6 +1,5 @@
 package com.fortuneteller.dclient.commands.music.utils
 
-import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
 
 /*
@@ -39,9 +38,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayerManager
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class GuildMusicManager(manager: AudioPlayerManager) {
-  val player: AudioPlayer = manager.createPlayer()
+  val player = manager.createPlayer()!!
   val scheduler: TrackScheduler
-  val sendHandler: AudioPlayerSendHandler get() = AudioPlayerSendHandler(player)
+  val sendingHandler: AudioPlayerSendHandler get() = AudioPlayerSendHandler(player)
 
   init {
     scheduler = TrackScheduler(player)

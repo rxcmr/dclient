@@ -67,93 +67,88 @@ class TrackLoader {
   companion object {
     val instance = TrackLoader()
 
-    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) {
-      when {
-        !audioManager.isConnected && !audioManager.isAttemptingToConnect -> audioManager.guild
-          .voiceChannels.stream().filter { vc -> vc.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
-          .ifPresent { channel -> audioManager.openAudioConnection(channel) }
-        audioManager.guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } }
-        -> throw CommandException(ExMessage.M_NOT_JOINED)
+    val Guild.musicManager: GuildMusicManager
+      get() = instance.musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(instance.playerManager) }.also {
+        audioManager.sendingHandler = it.sendingHandler
       }
+
+    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) {
+      with(audioManager) { when {
+        !isConnected && !isAttemptingToConnect -> guild.voiceChannels.stream()
+          .filter { it.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
+          .ifPresent { openAudioConnection(it) }
+        guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } } ->
+          throw CommandException(ExMessage.M_NOT_JOINED)
+      }}
     }
   }
 
-  private val Guild.musicManager: GuildMusicManager
-    get() = musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(playerManager) }.apply {
-      audioManager.sendingHandler = sendHandler
-    }
-
   fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {
-    val musicManager = guild.musicManager
-    playerManager.loadItemOrdered(musicManager, trackURL, object : AudioLoadResultHandler {
-      override fun trackLoaded(track: AudioTrack) {
-        sendMessage("Adding track to queue: **${track.info.title}**").queue()
-        play(guild, member, musicManager, track)
+    playerManager.loadItemOrdered(guild.musicManager, trackURL, object : AudioLoadResultHandler {
+      override fun trackLoaded(track: AudioTrack) = with(track) {
+        sendMessage("Adding track to queue: **${info.title}**").queue()
+        play(member, this)
       }
 
-      override fun playlistLoaded(playlist: AudioPlaylist) {
-        sendMessage("Adding playlist to queue: **${playlist.name}**").queue()
+      override fun playlistLoaded(playlist: AudioPlaylist) = with(playlist) {
+        sendMessage("Adding playlist to queue: **$name**").queue()
         when {
-          playlist.tracks.size == 1 || playlist.isSearchResult ->
-            trackLoaded(playlist.selectedTrack ?: playlist.tracks[0])
-          playlist.selectedTrack != null -> trackLoaded(playlist.selectedTrack)
-          else -> playlist.tracks.forEach { if (it == null) return else trackLoaded(it) }
+          tracks.size == 1 || isSearchResult -> trackLoaded(selectedTrack ?: tracks[0])
+          selectedTrack != null -> trackLoaded(selectedTrack)
+          else -> tracks.forEach { if (it == null) return else trackLoaded(it) }
         }
       }
 
       override fun noMatches() = sendMessage("Nothing found by: $trackURL.").queue()
-
       override fun loadFailed(e: FriendlyException) = sendMessage("Could not play: ${e.message}").queue()
     })
   }
 
-  fun displayQueue(channel: TextChannel) =
-    channel.guild.musicManager.scheduler.trackList.joinToString("\n")
-
-  private fun play(guild: Guild, member: Member, musicManager: GuildMusicManager, track: AudioTrack) {
-    connectToVoiceChannel(member, guild.audioManager)
-    musicManager.scheduler.queue(track)
+  private fun play(member: Member, track: AudioTrack) = with(member) {
+    connectToVoiceChannel(this, guild.audioManager)
+    guild.musicManager.scheduler.queue(track)
   }
 
-  fun pause(channel: TextChannel) = channel.guild.musicManager.player.isPaused.let {
-    channel.guild.musicManager.player.isPaused = !it
-    channel.sendMessage(if (it) "Playback paused." else "Playback resumed.").queue()
-  }
+  fun pause(channel: TextChannel) = channel.guild.musicManager.player.isPaused.let { with(channel) {
+    guild.musicManager.player.isPaused = !it
+    sendMessage(if (it) "Playback paused." else "Playback resumed.").queue()
+  }}
 
-  fun repeatTrack(channel: TextChannel) {
-    channel.guild.musicManager.scheduler.repeat = !channel.guild.musicManager.scheduler.repeat
-  }
+  fun repeatTrack(channel: TextChannel) = channel.guild.musicManager.scheduler.repeat.let { with(channel) {
+    guild.musicManager.scheduler.repeat = !it
+    sendMessage(if (it) "Track set to repeat." else "Track set to end.").queue()
+  }}
 
   fun stopTrack(channel: TextChannel) = channel.guild.musicManager.let {
     it.player.stopTrack()
     it.scheduler.clearQueue()
   }
 
-  fun reset(channel: TextChannel) {
+  fun reset(channel: TextChannel) = with(channel) {
     synchronized(musicManagers) {
-      channel.guild.musicManager.let {
+      guild.musicManager.let {
         it.scheduler.clearQueue()
         it.player.destroy()
-        channel.guild.audioManager.sendingHandler = null
-        musicManagers.remove(channel.guild.idLong)
+        guild.audioManager.sendingHandler = null
+        musicManagers.remove(guild.idLong)
       }
-      channel.guild.audioManager.sendingHandler = channel.guild.musicManager.sendHandler
-      channel.sendMessage("Player reset.")
+      guild.audioManager.sendingHandler = guild.musicManager.sendingHandler
+      sendMessage("Player reset.").queue()
     }
   }
 
   fun shuffleTracks(channel: TextChannel) = channel.guild.musicManager.scheduler.shuffle()
 
-  fun skipTrack(channel: TextChannel) {
-    channel.guild.musicManager.scheduler.nextTrack()
-    channel.sendMessage("Skipped.").queue()
+  fun skipTrack(channel: TextChannel) = with(channel) {
+    guild.musicManager.scheduler.nextTrack()
+    sendMessage("Skipped.").queue()
   }
 
   @Contract("_ -> param1")
   private fun registerSourceManagers(manager: AudioPlayerManager) = manager.apply {
-    registerSourceManager(YoutubeAudioSourceManager().apply {
-      configureRequests { cfg -> RequestConfig.copy(cfg).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build() }
-    })
+    registerSourceManager(YoutubeAudioSourceManager().apply { configureRequests {
+      RequestConfig.copy(it).setCookieSpec(CookieSpecs.IGNORE_COOKIES).build()
+    }})
     registerSourceManager(SoundCloudAudioSourceManager.createDefault())
     registerSourceManager(TwitchStreamAudioSourceManager())
     registerSourceManager(BandcampAudioSourceManager())

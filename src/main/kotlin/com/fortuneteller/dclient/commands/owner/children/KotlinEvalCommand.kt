@@ -51,31 +51,31 @@ class KotlinEvalCommand : Command() {
   private val script = StringBuilder()
   private val embedBuilder = EmbedBuilder()
 
-  override fun execute(event: CommandEvent) {
-    val input = event.args.replace("(```[a-z]*)".toRegex(), "")
+  override fun execute(event: CommandEvent): Unit = with(event) {
+    val input = args.replace("(```[a-z]*)".toRegex(), "")
 
     try {
-      KotlinJsr223JvmLocalScriptEngineFactory().scriptEngine.let {
-        val bindings = it.createBindings()
-        bindings.putAll(mapOf(
-          "args" to event.args,
-          "event" to event,
-          "message" to event.message,
-          "textChannel" to event.textChannel,
-          "channel" to event.channel,
-          "jda" to event.jda,
-          "guild" to event.guild,
-          "member" to event.member,
-          "user" to event.member?.user
-        ))
-        bindings.filter { (k, _) -> !k.contains('.') }
-          .forEach { (k, _) -> script.append("\nval $k = bindings[\"$k\"]") }
-        it.setBindings(bindings, ScriptContext.ENGINE_SCOPE)
-        event.reply(buildEmbed(it.eval("$script\n$input", it.context), input))
+      with(KotlinJsr223JvmLocalScriptEngineFactory().scriptEngine) {
+        with(createBindings()) {
+          putAll(mapOf(
+            "args" to args,
+            "event" to event,
+            "message" to message,
+            "textChannel" to textChannel,
+            "channel" to channel,
+            "jda" to jda,
+            "guild" to guild,
+            "member" to member,
+            "user" to member?.user
+          ))
+          filter { (k, _) -> !k.contains('.') }.forEach { (k, _) -> script.append("\nval $k = bindings[\"$k\"]") }
+          setBindings(this, ScriptContext.ENGINE_SCOPE)
+        }
+        reply(buildEmbed(eval("$script\n$input", context), input))
         embedBuilder.clear()
       }
     } catch (t: Throwable) {
-      event.reply(exceptionEmbed(t, input))
+      reply(exceptionEmbed(t, input))
       embedBuilder.clear()
     }
   }

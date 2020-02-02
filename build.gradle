@@ -15,6 +15,7 @@ plugins {
   id "application"
   id "com.github.johnrengelman.shadow" version "5.2.0"
   id "org.sonarqube" version "2.8"
+  id "org.openjfx.javafxplugin" version "0.0.8"
 }
 
 apply plugin: "kotlin"
@@ -27,6 +28,7 @@ targetCompatibility = 11
 sourceCompatibility = 11
 
 dependencies {
+  implementation group: "com.gitlab.aberrantfox", name: "kutils", version: "master-SNAPSHOT"
   implementation group: "com.github.FredBoat", name: "Lavalink-Client", version: "master-SNAPSHOT"
   implementation group: "org.postgresql", name: "postgresql", version: "42.2.9"
   implementation group: "no.tornado", name: "tornadofx", version: "1.7.19"
@@ -76,6 +78,17 @@ sonarqube {
     property "sonar.login", "dd688ef0c4c3503dace198a62b986c530fc993d1"
   }
 }
+
+javafx {
+  version = "13"
+  modules = [
+    "javafx.controls",
+    "javafx.base",
+    "javafx.fxml",
+    "javafx.graphics"
+  ]
+}
+
 
 compileKotlin {
   kotlinOptions.jvmTarget = "11"

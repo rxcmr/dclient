@@ -59,10 +59,10 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
         false -> ArrayList<String>().apply {
           add("`Now playing: ${player.playingTrack.info.title}`")
           queue.toList().let {
-            it.forEach { t ->
-              add("`${it.indexOf(t) + 1} -> ${t.info.title} -> " +
-                "${TimeUnit.MILLISECONDS.toMinutes(t.duration)}:" +
-                "${TimeUnit.MILLISECONDS.toSeconds(t.duration) % TimeUnit.MINUTES.toSeconds(1)}`")
+            it.forEach { t -> add("`${it.indexOf(t) + 1} -> ${t.info.title} -> " +
+              "${String.format("%02d", TimeUnit.MILLISECONDS.toMinutes(t.duration))}:" +
+              "${String.format("%02d", TimeUnit.MILLISECONDS.toSeconds(t.duration) 
+                % TimeUnit.MINUTES.toSeconds(1))}`")
             }
           }
         }

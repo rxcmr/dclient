@@ -56,8 +56,8 @@ open class StatisticsCommand : Command() {
   init {
     name = "statistics"
     aliases = arrayOf("stats")
-    help = Arrays.stream(children).map { c ->
-      "\n   - " + (if (c.arguments != null) c.arguments + " " else "") + c.help
+    help = Arrays.stream(children).map {
+      "\n   - ${if (it.arguments != null) "${it.arguments} " else ""}${it.help}"
     }.collect(Collectors.joining("", "Various statistics for games.", ""))
     arguments = "**<game>** **<args>**"
     children = ArrayList<Command>().let {

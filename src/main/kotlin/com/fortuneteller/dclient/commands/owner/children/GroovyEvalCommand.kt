@@ -48,37 +48,40 @@ class GroovyEvalCommand : Command() {
   private val imports: String
   private val embedBuilder = EmbedBuilder()
 
-  override fun execute(event: CommandEvent) {
-    val input = event.args.replace("(```[a-z]*)".toRegex(), "")
+  override fun execute(event: CommandEvent): Unit = with(event) {
+    val input = args.replace("(```[a-z]*)".toRegex(), "")
     try {
       with(GroovyShell()) {
-        setProperty("args", event.args)
-        setProperty("event", event)
-        setProperty("message", event.message)
-        setProperty("channel", event.channel)
-        setProperty("jda", event.jda)
-        setProperty("guild", event.guild)
-        setProperty("member", event.member)
-        setProperty("user", event.member?.user)
-        event.reply(buildEmbed(evaluate("$imports\n$input"), input))
+        setProperty("args", args)
+        setProperty("event", this)
+        setProperty("message", message)
+        setProperty("channel", channel)
+        setProperty("jda", jda)
+        setProperty("guild", guild)
+        setProperty("member", member)
+        setProperty("user", member?.user)
+        reply(buildEmbed(evaluate("$imports\n$input"), input))
         embedBuilder.clear()
       }
     } catch (t: Throwable) {
-      event.reply(exceptionEmbed(t, input))
+      reply(exceptionEmbed(t, input))
       embedBuilder.clear()
     }
   }
 
   private fun buildEmbed(output: Any?, args: String) = with(embedBuilder) {
-    if (output != null) {
-      setTitle("```Finished execution.```")
-      setDescription("**Command:** ```groovy\n$args\n```")
-      addField("**Output:** ", "```$output```", false)
-      build()
-    } else {
-      setTitle("```Finished execution.```")
-      setDescription("**Command:** ```groovy\n$args\n```")
-      build()
+    when (output) {
+      null -> {
+        setTitle("```Finished execution.```")
+        setDescription("**Command:** ```groovy\n$args\n```")
+        build()
+      }
+      else -> {
+        setTitle("```Finished execution.```")
+        setDescription("**Command:** ```groovy\n$args\n```")
+        addField("**Output:** ", "```$output```", false)
+        build()
+      }
     }
   }
 
