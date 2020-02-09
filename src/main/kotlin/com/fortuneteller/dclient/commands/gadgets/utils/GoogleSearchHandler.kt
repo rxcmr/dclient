@@ -11,7 +11,7 @@ import org.json.JSONObject
 import java.io.IOException
 import java.net.URL
 import java.time.LocalDateTime
-import java.util.*
+import java.util.LinkedList
 import java.util.stream.Collectors
 import java.util.stream.IntStream
 import kotlin.random.Random
@@ -79,7 +79,7 @@ object GoogleSearchHandler {
       val request = Request.Builder().url(searchURL).build()
       performRequest(request, okHttpClient)
     } catch (e: IOException) {
-      LinkedList()
+      LinkedList<GoogleSearchResult>()
     }
 
   private fun performRequest(request: Request, okHttpClient: OkHttpClient) = okHttpClient

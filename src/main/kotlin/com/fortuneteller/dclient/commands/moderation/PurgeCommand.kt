@@ -45,7 +45,7 @@ class PurgeCommand : Command() {
   override fun execute(event: CommandEvent): Unit = with(event) {
     val amount = args.toInt()
     channel.sendTyping().queue()
-    channel.history.retrievePast(amount).queue(channel::purgeMessages)
+    channel.history.retrievePast(amount).queue { channel.purgeMessages(it) }
     channel.sendMessage("Cleared $amount messages.").queue {
       it.delete().queueAfter(5, TimeUnit.SECONDS)
     }
