@@ -65,8 +65,8 @@ class ReadyListener : ListenerAdapter() {
       Permission.MANAGE_ROLES,
       Permission.MANAGE_SERVER
     )
-    val guilds = j.guilds.stream().map { g -> g.name }.collect(Collectors.joining(", "))
-    j.restPing.queue { api ->
+    val guilds = j.guilds.stream().map { it.name }.collect(Collectors.joining(", "))
+    j.restPing.queue {
       info("|$GREEN_BOLD_BRIGHT        R U N N I N G       $RESET| Status: $GREEN_BOLD_BRIGHT${j.status}$RESET")
       info("|                            | Logged in as: $BLUE_BOLD_BRIGHT${j.selfUser.asTag}$RESET")
       info("|$PURPLE_BOLD_BRIGHT       ██╗██████╗  █████╗   $RESET| Guilds available: ${event.guildAvailableCount}")
@@ -79,13 +79,13 @@ class ReadyListener : ListenerAdapter() {
         "WebSocket Ping: ${ when {
           j.gatewayPing <= 125 -> "$GREEN_BOLD_BRIGHT${j.gatewayPing}$RESET"
           j.gatewayPing <= 325 -> "$YELLOW_BOLD_BRIGHT${j.gatewayPing}$RESET"
-          else -> "$RED_BOLD_BRIGHT$api$RESET"
+          else -> "$RED_BOLD_BRIGHT$it$RESET"
         }}")
       info("|$GREEN_BOLD_BRIGHT    [dcl version ${Contraption.VERSION}]    $RESET| " +
         "API Ping: ${ when {
-          api <= 125 -> "$GREEN_BOLD_BRIGHT$api$RESET"
-          api <= 325 -> "$YELLOW_BOLD_BRIGHT$api$RESET"
-          else -> "$RED_BOLD_BRIGHT$api$RESET"
+          it <= 125 -> "$GREEN_BOLD_BRIGHT$it$RESET"
+          it <= 325 -> "$YELLOW_BOLD_BRIGHT$it$RESET"
+          else -> "$RED_BOLD_BRIGHT$it$RESET"
         }}")
       info("|                            | Shards: $shards")
       info("Finished ready for Shard ${shardInfo.shardId} in " +

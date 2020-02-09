@@ -1,10 +1,4 @@
-package com.fortuneteller.dclient.commands.moderation
-
-import com.fortuneteller.dclient.commands.utils.Categories
-import com.jagrosh.jdautilities.command.Command
-import com.jagrosh.jdautilities.command.CommandEvent
-import net.dv8tion.jda.api.Permission
-import java.util.function.Consumer
+package com.fortuneteller.ndclient
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -41,22 +35,4 @@ import java.util.function.Consumer
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class SoftbanCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    event.channel.sendTyping().queue()
-    event.message.mentionedMembers.forEach { m -> event.channel.iterableHistory.limit(1000).forEach {
-      if (it.author.id == m.user.id) it.delete().queue()
-    }
-      m.kick().queue()
-    }
-  }
-
-  init {
-    name = "softban"
-    arguments = "**<reason>** **<user>**"
-    help = "Kicks a user and deletes all their messages."
-    category = Categories.MODERATION.category
-    botPermissions = arrayOf(Permission.MESSAGE_MANAGE, Permission.KICK_MEMBERS)
-    userPermissions = arrayOf(Permission.MESSAGE_MANAGE, Permission.KICK_MEMBERS)
-  }
-}
+fun main() = NContraption().launch()

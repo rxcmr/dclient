@@ -44,8 +44,7 @@ import net.dv8tion.jda.api.Permission
 class NicknameCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
     val args = event.args.split("\\s+".toRegex(), 2)
-    val member = if (message.mentionedMembers.isEmpty()) guild.getMemberById(args[0])
-    else message.mentionedMembers[0]
+    val member = if (message.mentionedMembers.isEmpty()) guild.getMemberById(args[0]) else message.mentionedMembers[0]
     member?.modifyNickname(args[1])?.queue()!!
   }
 

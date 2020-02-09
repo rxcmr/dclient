@@ -41,33 +41,29 @@ import java.nio.charset.StandardCharsets
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class GoogleSearchResult {
-  var title: String? = null
+  var title = ""
     private set
-  var content: String? = null
+  var content = ""
     private set
-  var url: String? = null
+  var url = ""
     private set
 
-  val suggestedResult: String
+  val suggestedResult
     get() = "$url - *$title*: \"$content\""
 
   companion object {
-    fun fromGoogle(googleResult: JSONObject): GoogleSearchResult {
-      val gsr = GoogleSearchResult()
-      gsr.title = cleanString(googleResult.getString("title"))
-      gsr.content = cleanString(googleResult.getString("snippet"))
-      gsr.url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8)
-      return gsr
+    fun fromGoogle(googleResult: JSONObject)= GoogleSearchResult().apply {
+      title = cleanString(googleResult.getString("title"))
+      content = cleanString(googleResult.getString("snippet"))
+      url = URLDecoder.decode(cleanString(googleResult.getString("link")), StandardCharsets.UTF_8)
     }
 
-    private fun cleanString(dirtyString: String): String {
-      return StringEscapeUtils.unescapeJava(StringEscapeUtils.unescapeHtml4(
-        dirtyString
-          .replace("\\s+".toRegex(), " ")
+    private fun cleanString(dirtyString: String) = StringEscapeUtils.unescapeJava(
+      StringEscapeUtils.unescapeHtml4(
+        dirtyString.replace("\\s+".toRegex(), " ")
           .replace("<.*?>".toRegex(), "")
           .replace("\"".toRegex(), "")
       )
-      )
-    }
+    )
   }
 }

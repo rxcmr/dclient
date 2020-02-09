@@ -43,14 +43,13 @@ import java.util.*
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class UnicodeCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    if (event.args?.length!! > 10) throw CommandException(ExMessage.INPUT_TOO_LONG)
-    event.reply(StringJoiner("\n").apply {
-      for (i in event.args.indices)
-        add(event.args.toCharArray()[i].let {
-          "`${String.format("\\u%04x", it.toInt())}` ${Character.getName(it.toInt())} [$it]"
-        })
-    }.toString())
+  override fun execute(event: CommandEvent) = with(event) {
+    if (args?.length!! > 10) throw CommandException(ExMessage.INPUT_TOO_LONG)
+    reply("${StringJoiner("\n").apply {
+      for (i in args.indices) add(args.toCharArray()[i].let {
+        "`${String.format("\\u%04x", it.toInt())}` ${Character.getName(it.toInt())} [$it]"
+      })
+    }}")
   }
 
   init {

@@ -3,7 +3,7 @@ package com.fortuneteller.dclient.commands.owner
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
-import java.util.*
+import java.util.Arrays
 import java.util.stream.Collectors
 
 /*
@@ -41,6 +41,7 @@ import java.util.stream.Collectors
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
+@Suppress("unused")
 class GhostMessageCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
     val args = args.split("\\s+".toRegex()).toTypedArray()

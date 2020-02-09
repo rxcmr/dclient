@@ -5,7 +5,9 @@ import com.fortuneteller.dclient.commands.gadgets.utils.Tag
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.fortuneteller.dclient.commands.utils.CommandException
 import com.fortuneteller.dclient.database.SQLItemMode
-import com.fortuneteller.dclient.database.SQLItemMode.*
+import com.fortuneteller.dclient.database.SQLItemMode.ALL
+import com.fortuneteller.dclient.database.SQLItemMode.GVALUE
+import com.fortuneteller.dclient.database.SQLItemMode.LVALUE
 import com.fortuneteller.dclient.database.SQLUtils
 import com.fortuneteller.dclient.database.SQLUtils.Companion.transact
 import com.fortuneteller.dclient.utils.ExMessage
@@ -18,15 +20,22 @@ import net.dv8tion.jda.api.entities.ChannelType
 import net.dv8tion.jda.api.entities.Role
 import net.dv8tion.jda.api.events.message.guild.GuildMessageReceivedEvent
 import net.dv8tion.jda.api.hooks.ListenerAdapter
-import org.jetbrains.exposed.sql.*
+import org.jetbrains.exposed.sql.SchemaUtils
+import org.jetbrains.exposed.sql.deleteWhere
+import org.jetbrains.exposed.sql.exists
+import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
+import org.jetbrains.exposed.sql.update
 import org.sqlite.SQLiteException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.SecureRandom
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Arrays
+import java.util.Date
+import java.util.LinkedList
 import java.util.stream.Collectors
-import kotlin.collections.LinkedHashSet
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -119,8 +128,7 @@ class JagTagCommand : Command(), SQLUtils {
           "create", "new", "add" -> {
             clearAndSelect()
             if (isFromType(ChannelType.PRIVATE)) throw CommandException(ExMessage.JT_GLOBAL)
-            if (args[1].matches(
-                "(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
+            if (args[1].matches("(global|g|create|new|add|delete|remove|edit|modify|raw|cblkraw)".toRegex())
             ) throw CommandException(ExMessage.JT_RESERVED)
             val tagValue = Arrays.stream(args).skip(2).collect(Collectors.joining(" "))
             if (message.attachments.isNotEmpty())
@@ -255,28 +263,10 @@ class JagTagCommand : Command(), SQLUtils {
   }
 
   override fun createTable() = transact(db) {
-    try {
-      when (this@JagTagCommand.db) {
-        "sqlite" -> {
-          //language=SQLite
-          exec("PRAGMA auto_vacuum = FULL")
-          //language=SQLite
-          exec("SELECT EXISTS(SELECT name FROM sqlite_master WHERE type='table' AND name='tags')") {
-            while (it.next())
-              if (!it.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
-          }!!
-        }
-        "postgresql" -> {
-          //language=PostgreSQL
-          exec("SELECT EXISTS(SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tablename = 'tags')") {
-            while (it.next())
-              if (!it.getBoolean(1)) SchemaUtils.createMissingTablesAndColumns(JagTagTable)
-          }!!
-        }
-        else -> throw CommandException(ExMessage.INVALID_DB)
-      }
-    } finally {
-      clearAndSelect()
+    if (JagTagTable.exists()) clearAndSelect()
+    else {
+      if (this@JagTagCommand.db == "sqlite") /* language=SQLite */ exec("PRAGMA auto_vacuum = FULL;")
+      SchemaUtils.createMissingTablesAndColumns(JagTagTable)
     }
   }
 

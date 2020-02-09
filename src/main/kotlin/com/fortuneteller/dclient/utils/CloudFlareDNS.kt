@@ -3,7 +3,8 @@ package com.fortuneteller.dclient.utils
 import okhttp3.Dns
 import java.net.InetAddress
 import java.net.UnknownHostException
-import java.util.*
+import java.util.Collections
+import java.util.LinkedList
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.

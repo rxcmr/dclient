@@ -41,9 +41,9 @@ import net.dv8tion.jda.api.Permission
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class KickCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    event.channel.sendTyping().queue()
-    for (m in event.message.mentionedMembers) m.kick().queue()
+  override fun execute(event: CommandEvent) = with(event) {
+    channel.sendTyping().queue()
+    for (m in message.mentionedMembers) m.kick().queue()
   }
 
   init {

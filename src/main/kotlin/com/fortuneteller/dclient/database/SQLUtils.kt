@@ -45,7 +45,7 @@ import java.sql.Connection
 interface SQLUtils {
   companion object {
     fun <T> transact(db: String, statement: Transaction.() -> T) = transaction(
-      if (db == "sqlite") Connection.TRANSACTION_SERIALIZABLE else Connection.TRANSACTION_READ_UNCOMMITTED,
+      Connection.TRANSACTION_SERIALIZABLE,
       3,
       Database.connect(
         when (db) {

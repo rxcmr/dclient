@@ -47,7 +47,7 @@ import java.util.*
  */
 class JavadocCommand : Command() {
   override fun execute(event: CommandEvent) = EnumSet.allOf(JavadocPackages::class.java)
-    .map { j -> String.format(j.url, event.args) }.forEach { formatted ->
+    .map { String.format(it.url, event.args) }.forEach { formatted ->
       val request = Request.Builder().url(formatted).head().build()
       OkHttpClient().newCall(request).execute().use {
         if (it.code() == 200) event.reply(formatted)

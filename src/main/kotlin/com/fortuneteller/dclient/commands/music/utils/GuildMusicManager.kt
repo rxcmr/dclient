@@ -42,8 +42,8 @@ class GuildMusicManager(manager: AudioPlayerManager) {
   val scheduler: TrackScheduler
   val sendingHandler: AudioPlayerSendHandler get() = AudioPlayerSendHandler(player)
 
-  init {
-    scheduler = TrackScheduler(player)
-    player.addListener(scheduler)
-  }
+  init { player.apply {
+    scheduler = TrackScheduler(this)
+    addListener(scheduler)
+  }}
 }

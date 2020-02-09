@@ -1,11 +1,12 @@
-package com.fortuneteller.dclient
+package com.fortuneteller.ndclient
 
 import com.fortuneteller.dclient.utils.loadEnv
-import com.jagrosh.jdautilities.command.Command
-import io.github.classgraph.ClassGraph
-import net.dv8tion.jda.api.hooks.ListenerAdapter
-import java.time.Instant
-import java.util.*
+import me.aberrantfox.kjdautils.api.KUtils
+import me.aberrantfox.kjdautils.api.dsl.PrefixDeleteMode
+import me.aberrantfox.kjdautils.api.dsl.embed
+import me.aberrantfox.kjdautils.api.startBot
+import me.aberrantfox.kjdautils.extensions.jda.fullName
+import java.awt.Color
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -42,35 +43,48 @@ import java.util.*
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class Pilot(private val token: String, private val prefix: String, private val shards: Int) : Runnable {
+class NContraption {
   companion object {
-    val initTime: Instant = Instant.now()
+    const val VERSION = "0.0.1n"
+    const val ID = "175610330217447424"
   }
 
-  private val commands = LinkedList<Command>().apply {
-    for (c in ClassGraph()
-      .blacklistPackages(
-        "com.fortuneteller.dclient.commands.utils",
-        "com.fortuneteller.dclient.commands.gadgets.utils",
-        "com.fortuneteller.dclient.commands.music.utils",
-        "com.fortuneteller.dclient.commands.music.children",
-        "com.fortuneteller.dclient.commands.statistics.children",
-        "com.fortuneteller.dclient.commands.owner.children")
-      .whitelistPackages("com.fortuneteller.dclient.commands.*")
-      .scan()
-      .getSubclasses(Command::class.qualifiedName)
-      .loadClasses(Command::class.java)) add(c.getDeclaredConstructor().newInstance())
-  }
 
-  private val listeners = LinkedList<Any>().apply {
-    for (l in ClassGraph()
-      .whitelistPackagesNonRecursive("com.fortuneteller.dclient.listeners")
-      .scan()
-      .getSubclasses(ListenerAdapter::class.qualifiedName)
-      .loadClasses(ListenerAdapter::class.java)) add(l.getDeclaredConstructor().newInstance())
-  }
+  fun launch() {
+    startBot(loadEnv("SUBTOKEN")) {
+      configure {
+        prefix = "nd."
+        globalPath = "com.fortuneteller.ndclient"
+        reactToCommands = true
+        deleteMode = PrefixDeleteMode.Double
+        deleteErrors = true
+        allowPrivateMessages = true
+        documentationSortOrder = listOf("Gadgets", "Moderation", "Music", "Owner", "Statistics")
+        mentionEmbed = { embed {
+          title = "ndclient"
+          description = "*new dclient*"
+          color = Color(0xd32ce6)
 
-  override fun run() = Contraption(token, prefix, shards, commands, listeners).launch()
+          author {
+            name = it.author.fullName()
+            iconUrl = it.author.effectiveAvatarUrl
+          }
+
+          field {
+            value = "ndclient $VERSION"
+            inline = false
+          }
+
+          footer {
+            text = it.jda.selfUser.fullName()
+            iconUrl = it.jda.selfUser.effectiveAvatarUrl
+          }
+        }}
+        visibilityPredicate = { command, user, _, guild ->
+          command.category == "Owner" && user.id == ID
+          command.category == "Music" && guild?.voiceChannels?.size != 0
+        }
+      }
+    }
+  }
 }
-
-fun main() = Pilot(loadEnv("TOKEN"), "pl.", 1).run()

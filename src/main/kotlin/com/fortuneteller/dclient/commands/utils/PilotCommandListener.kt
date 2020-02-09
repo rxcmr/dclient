@@ -47,22 +47,22 @@ import com.jagrosh.jdautilities.examples.command.ShutdownCommand
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PilotCommandListener : CommandListener {
-  override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) = event.let { e ->
-    e.channel?.sendTyping()?.queue()
-    command.let { c ->
+  override fun onCommandException(event: CommandEvent, command: Command, throwable: Throwable) = with(event) {
+    channel?.sendTyping()?.queue()
+    command.let {
       throwable.let { t ->
-        when (c) {
-          is PingCommand -> e.reply("Request didn't go through.")
-          is TestCommand -> e.reply("```kotlin\nTest complete.\nThrew:\n$t```")
-          is PlayCommand -> SearchCommand().execute(e)
+        when (it) {
+          is PingCommand -> reply("Request didn't go through.")
+          is TestCommand -> reply("```kotlin\nTest complete.\nThrew:\n$t```")
+          is PlayCommand -> SearchCommand().execute(this)
           else -> {
-            e.message?.addReaction("\uD83D\uDE41")?.queue()
-            e.replyToOwner("```java\n$t\n```")
-            e.reply(when (c.arguments) {
+            message?.addReaction("\uD83D\uDE41")?.queue()
+            replyToOwner("```java\n$t\n```")
+            reply(when (it.arguments) {
               null -> "Something wrong happened..."
-              else -> "${Contraption.prefix}${c.name} ${c.arguments}"
+              else -> "${Contraption.prefix}${it.name} ${it.arguments}"
             })
-            e.reply(t.message)
+            reply(t.message)
           }
         }
       }
@@ -71,16 +71,15 @@ class PilotCommandListener : CommandListener {
 
   override fun onCompletedCommand(event: CommandEvent, command: Command) {
     if (command is ShutdownCommand) return
-    event.message?.addReaction("\uD83D\uDE42")?.queue()
+    else event.message?.addReaction("\uD83D\uDE42")?.queue()
   }
 
-  override fun onTerminatedCommand(event: CommandEvent, command: Command) {
+  override fun onTerminatedCommand(event: CommandEvent, command: Command) = with(event) {
     if (command is LeaveCommand) return
-    event.message?.addReaction("\uD83E\uDD2C")?.queue()
-    event.channel?.sendTyping()?.queue()
-    event.reply("Unexpected behavior. Try again.")
-    event.replyToOwner("Unexpected behavior.\n" +
-      "Triggered by: ${event.author.name} in ${event.guild.name} in ${event.channel.name}\n" +
-      "Input: ${event.message}")
+    message?.addReaction("\uD83E\uDD2C")?.queue()
+    channel?.sendTyping()?.queue()
+    reply("Unexpected behavior. Try again.")
+    replyToOwner("Unexpected behavior.\n" +
+        "Triggered by: ${author.name} in ${guild.name} in ${channel.name}\n Input: $message")
   }
 }

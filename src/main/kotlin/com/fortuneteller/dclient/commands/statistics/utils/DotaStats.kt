@@ -47,14 +47,14 @@ object DotaStats {
     7 -> "Ranked"
     8 -> "1v1 Mid"
     9 -> "Battle Cup"
-    else -> "UNKNOWN"
+    else -> "**UNKNOWN**"
   }
 
   fun getSkill(id: Int) = when (id) {
     0 -> "Normal"
     1 -> "High"
     2 -> "Very High"
-    else -> "UNKNOWN"
+    else -> "**UNKNOWN**"
   }
 
   fun getGameMode(id: Int) = when (id) {
@@ -83,6 +83,6 @@ object DotaStats {
     22 -> "All Draft"
     23 -> "Turbo"
     24 -> "Mutation"
-    else -> "UNKNOWN"
+    else -> "**UNKNOWN**"
   }
 }

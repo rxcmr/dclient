@@ -23,7 +23,7 @@ import net.dv8tion.jda.api.managers.AudioManager
 import org.apache.http.client.config.CookieSpecs
 import org.apache.http.client.config.RequestConfig
 import org.jetbrains.annotations.Contract
-import java.util.*
+import java.util.HashMap
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -76,7 +76,7 @@ class TrackLoader {
       with(audioManager) { when {
         !isConnected && !isAttemptingToConnect -> guild.voiceChannels.stream()
           .filter { it.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
-          .ifPresent { openAudioConnection(it) }
+          .ifPresent(::openAudioConnection)
         guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } } ->
           throw CommandException(ExMessage.M_NOT_JOINED)
       }}

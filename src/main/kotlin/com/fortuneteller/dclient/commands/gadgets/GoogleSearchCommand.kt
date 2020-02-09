@@ -44,9 +44,8 @@ import com.jagrosh.jdautilities.command.CommandEvent
 class GoogleSearchCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
     channel.sendTyping().queue()
-    val query = event.args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
-    GoogleSearchHandler.init(loadEnv("API_KEY"))
-    val results = GoogleSearchHandler.performSearch(loadEnv("ENGINE_ID"), query, event.jda.httpClient)
+    val query = args.split("\\s+".toRegex()).toTypedArray().joinToString(" ")
+    val results = GoogleSearchHandler.performSearch(query, jda.httpClient)
     reply(results[0].suggestedResult)
   }
 

@@ -41,10 +41,10 @@ import net.dv8tion.jda.api.Permission
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class BanCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    val args = event.args.split("\\s+".toRegex()).toTypedArray()
-    event.channel.sendTyping().queue()
-    for (m in event.message.mentionedMembers) m.ban(args[1].toInt()).queue()
+  override fun execute(event: CommandEvent) = with(event) {
+    val args = args.split("\\s+".toRegex()).toTypedArray()
+    channel.sendTyping().queue()
+    for (m in message.mentionedMembers) m.ban(args[1].toInt()).queue()
   }
 
   init {

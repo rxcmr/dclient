@@ -41,6 +41,7 @@ import java.util.stream.Collectors
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 
-fun Response.getJSONResponse(): String = BufferedReader(InputStreamReader(body()?.byteStream()!!)).use { i ->
-  i.lines().map { l -> "$l\n" }.collect(Collectors.joining())
-}
+val Response.jsonResponse: String
+  get() = BufferedReader(InputStreamReader(body()?.byteStream()!!)).use { i ->
+    i.lines().map { "$it\n" }.collect(Collectors.joining())
+  }

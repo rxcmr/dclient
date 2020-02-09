@@ -41,16 +41,8 @@ import java.lang.management.ManagementFactory
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class UptimeCommand : Command() {
-  override fun execute(event: CommandEvent) {
-    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
-    val uptime = runtimeMXBean.uptime
-    val uptimeInSeconds = uptime / 1000
-    with(uptimeInSeconds) {
-      val h = this / (60 * 60)
-      val m = this / 60 - h * 60
-      val s = this % 60
-      event.channel.sendMessageFormat("`%s:%s:%s`", h, m, s).queue()
-    }
+  override fun execute(event: CommandEvent) = (ManagementFactory.getRuntimeMXBean().uptime / 1000).let {
+    event.replyFormatted("`%s:%s:%s`", it / (60 * 60), it / 60 - it / (60 * 60) * 60, it % 60)
   }
 
   init {

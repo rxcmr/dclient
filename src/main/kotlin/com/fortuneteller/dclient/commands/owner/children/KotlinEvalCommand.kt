@@ -109,9 +109,7 @@ class KotlinEvalCommand : Command() {
   }
 
   init {
-    val os = System.getProperty("os.name")?.toLowerCase()
-    if (os?.startsWith("win") == true) setIdeaIoUseFallback()
-
+    if (System.getProperty("os.name")?.toLowerCase()?.startsWith("win") == true) setIdeaIoUseFallback()
     name = "kotlin"
     aliases = arrayOf("kts")
     ownerCommand = true

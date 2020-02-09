@@ -66,16 +66,8 @@ class LoadCommand : Command() {
           .loadClasses(ListenerAdapter::class.java)[0].getDeclaredConstructor().newInstance()
         shardManager.addEventListener(listener)
       }
-    } catch (e: IndexOutOfBoundsException) {
-      throw CommandException(e.message)
-    } catch (e: NoSuchMethodException) {
-      throw CommandException(e.message)
-    } catch (e: IllegalAccessException) {
-      throw CommandException(e.message)
-    } catch (e: InstantiationException) {
-      throw CommandException(e.message)
-    } catch (e: InvocationTargetException) {
-      throw CommandException(e.message)
+    } catch (t: Throwable) {
+      throw CommandException(t.message)
     }
   }
 

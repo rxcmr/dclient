@@ -1,7 +1,11 @@
 package com.fortuneteller.dclient
 
 import com.fortuneteller.dclient.commands.utils.Categories
-import com.fortuneteller.dclient.commands.utils.Categories.*
+import com.fortuneteller.dclient.commands.utils.Categories.GADGETS
+import com.fortuneteller.dclient.commands.utils.Categories.MODERATION
+import com.fortuneteller.dclient.commands.utils.Categories.MUSIC
+import com.fortuneteller.dclient.commands.utils.Categories.OWNER
+import com.fortuneteller.dclient.commands.utils.Categories.STATS
 import com.fortuneteller.dclient.commands.utils.PilotCommandListener
 import com.fortuneteller.dclient.utils.CloudFlareDNS
 import com.fortuneteller.dclient.utils.Colors.BLUE_BOLD_BRIGHT
@@ -34,7 +38,9 @@ import java.io.File
 import java.net.UnknownHostException
 import java.time.Duration
 import java.time.Instant
-import java.util.*
+import java.util.EnumSet
+import java.util.LinkedList
+import java.util.Scanner
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
@@ -77,19 +83,20 @@ import kotlin.system.exitProcess
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class Contraption(private val token: String,
-                  private val prefix: String,
-                  private val shards: Int,
-                  private val commands: Collection<Command>,
-                  private val listeners: Collection<Any>?) {
+class Contraption(
+  private val token: String,
+  private val prefix: String,
+  private val shards: Int,
+  private val commands: Collection<Command>,
+  private val listeners: Collection<Any>) {
 
   companion object {
     lateinit var instance: Contraption private set
     lateinit var shardManager: ShardManager private set
     lateinit var commandClient: CommandClient private set
     lateinit var prefix: String private set
-    const val ID: String = "175610330217447424"
-    val VERSION = this::class.java.`package`.implementationVersion ?: "1.9.4l"
+    const val ID = "175610330217447424"
+    val VERSION = this::class.java.`package`.implementationVersion ?: "1.10.0l"
 
     fun generateClassGraph() {
       val file = File("./graphs/dclient.dot")
@@ -113,7 +120,7 @@ class Contraption(private val token: String,
     }
   }
 
-  private fun buildCommandClient() = CommandClientBuilder().let {
+  private fun buildCommandClient() = CommandClientBuilder().let { cb ->
     fun buildHelpEmbed(author: User, args: String) = EmbedBuilder().let { e ->
       fun addCommandInformation(c: Command, l: LinkedList<String>) {
         if (c.arguments == null && c.isGuildOnly) l.add("```GUILD ONLY \n - ${c.help}```")
@@ -128,10 +135,10 @@ class Contraption(private val token: String,
           val commandInformation = LinkedList<String>()
           val commandContent = DualLinkedHashBidiMap<String, String>()
           commands.stream()
-            .filter { c -> c.category == category && (!c.isHidden || c.isOwnerCommand) }
-            .forEachOrdered { c ->
-              commandInvocation.add("`$prefix${c.name}`")
-              addCommandInformation(c, commandInformation)
+            .filter { it.category == category && (!it.isHidden || it.isOwnerCommand) }
+            .forEachOrdered {
+              commandInvocation.add("`$prefix${it.name}`")
+              addCommandInformation(it, commandInformation)
               val invokeIter = commandInvocation.iterator()
               val infoIter = commandInformation.iterator()
               while (invokeIter.hasNext() && infoIter.hasNext()) commandContent[invokeIter.next()] = infoIter.next()
@@ -155,27 +162,24 @@ class Contraption(private val token: String,
           equals(MODERATION.name, true) -> categoryEmbed(MODERATION)
           equals(OWNER.name, true) -> categoryEmbed(OWNER)
           equals(STATS.name, true) -> categoryEmbed(STATS)
-          else -> {
-            categories.forEach { c ->
-              e.addField(
-                "**Category: ${c.name}**",
-                "```py\n${prefix}help ${c.name.toLowerCase()}\n```",
-                false)
-            }
-          }
+          else -> { categories.forEach { e.addField(
+            "**Category: ${it.name}**",
+            "```py\n${prefix}help ${it.name.toLowerCase()}\n```",
+            false
+          )}}
         }
       }
       e.setColor(0xd32ce6).setFooter("requested by: ${author.name}", author.avatarUrl).build()
     }
 
     info("Building ${YELLOW_BOLD_BRIGHT}CommandClient$RESET")
-    commands.forEach { c -> it.addCommand(c) }
-    commandClient = it.setOwnerId(ID)
+    commands.forEach { cb.addCommand(it) }
+    commandClient = cb.setOwnerId(ID)
       .setPrefix(prefix)
       .setActivity(Activity.listening("events."))
       .setStatus(OnlineStatus.DO_NOT_DISTURB)
       .setListener(PilotCommandListener())
-      .setHelpConsumer { e -> e.replyInDm(buildHelpEmbed(e.author, e.args)) }
+      .setHelpConsumer { it.replyInDm(buildHelpEmbed(it.author, it.args)) }
       .useHelpBuilder(false)
       .setShutdownAutomatically(true)
       .build()
@@ -199,17 +203,16 @@ class Contraption(private val token: String,
       .setRelativeRateLimit(false)
       .setContextEnabled(true)
       .setChunkingFilter(ChunkingFilter.NONE)
-      .addEventListeners(listeners ?: listOf<Any>(DefaultListener))
+      .addEventListeners(listeners)
       .build()
   }
 
   private fun retryPrompt(): Unit = Scanner(System.`in`).use {
     error("My disappointment is immeasurable, and my day is ruined.")
-    info("Retry connection? [y/n]: ")
-    when (it.next()) {
-      "y" -> launch()
-      "n" -> exitProcess(-9)
-      else -> exitProcess(-9)
+    info("Retry? [y/n]: ")
+    when (it.next().equals("y", true)) {
+      true -> launch()
+      false -> exitProcess(-9)
     }
   }
 
@@ -221,29 +224,23 @@ class Contraption(private val token: String,
       info("Running.")
       info(if (shards > 1) "$RED_BOLD_BRIGHT$shards$RESET shards active."
       else "$RED_BOLD_BRIGHT$shards$RESET shard active.")
-      commands.forEach { c ->
-        pattern.matcher(c.toString()).let { p ->
-          while (p.find())
-            info("${YELLOW_BOLD_BRIGHT}Command$RESET loaded: $GREEN_BOLD_BRIGHT${p.group(0)}$RESET")
-        }
+      commands.forEach { with(pattern.matcher(it.toString())) {
+        while (find()) info("${YELLOW_BOLD_BRIGHT}Command$RESET loaded: $GREEN_BOLD_BRIGHT${group(0)}$RESET")
+      }}
+      listeners.forEach { with(pattern.matcher(it.toString())) {
+        while (find())
+          info("${YELLOW_BOLD_BRIGHT}EventListener$RESET loaded: $GREEN_BOLD_BRIGHT${group(0)}$RESET")
+      }}
+    } catch (t: Throwable) {
+      ex.set(true)
+      when (t) {
+        is LoginException -> error("Invalid token, no internet connection, or time out.")
+        is IllegalArgumentException ->
+          error("${YELLOW_BOLD_BRIGHT}Commands$RESET/${YELLOW_BOLD_BRIGHT}EventListeners$RESET loading failed!")
+        is UnknownHostException -> error("Cannot connect to ${PURPLE_BOLD_BRIGHT}Discord API$RESET/" +
+            "${PURPLE_BOLD_BRIGHT}WebSocket$RESET, or ${BLUE_BOLD_BRIGHT}CloudFlare DNS$RESET.")
+        else -> error(t.localizedMessage)
       }
-      if (listeners == null) return
-      listeners.forEach { l ->
-        pattern.matcher(l.toString()).let { p ->
-          while (p.find())
-            info("${YELLOW_BOLD_BRIGHT}EventListener$RESET loaded: $GREEN_BOLD_BRIGHT${p.group(0)}$RESET")
-        }
-      }
-    } catch (l: LoginException) {
-      error("Invalid token or time out.")
-      ex.set(true)
-    } catch (i: IllegalArgumentException) {
-      error("${YELLOW_BOLD_BRIGHT}Commands$RESET/${YELLOW_BOLD_BRIGHT}EventListeners$RESET loading failed!")
-      ex.set(true)
-    } catch (u: UnknownHostException) {
-      ex.set(true)
-      error("Cannot connect to ${PURPLE_BOLD_BRIGHT}Discord API$RESET/" +
-        "${PURPLE_BOLD_BRIGHT}WebSocket$RESET, or ${BLUE_BOLD_BRIGHT}CloudFlare DNS$RESET.")
     } finally {
       when (!ex.get()) {
         true -> {
@@ -262,6 +259,7 @@ class Contraption(private val token: String,
 
   init {
     if (shards <= 0) throw IllegalArgumentException("Shards should be a non-zero positive integer.")
+    if (listeners.isEmpty()) (listeners as MutableList<Any>).add(DefaultListener)
     info("Initialized.")
   }
 }

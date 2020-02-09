@@ -46,7 +46,8 @@ class TestCommand : Command() {
     for (i in 0..100) {
       reply("RateLimit pls")
       replyToOwner("RateLimit pls")
-      guild.getMember(jda.getUserById(228106090242375680)!!)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
+      guild.getMember(jda.getUserById(228106090242375680)!!)
+        ?.modifyNickname("${SecureRandom().nextInt(100)}")?.queue()
       guild.getMember(jda.selfUser)?.modifyNickname(SecureRandom().nextInt(100).toString())?.queue()
     }
   }

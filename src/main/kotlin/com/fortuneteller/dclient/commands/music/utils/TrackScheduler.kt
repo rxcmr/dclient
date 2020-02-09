@@ -4,9 +4,9 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason
-import java.util.*
+import java.util.LinkedList
+import java.util.Queue
 import java.util.concurrent.TimeUnit
-import kotlin.collections.ArrayList
 
 /*
  * Copyright 2019-2020 rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>.
@@ -53,7 +53,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
         true -> {
           when (player.playingTrack != null) {
             true -> listOf("`Now playing: ${player.playingTrack.info.title}`")
-            false -> listOf("`No tracks left in the queue.`")
+            false -> listOf("`No tracks in the queue.`")
           }
         }
         false -> ArrayList<String>().apply {
