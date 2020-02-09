@@ -44,10 +44,10 @@ import java.util.concurrent.TimeUnit
 class PurgeCommand : Command() {
   override fun execute(event: CommandEvent): Unit = with(event) {
     val amount = args.toInt()
-    channel.sendTyping().queue()
-    channel.history.retrievePast(amount).queue { channel.purgeMessages(it) }
-    channel.sendMessage("Cleared $amount messages.").queue {
-      it.delete().queueAfter(5, TimeUnit.SECONDS)
+    with(channel) {
+      sendTyping().queue()
+      history.retrievePast(amount).queue { purgeMessages(it) }
+      sendMessage("Cleared $amount messages.").queue { it.delete().queueAfter(5, TimeUnit.SECONDS) }
     }
   }
 
