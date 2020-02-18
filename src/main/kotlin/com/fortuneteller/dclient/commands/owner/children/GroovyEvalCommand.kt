@@ -107,6 +107,7 @@ class GroovyEvalCommand : Command() {
     arguments = "**<code>**"
     hidden = true
     category = Categories.OWNER.category
+    //language=groovy
     imports = """
       import java.io.*
       import java.lang.*

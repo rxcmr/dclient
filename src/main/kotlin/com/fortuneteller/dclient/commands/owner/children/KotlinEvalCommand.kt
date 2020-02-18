@@ -117,6 +117,7 @@ class KotlinEvalCommand : Command() {
     arguments = "**<code>**"
     hidden = true
     category = Categories.OWNER.category
+    //language=kotlin
     script.append("""
       import java.io.*
       import java.lang.*

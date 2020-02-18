@@ -1,0 +1,1 @@
+This project is bound by the terms of the Apache License 2.0 and the GNU Affero General Public License version 3

@@ -42,11 +42,11 @@ import java.util.concurrent.TimeUnit
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PurgeCommand : Command() {
-  override fun execute(event: CommandEvent): Unit = with(event) {
+  override fun execute(event: CommandEvent) = with(event) {
     val amount = args.toInt()
     with(channel) {
       sendTyping().queue()
-      history.retrievePast(amount).queue { purgeMessages(it) }
+      history.retrievePast(amount).queue(this::purgeMessages)
       sendMessage("Cleared $amount messages.").queue { it.delete().queueAfter(5, TimeUnit.SECONDS) }
     }
   }

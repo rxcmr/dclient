@@ -1,0 +1,3 @@
+rootProject.name = 'dclient'
+include 'java'
+
