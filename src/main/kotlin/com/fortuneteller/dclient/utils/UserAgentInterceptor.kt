@@ -3,6 +3,7 @@ package com.fortuneteller.dclient.utils
 import com.fortuneteller.dclient.commands.gadgets.utils.GoogleSearchHandler
 import okhttp3.Interceptor
 import okhttp3.Response
+import java.security.SecureRandom
 import kotlin.random.Random
 
 /*
@@ -42,10 +43,8 @@ import kotlin.random.Random
  */
 class UserAgentInterceptor(
   private val userAgent: String = "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" + "AppleWebKit/537.36 (KHTML, like Gecko)"
-    + "Chrome/78.0.3904.108 Safari/537.36 ${GoogleSearchHandler.randomName(Random.nextInt())}") : Interceptor {
+    + "Chrome/78.0.3904.108 Safari/537.36 ${GoogleSearchHandler.randomName(SecureRandom().nextInt())}") : Interceptor {
 
-  override fun intercept(chain: Interceptor.Chain): Response = chain.proceed(chain.request()
-    .newBuilder()
-    .header("User-Agent", userAgent)
-    .build())
+  override fun intercept(chain: Interceptor.Chain): Response = chain.proceed(chain.request().newBuilder()
+    .header("User-Agent", userAgent).build())
 }

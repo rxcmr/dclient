@@ -41,7 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class ShuffleCommand : Command() {
-  override fun execute(event: CommandEvent) = TrackLoader.instance.shuffleTracks(event.textChannel)
+  override fun execute(event: CommandEvent) = TrackLoader.shuffleTracks(event.textChannel)
 
   init {
     name = "shuffle"

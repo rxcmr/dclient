@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.instance
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
@@ -43,7 +43,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
 class SkipCommand : Command() {
   override fun execute(event: CommandEvent) = with(event) {
     channel.sendTyping().queue()
-    instance.skipTrack(textChannel)
+    TrackLoader.skipTrack(textChannel)
   }
 
   init {

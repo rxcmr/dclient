@@ -62,7 +62,7 @@ class SearchCommand : Command() {
         val json = r.jsonResponse
         val itemsArray = JSONObject(json).getJSONArray("items")
         val videoID = itemsArray.getJSONObject(0).getJSONObject("id").getString("videoId")
-        TrackLoader.instance.loadAndPlay(it.textChannel, it.member, "https://www.youtube.com/watch?v=$videoID")
+        TrackLoader.loadAndPlay(it.textChannel, it.member, "https://www.youtube.com/watch?v=$videoID")
       }
     } else {
       PilotUtils.warn("API limit reached, using scraper...")
@@ -73,7 +73,7 @@ class SearchCommand : Command() {
         val json = r.jsonResponse
         val itemsArray = JSONObject(json).getJSONArray("results")
         val videoURL = itemsArray.getJSONObject(1).getJSONObject("video").getString("url")
-        TrackLoader.instance.loadAndPlay(it.textChannel, it.member, videoURL)
+        TrackLoader.loadAndPlay(it.textChannel, it.member, videoURL)
       }
     }
   }

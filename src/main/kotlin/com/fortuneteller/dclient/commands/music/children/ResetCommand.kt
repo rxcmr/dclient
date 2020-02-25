@@ -41,7 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class ResetCommand : Command() {
-  override fun execute(event: CommandEvent) = TrackLoader.instance.reset(event.textChannel)
+  override fun execute(event: CommandEvent) = TrackLoader.reset(event.textChannel)
 
   init {
     name = "reset"

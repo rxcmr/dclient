@@ -58,10 +58,10 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
         }
         false -> ArrayList<String>().apply {
           add("`Now playing: ${player.playingTrack.info.title}`")
-          queue.toList().let {
-            it.forEach { t -> add("`${it.indexOf(t) + 1} -> ${t.info.title} -> " +
-              "${String.format("%02d", TimeUnit.MILLISECONDS.toMinutes(t.duration))}:" +
-              "${String.format("%02d", TimeUnit.MILLISECONDS.toSeconds(t.duration) 
+          queue.toList().let { t ->
+            t.forEach { add("`${t.indexOf(it) + 1} -> ${it.info.title} -> " +
+              "${String.format("%02d", TimeUnit.MILLISECONDS.toMinutes(it.duration))}:" +
+              "${String.format("%02d", TimeUnit.MILLISECONDS.toSeconds(it.duration) 
                 % TimeUnit.MINUTES.toSeconds(1))}`")
             }
           }
@@ -70,8 +70,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
     }
 
   fun queue(track: AudioTrack) {
-    if (player.playingTrack != null) queue.offer(track)
-    else player.playTrack(track)
+    if (player.playingTrack != null) queue.offer(track) else player.playTrack(track)
   }
 
   fun clearQueue() = queue.clear()
@@ -79,10 +78,7 @@ class TrackScheduler(private val player: AudioPlayer) : AudioEventAdapter() {
   fun shuffle() = (queue as MutableList<*>).shuffle()
 
   override fun onTrackEnd(player: AudioPlayer, track: AudioTrack, reason: AudioTrackEndReason) = reason.let {
-    if (it.mayStartNext) {
-      if (repeat) player.playTrack(track.makeClone())
-      else nextTrack()
-    }
+    if (it.mayStartNext) if (repeat) player.playTrack(track.makeClone()) else nextTrack()
   }
 
   init {

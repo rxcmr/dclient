@@ -1,6 +1,6 @@
 package com.fortuneteller.dclient.commands.music.children
 
-import com.fortuneteller.dclient.commands.music.utils.TrackLoader.Companion.musicManager
+import com.fortuneteller.dclient.commands.music.utils.TrackLoader.musicManager
 import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent

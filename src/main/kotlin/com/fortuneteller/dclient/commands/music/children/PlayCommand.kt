@@ -52,7 +52,7 @@ class PlayCommand : Command() {
     } catch (e: MalformedURLException) {
       throw CommandException()
     }
-    TrackLoader.instance.loadAndPlay(textChannel, member, args)
+    TrackLoader.loadAndPlay(textChannel, member, args)
   }
 
   init {

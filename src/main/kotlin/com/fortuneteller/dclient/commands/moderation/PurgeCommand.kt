@@ -4,6 +4,7 @@ import com.fortuneteller.dclient.commands.utils.Categories
 import com.jagrosh.jdautilities.command.Command
 import com.jagrosh.jdautilities.command.CommandEvent
 import net.dv8tion.jda.api.Permission
+import net.dv8tion.jda.api.entities.TextChannel
 import java.util.concurrent.TimeUnit
 
 /*
@@ -46,7 +47,7 @@ class PurgeCommand : Command() {
     val amount = args.toInt()
     with(channel) {
       sendTyping().queue()
-      history.retrievePast(amount).queue(this::purgeMessages)
+      history.retrievePast(amount).queue { purgeMessages(it) }
       sendMessage("Cleared $amount messages.").queue { it.delete().queueAfter(5, TimeUnit.SECONDS) }
     }
   }

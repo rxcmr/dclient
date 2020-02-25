@@ -41,7 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class StopCommand : Command() {
-  override fun execute(event: CommandEvent) = TrackLoader.instance.stopTrack(event.textChannel)
+  override fun execute(event: CommandEvent) = TrackLoader.stopTrack(event.textChannel)
 
   init {
     name = "stop"

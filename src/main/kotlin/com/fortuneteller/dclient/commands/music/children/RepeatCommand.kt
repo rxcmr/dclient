@@ -41,7 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class RepeatCommand : Command() {
-  override fun execute(event: CommandEvent) = TrackLoader.instance.repeatTrack(event.textChannel)
+  override fun execute(event: CommandEvent) = TrackLoader.repeatTrack(event.textChannel)
 
   init {
     name = "repeat"

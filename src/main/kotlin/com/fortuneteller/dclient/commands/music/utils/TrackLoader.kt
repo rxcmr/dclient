@@ -60,27 +60,22 @@ import java.util.HashMap
 /**
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
-class TrackLoader {
+object TrackLoader {
   private val playerManager: AudioPlayerManager
   private val musicManagers: MutableMap<Long, GuildMusicManager>
-
-  companion object {
-    val instance = TrackLoader()
-
-    val Guild.musicManager: GuildMusicManager
-      get() = instance.musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(instance.playerManager) }.also {
-        audioManager.sendingHandler = it.sendingHandler
-      }
-
-    private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) {
-      with(audioManager) { when {
-        !isConnected && !isAttemptingToConnect -> guild.voiceChannels.stream()
-          .filter { it.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
-          .ifPresent(::openAudioConnection)
-        guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } } ->
-          throw CommandException(ExMessage.M_NOT_JOINED)
-      }}
+  val Guild.musicManager: GuildMusicManager
+    get() = musicManagers.computeIfAbsent(id.toLong()) { GuildMusicManager(playerManager) }.also {
+      audioManager.sendingHandler = it.sendingHandler
     }
+
+  private fun connectToVoiceChannel(member: Member, audioManager: AudioManager) {
+    with(audioManager) { when {
+      !isConnected && !isAttemptingToConnect -> guild.voiceChannels.stream()
+        .filter { it.members.stream().anyMatch { m -> m.id == member.id } }.findFirst()
+        .ifPresent(::openAudioConnection)
+      guild.voiceChannels.stream().noneMatch { it.members.stream().anyMatch { m -> m.id == member.id } } ->
+        throw CommandException(ExMessage.M_NOT_JOINED)
+    }}
   }
 
   fun loadAndPlay(channel: TextChannel, member: Member, trackURL: String): Unit = with(channel) {

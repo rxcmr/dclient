@@ -54,7 +54,6 @@ import kotlin.random.Random
 object GoogleSearchHandler {
   private var apiUsageCounter = 0
   private val googleAPIKey = loadEnv("API_KEY")
-  private var startingDate: LocalDateTime
   private val characters = charArrayOf(
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
     'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
@@ -65,22 +64,17 @@ object GoogleSearchHandler {
     '9', '0'
   )
 
-  fun performSearch(terms: String, okHttpClient: OkHttpClient) =
-    try {
-      val engineId = loadEnv("ENGINE_ID")
-      val currentTime = LocalDateTime.now()
-      if (currentTime.isAfter(startingDate.plusDays(1))) {
-        startingDate = currentTime
-        apiUsageCounter = 1
-      } else check(apiUsageCounter < 80) { "Limit reached. (80)" }
-      val searchTerms = terms.replace(" ", "%20")
-      val searchURL = URL("https://www.googleapis.com/customsearch/" +
-          "v1?safe=medium&cx=$engineId&key=$googleAPIKey&num=1&q=$searchTerms")
-      val request = Request.Builder().url(searchURL).build()
-      performRequest(request, okHttpClient)
-    } catch (e: IOException) {
-      LinkedList<GoogleSearchResult>()
-    }
+  fun performSearch(terms: String, okHttpClient: OkHttpClient) = try {
+    val engineId = loadEnv("ENGINE_ID")
+    check(apiUsageCounter < 80) { "Limit reached. (80)" }
+    val searchTerms = terms.replace(" ", "%20")
+    val searchURL = URL("https://www.googleapis.com/customsearch/" +
+        "v1?safe=medium&cx=$engineId&key=$googleAPIKey&num=1&q=$searchTerms")
+    val request = Request.Builder().url(searchURL).build()
+    performRequest(request, okHttpClient)
+  } catch (e: IOException) {
+    LinkedList<GoogleSearchResult>()
+  }
 
   private fun performRequest(request: Request, okHttpClient: OkHttpClient) = okHttpClient
     .newCall(request).execute().use {
@@ -97,8 +91,4 @@ object GoogleSearchHandler {
   fun randomName(randomLength: Int) = IntStream.range(0, randomLength)
     .mapToObj { "${characters[Random.nextInt(characters.size)]}" }
     .collect(Collectors.joining("", "Pilot/", ""))!!
-
-  init {
-    startingDate = LocalDateTime.now()
-  }
 }

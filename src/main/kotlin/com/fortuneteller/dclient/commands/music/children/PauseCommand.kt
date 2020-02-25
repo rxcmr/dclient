@@ -41,7 +41,7 @@ import com.jagrosh.jdautilities.command.CommandEvent
  * @author rxcmr <lythe1107@gmail.com> or <lythe1107@icloud.com>
  */
 class PauseCommand : Command() {
-  override fun execute(event: CommandEvent) = TrackLoader.instance.pause(event.textChannel)
+  override fun execute(event: CommandEvent) = TrackLoader.pause(event.textChannel)
 
   init {
     name = "pause"
